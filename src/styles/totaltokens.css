@@ -1,0 +1,24 @@
+/* styles/globals.scss or wherever your global styles are */
+.total-tokens {
+  text-align: center;
+  background-color: #fff;
+  border-radius: 5px;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+  margin-top: 20px;
+}
+
+.total-tokens h2 {
+  color: #000000; /* Heading text color */
+  font-family: "Poppins", sans-serif;
+  font-size: 22px;
+  font-weight: 700;
+  margin-bottom: 5px;
+  margin-top: 10px;
+}
+
+.total-tokens p {
+  font-family: "Poppins", sans-serif;
+  font-size: 18px;
+  font-weight: 700;
+  margin-top: 7px;
+}

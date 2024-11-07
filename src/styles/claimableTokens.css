@@ -1,0 +1,41 @@
+.claimableTokens {
+}
+
+.nftTabs {
+}
+
+.ant-descriptions-view {
+  padding: 20px;
+}
+
+.ant-tabs .ant-tabs-tab {
+  padding: 20px;
+}
+
+.ant-tabs-top > .ant-tabs-nav {
+  margin-bottom: 0px;
+}
+
+.claimableTokens
+  .ant-btn.ant-btn-primary:not([disabled]):not(.ant-btn-dangerous) {
+  background-color: #3f8601;
+  border-color: #3f8601;
+}
+
+.claimableTokens
+  .ant-btn.ant-btn-primary:hover:not([disabled]):not(.ant-btn-dangerous) {
+  background-color: #69a501;
+  border-color: #69a501;
+}
+.purchase-btn {
+  background-color: #1668dc !important;
+  border: none !important;
+}
+.light .ant-statistic .ant-statistic-title,
+.light .ant-descriptions-item-label {
+  @apply text-nomyx-gray2-light;
+}
+.light .ant-statistic .ant-statistic-content,
+.light .ant-descriptions .ant-descriptions-item-content {
+  @apply text-nomyx-text-light;
+}

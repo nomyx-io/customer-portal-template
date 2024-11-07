@@ -1,0 +1,27 @@
+/* Border between labels and main content */
+.light .ant-card-head {
+  @apply border-b border-nomyx-gray4-light bg-nomyx-dark2-light;
+}
+
+.dark .ant-card-head {
+  @apply border-b border-nomyx-gray4-dark bg-nomyx-dark2-dark;
+}
+
+.light .ant-table {
+  @apply !bg-nomyx-dark2-light !rounded-lg;
+}
+
+.dark .ant-table {
+  @apply !bg-nomyx-dark2-dark !rounded-lg;
+}
+
+.ant-table-content {
+  @apply !rounded-lg;
+}
+.light .ant-btn .anticon svg {
+  @apply !text-nomyx-text-light fill-current;
+}
+/* Dark Mode: Change sorting arrow colors */
+.dark .ant-btn .anticon svg {
+  @apply !text-nomyx-text-dark fill-current;
+}

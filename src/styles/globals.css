@@ -1,0 +1,51 @@
+@import "./home.css";
+@import "./nftRecordDetail.css";
+@import "./compliance.css";
+
+/* Light Mode */
+.light .ant-menu-item-selected {
+  background-color: rgba(21, 104, 219, 0.1) !important; /* Custom background color for selected item in light mode */
+  color: #1568db !important; /* Custom text color for selected item in light mode */
+}
+
+.light .ant-menu-item-selected a span {
+  color: #1568db !important;
+}
+
+.light .ant-menu-item-active {
+  background-color: rgb(228, 231, 231) !important;
+}
+
+/* Dark Mode */
+.dark .ant-menu-item-selected {
+  background-color: rgba(17, 26, 44, 1) !important;
+  color: #1568db !important;
+}
+
+.dark .ant-menu-item-selected a span {
+  color: #1568db !important;
+}
+
+.light .ant-card .ant-card-head-title {
+  @apply text-nomyx-text-light;
+}
+.light .ant-card-bordered {
+  border-color: rgb(187 187 187);
+}
+
+.light .ant-card .ant-card-grid {
+  box-shadow: 1px 0 0 0 #bbbbbb, 0 1px 0 0 #bbbbbb, 1px 1px 0 0 #bbbbbb, 1px 0 0 0 #bbbbbb inset, 0 1px 0 0 #bbbbbb inset;
+  @apply bg-nomyx-dark2-light;
+}
+
+.light .ant-layout-content {
+  @apply bg-nomyx-dark1-light;
+}
+
+.dark .ant-layout-content {
+  @apply bg-nomyx-dark1-dark;
+}
+
+.light .ant-input-outlined.ant-input-disabled {
+  @apply text-nomyx-text-light border-nomyx-gray4-light;
+}

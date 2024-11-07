@@ -1,0 +1,216 @@
+@import "dashboard.scss";
+@import "onboarding";
+@import "./sidebar.css";
+@import "./header.css";
+@import "./totaltokens.css";
+@import "./nftDetailsHeader.css";
+@import "./claimableTokens.css";
+@import "./assetDetails.css";
+@import "./tailwind.css";
+@import "./marketplace";
+
+html, body, #__next{
+  height:100%;
+}
+
+body {
+  margin: 0;
+  font-family: "Poppins, sans-serif";
+}
+
+button.ant-btn-primary:not([disabled]), [type='button'].ant-btn-primary:not([disabled]){
+  background-color: #1668dc;
+}
+
+w3m-button{
+  display: inline-block;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% {  transform: rotate(359deg); }
+}
+
+.spin-rotate {
+  animation: rotate 1s linear infinite; /* Rotates every 1 second infinitely */
+}
+
+.login{
+  .error {
+    color: red;
+    text-align: center;
+    margin-bottom: 20px;
+
+    .anticon{
+      margin-right:5px;
+    }
+  }
+
+  .actions{
+    text-align: right;
+    margin-bottom: 20px;
+  }
+
+  w3m-button{
+    margin-bottom:20px;
+  }
+}
+
+
+.ant-card.no-padding .ant-card-body{
+  padding: 0;
+}
+
+.actions{
+  text-align: right;
+
+  button:last-of-type{
+    margin-left:10px;
+  }
+}
+
+.Home {
+  min-height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background: linear-gradient(
+    45deg,
+    rgb(3, 0, 92) 25%,
+    #070809 25%,
+    #070809 50%,
+    rgb(3, 0, 92) 50%,
+    rgb(3, 0, 92) 75%,
+    #070809 75%,
+    #070809 100%
+  );
+  background-size: 2px 2px;
+  font-family: "Montserrat", sans-serif;
+  padding: 20px;
+  box-sizing: border-box;
+  color: #ffffff;
+}
+
+.App {
+  min-height: 100vh;
+  display: flex;
+  background: #f4f7fa;
+  background-size: 2px 2px;
+  font-family: "Montserrat", sans-serif;
+  box-sizing: border-box;
+  color: #ffffff;
+}
+.component-container {
+  min-width: calc(75% + 200px);
+}
+.m-l-25 {
+  margin-left: 25px;
+}
+.font-22 {
+  font-size: 22px;
+}
+
+.signup-card .ant-card-head, .password-card .ant-card-head {
+  border-bottom: 1px solid #BBBBBB !important
+}
+/* Custom styles for Ant Design Select component */
+.ant-select-selector {
+  background: transparent !important; /* No background */
+  border: none !important; /* No border */
+  color: #000 !important; /* Text color */
+}
+.ant-select .ant-select-arrow {
+  color: #000 !important; /* Arrow color */
+}
+.signup-input::placeholder {
+  color: #BDBDBD; /* Set placeholder color */
+  opacity: 1; /* Ensure full opacity */
+}
+.signup-input:-ms-input-placeholder { /* Internet Explorer 10-11 */
+  color: #BDBDBD;
+}
+.signup-input::-ms-input-placeholder { /* Microsoft Edge */
+  color: #BDBDBD;
+}
+.onboarding-header-card .ant-card-body {
+  padding: 0px;
+}
+.ant-tabs-top >.ant-tabs-nav::before {
+  border-bottom: none;
+}
+.ant-tabs .ant-tabs-ink-bar {
+  background: none;
+}
+.onboarding-header-card .ant-tabs-nav-wrap {
+  border: none;
+}
+.wallet-setup-radio-group .ant-radio-button-wrapper {
+  border: 1px solid #878787;
+  background: #fff;
+  color:#000;
+}
+.connect-wallet w3m-button {
+  @apply bg-nomyx-gray4-light rounded-3xl;
+}
+.persona-container iframe {
+  width: 100%;
+  height: 70vh;
+}
+.ant-modal-content {
+  height: 100%;
+}
+
+.dark .auth-pages .ant-card-head {
+  @apply bg-white;
+}
+
+.auth-pages .ant-card .ant-card-grid {
+  box-shadow: none;
+  border-radius: 8px !important;
+}
+
+.auth-pages .ant-input-affix-wrapper .anticon.ant-input-password-icon {
+  @apply text-nomyx-gray1-light
+}
+
+.auth-pages .ant-checkbox .ant-checkbox-inner {
+  @apply bg-white;
+}
+.auth-pages .ant-checkbox-checked .ant-checkbox-inner {
+  background-color: #1668dc;
+  border-color: #1668dc;
+}
+.custom-button {
+  background-color: white; /* Default background */
+  color: #333; /* Default color */
+  border: none; /* Default border */
+
+  &:hover {
+    background-color: white !important; /* Override hover background */
+    color: #333 !important; /* Override hover color */
+    border-color: transparent !important; /* Ensure no hover border change */
+  }
+}
+.light .custom-modal .ant-modal-content, 
+.light .custom-modal .ant-modal-header {
+  @apply bg-white;
+}
+.light .custom-modal .ant-modal-title, 
+.light .custom-modal .ant-modal-close {
+  @apply text-black
+}
+.light .custom-modal .ant-input-outlined {
+  background: #e7e7e7;
+  border-color: #ccc;
+  color: #000;
+}
+.light .custom-modal .ant-form-item-label >label {
+  color: #000;
+}
+.light .custom-modal .ant-input-outlined.ant-input-status-error:not(.ant-input-disabled) {
+  background: #ccc;
+}
+.light .custom-modal input::placeholder {
+  color: #888888; 
+  opacity: 1;
+}

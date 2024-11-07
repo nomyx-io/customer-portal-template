@@ -1,0 +1,346 @@
+/* Border between labels and main content */
+.light .ant-tabs-nav-wrap {
+  @apply border-b border-nomyx-gray4-light;
+}
+
+.dark .ant-tabs-nav-wrap {
+  @apply border-b border-nomyx-gray4-dark;
+}
+
+/* Regular label (unselected) - red color */
+.light .ant-tabs-tab {
+  @apply text-nomyx-text-light;
+}
+
+.dark .ant-tabs-tab {
+  @apply text-nomyx-text-dark;
+}
+
+/* Selected label (active) - yellow color */
+.light .ant-tabs-tab-active .ant-tabs-tab-btn {
+  @apply !text-nomyx-main1-light;
+}
+
+.dark .ant-tabs-tab-active .ant-tabs-tab-btn {
+  @apply !text-nomyx-main1-dark;
+}
+
+/* Change the focus and hover state of tabs as well */
+.light .ant-tabs-tab:hover .ant-tabs-tab-btn,
+.light .ant-tabs-tab:focus .ant-tabs-tab-btn {
+  @apply !text-nomyx-main1-light;
+}
+
+.dark .ant-tabs-tab:hover .ant-tabs-tab-btn,
+.dark .ant-tabs-tab:focus .ant-tabs-tab-btn {
+  @apply !text-nomyx-main1-dark;
+}
+
+/* Change the color of the underline bar */
+.light .ant-tabs-ink-bar {
+  @apply bg-nomyx-main1-light;
+}
+
+.dark .ant-tabs-ink-bar {
+  @apply bg-nomyx-main1-dark;
+}
+
+/* Text color for table*/
+.light .ant-table-tbody .ant-table-cell {
+  @apply text-nomyx-text-light;
+}
+
+.dark .ant-table-tbody .ant-table-cell {
+  @apply text-nomyx-text-dark;
+}
+
+/* Ensure other table elements, like the header, also have the correct color */
+.light .ant-table-thead .ant-table-cell {
+  @apply text-nomyx-text-light;
+  @apply bg-nomyx-dark2-light;
+}
+
+.dark .ant-table-thead .ant-table-cell {
+  @apply text-nomyx-text-dark;
+  @apply bg-nomyx-dark2-dark;
+}
+
+/* Border color in light mode */
+.light .ant-table-tbody .ant-table-cell,
+.light .ant-table-thead .ant-table-cell {
+  @apply !border-nomyx-gray4-light;
+}
+
+.dark .ant-table-tbody .ant-table-cell,
+.dark .ant-table-thead .ant-table-cell {
+  @apply !border-nomyx-gray4-dark;
+}
+
+/* Light Mode: Targeting the vertical divider before the header cell content */
+.light th.ant-table-cell::before {
+  @apply !bg-nomyx-gray4-light;
+}
+
+/* Dark Mode: Targeting the vertical divider for dark mode */
+.dark th.ant-table-cell::before {
+  @apply !bg-nomyx-gray4-dark;
+}
+
+/* Default background color for table */
+.light .ant-table-tbody {
+  @apply bg-nomyx-dark2-light;
+}
+
+.dark .ant-table-tbody {
+  @apply bg-nomyx-dark2-dark;
+}
+
+/* Light Mode: Change sorting arrow colors */
+.light .ant-table-column-sorters .anticon svg {
+  @apply !text-nomyx-text-light fill-current;
+}
+
+/* Dark Mode: Change sorting arrow colors */
+.dark .ant-table-column-sorters .anticon svg {
+  @apply !text-nomyx-text-dark fill-current;
+}
+
+/* Change the active sorting arrow color */
+.light .ant-table-column-sorter-up.active svg,
+.light .ant-table-column-sorter-down.active svg {
+  @apply !text-nomyx-text-light opacity-25 fill-current;
+}
+
+/* Dark Mode: Active sorting arrow */
+.dark .ant-table-column-sorter-up.active svg,
+.dark .ant-table-column-sorter-down.active svg {
+  @apply !text-nomyx-text-dark opacity-25 fill-current;
+}
+
+/* Light Mode: Change hover row color */
+.light .ant-table-tbody > tr:hover > td {
+  @apply !bg-nomyx-gray4-light;
+}
+
+/* Dark Mode: Change hover row color */
+.dark .ant-table-tbody > tr:hover > td {
+  @apply !bg-nomyx-dark1-dark;
+}
+
+/* Highlighted (sorted) column background color */
+/* Light Mode */
+.light .ant-table-column-sort {
+  @apply !bg-nomyx-gray4-light;
+}
+
+/* Dark Mode */
+.dark .ant-table-column-sort {
+  @apply !bg-nomyx-dark1-dark;
+}
+
+/* Light Mode: Change table header hover color */
+.light .ant-table-thead th:hover {
+  @apply !bg-nomyx-gray4-light;
+}
+
+/* Dark Mode: Change table header hover color */
+.dark .ant-table-thead th:hover {
+  @apply !bg-nomyx-dark1-dark;
+}
+
+/* Pagination styling */
+
+/* Light Mode: Pagination button and active page color */
+.light .ant-pagination-item a {
+  @apply !text-nomyx-text-light;
+}
+
+.light .ant-pagination-item-active a {
+  @apply !text-nomyx-main1-light;
+}
+
+/* Light Mode: Hover effect for pagination buttons that are not currently selected */
+.light .ant-pagination-item:not(.ant-pagination-item-active):hover a {
+  @apply bg-nomyx-gray3-light opacity-75 rounded-lg; /* Apply background, opacity, and rounded corners */
+}
+
+/* Dark Mode: Pagination button and active page color */
+.dark .ant-pagination-item a {
+  @apply !text-nomyx-text-dark;
+}
+
+.dark .ant-pagination-item-active a {
+  @apply !text-nomyx-main1-dark rounded-md;
+}
+
+/* Dark Mode: Hover effect for pagination buttons that are not currently selected */
+.dark .ant-pagination-item:not(.ant-pagination-item-active):hover a {
+  @apply bg-nomyx-gray3-dark opacity-75 rounded-md;
+}
+
+/* Light Mode: Pagination next/prev button hover color */
+.light .ant-pagination-prev:hover .ant-pagination-item-link,
+.light .ant-pagination-next:hover .ant-pagination-item-link {
+  @apply !bg-nomyx-gray3-light opacity-75 text-nomyx-text-light;
+}
+
+/* Light Mode: Pagination next/prev button hover color */
+.light .ant-pagination-prev .ant-pagination-item-link,
+.light .ant-pagination-next .ant-pagination-item-link {
+  @apply text-nomyx-text-light;
+}
+
+/* Dark Mode: Pagination next/prev button hover color */
+.dark .ant-pagination-prev:hover .ant-pagination-item-link,
+.dark .ant-pagination-next:hover .ant-pagination-item-link {
+  @apply !bg-nomyx-gray3-dark opacity-75 text-nomyx-text-dark;
+}
+
+/* Dark Mode: Pagination next/prev button hover color */
+.dark .ant-pagination-prev .ant-pagination-item-link,
+.dark .ant-pagination-next .ant-pagination-item-link {
+  @apply text-nomyx-text-dark;
+}
+
+/* Light Mode: Active pagination item border */
+.light .ant-pagination-item-active {
+  @apply !border-nomyx-gray3-light rounded-md;
+}
+
+/* Dark Mode: Active pagination item border */
+.dark .ant-pagination-item-active {
+  @apply border bg-nomyx-dark2-dark !border-nomyx-text-dark rounded-md;
+}
+
+.light .ant-pagination .ant-pagination-item-active {
+  @apply bg-transparent;
+}
+
+.light .ant-typography-ellipsis {
+  @apply !text-nomyx-text-light;
+}
+
+.dark .ant-typography-ellipsis {
+  @apply !text-nomyx-text-dark;
+}
+
+.light .ant-tabs-nav-more {
+  @apply !text-nomyx-text-light;
+}
+
+.dark .ant-tabs-nav-more {
+  @apply !text-nomyx-text-dark;
+}
+
+.light .ant-tabs-dropdown-menu-item {
+  @apply !text-nomyx-text-light !bg-nomyx-dark2-light;
+}
+
+.dark .ant-tabs-dropdown-menu-item {
+  @apply !text-nomyx-text-dark !bg-nomyx-dark2-dark;
+}
+
+.light .ant-tabs-dropdown-menu {
+  @apply !bg-nomyx-dark2-light;
+}
+
+.dark .ant-tabs-dropdown-menu {
+  @apply !bg-nomyx-dark2-dark;
+}
+.light .ant-layout-header w3m-button {
+  @apply !bg-nomyx-gray4-light;
+  @apply rounded-3xl;
+}
+.light
+  .ant-list
+  .ant-list-item
+  .ant-list-item-meta
+  .ant-list-item-meta-title
+  a {
+  @apply text-nomyx-text-light;
+}
+.light
+  .ant-list
+  .ant-list-item
+  .ant-list-item-meta
+  .ant-list-item-meta-title
+  a:hover {
+  @apply text-[#1668dc];
+}
+.light .ant-table-expanded-row-fixed,
+.light .ant-table-wrapper .ant-table-tbody > tr.ant-table-placeholder {
+  @apply !bg-nomyx-dark2-light;
+}
+.dark .ant-table-expanded-row-fixed,
+.dark .ant-table-wrapper .ant-table-tbody > tr.ant-table-placeholder {
+  @apply !bg-nomyx-dark2-dark;
+}
+.light .ant-empty-normal .ant-empty-description {
+  @apply text-nomyx-text-light;
+}
+.dark .ant-empty-normal .ant-empty-description {
+  @apply text-nomyx-text-dark;
+}
+.light .id-verification-modal .ant-modal-content,
+.light .id-verification-modal .ant-modal .ant-modal-title {
+  @apply !bg-nomyx-gray2-light;
+}
+.light
+  .ant-table-wrapper
+  .ant-table-tbody
+  .ant-table-row.ant-table-row-selected
+  > .ant-table-cell {
+  @apply !bg-gray-300;
+}
+.light .ant-modal-footer .ant-btn-default:hover {
+  @apply !bg-transparent;
+}
+.light .ant-table-wrapper .ant-table-summary > tr > td {
+  @apply border-b-nomyx-gray4-light;
+}
+.light .ant-table-wrapper .ant-table-tbody > tr.ant-table-placeholder:hover {
+  @apply !bg-nomyx-gray4-light;
+}
+
+/* Filter selector */
+.light .ant-select-selector {
+  @apply text-nomyx-text-light placeholder-nomyx-gray3-light bg-nomyx-dark2-light hover:bg-nomyx-dark2-light focus:bg-nomyx-dark2-light focus-within:bg-nomyx-dark2-light focus-within:dark:bg-nomyx-dark2-dark border-nomyx-gray4-light;
+}
+
+.light
+  .ant-select-outlined:not(.ant-select-customize-input)
+  .ant-select-selector {
+  @apply bg-nomyx-dark2-light border-nomyx-gray4-light;
+}
+
+.light .ant-select-selection-placeholder {
+  @apply text-nomyx-gray3-light;
+}
+
+.light .ant-dropdown-trigger {
+  @apply !text-nomyx-text-light;
+}
+
+.light .ant-select-arrow {
+  @apply !text-nomyx-text-light;
+}
+
+.light .rc-virtual-list-holder-inner {
+  @apply !bg-nomyx-dark2-light;
+}
+
+.light .ant-select-dropdown {
+  @apply !bg-nomyx-dark2-light;
+}
+
+.light .ant-select-item {
+  @apply !text-nomyx-text-light hover:bg-nomyx-gray1-light hover:text-nomyx-text-dark hover:opacity-80 focus:bg-nomyx-gray2-light focus:opacity-90 active:!bg-nomyx-gray4-light active:text-nomyx-text-dark active:opacity-10;
+}
+
+.light .ant-select-item-option-selected {
+  @apply !bg-nomyx-gray4-light;
+}
+
+.filter-search-btn.ant-btn > span {
+  display: ruby !important;
+}

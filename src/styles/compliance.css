@@ -1,0 +1,49 @@
+/* Compliance feature section */
+.light .ant-transfer-list {
+  @apply rounded-lg border border-nomyx-gray4-light;
+}
+
+.dark .ant-transfer-list {
+  @apply rounded-lg border border-nomyx-gray4-dark;
+}
+
+.light .ant-transfer-list-header {
+  @apply bg-nomyx-dark2-light text-nomyx-text-light border-b border-nomyx-gray4-light;
+}
+
+.dark .ant-transfer-list-header {
+  @apply bg-nomyx-dark2-dark text-nomyx-text-dark border-b border-nomyx-gray4-dark;
+}
+
+.light .ant-transfer-list-content-item {
+  @apply bg-nomyx-dark2-light text-nomyx-text-light rounded-lg;
+}
+
+.dark .ant-transfer-list-content-item {
+  @apply bg-nomyx-dark2-dark text-nomyx-text-dark rounded-lg;
+}
+
+.light .ant-transfer-operation .ant-btn {
+  @apply bg-nomyx-dark2-light text-nomyx-text-light;
+}
+
+.dark .ant-transfer-operation .ant-btn {
+  @apply bg-nomyx-dark2-dark text-nomyx-text-dark;
+}
+
+.ant-transfer .ant-transfer-operation .ant-btn:not(:disabled) {
+  @apply border-nomyx-blue-light;
+}
+
+.light .ant-transfer .ant-transfer-list-content-item-checked {
+  @apply bg-transparent;
+}
+.light .ant-checkbox .ant-checkbox-inner {
+  @apply bg-transparent;
+}
+.light .ant-checkbox .ant-checkbox-inner:after {
+  @apply border-nomyx-blue-light;
+}
+.light .ant-transfer .ant-transfer-list-content-item:not(.ant-transfer-list-content-item-disabled).ant-transfer-list-content-item-checked:hover {
+  @apply !bg-nomyx-gray4-light;
+}

@@ -1,0 +1,40 @@
+import React, { useEffect, useState } from "react";
+import { Table } from "antd";
+import { useGemforceApp } from "@/context/GemforceAppContext";
+import PubSub from "pubsub-js";
+import { NomyxEvent } from "@/utils/Constants";
+
+
+const columns = [
+  { title: "Record Id", dataIndex: "objectId" },
+  { title: "Date", dataIndex: "createdAt" },
+  { title: "Amount", dataIndex: "amount" },
+  { title: "Treasury Address", dataIndex: "treasuryAddress" },
+];
+
+const InterestClaimHistory = ({ token }: any) => {
+  const { appState }: any = useGemforceApp();
+  const [withdrawals, setWithdrawals] = useState<any>(token.tokenWithdrawals);
+
+  useEffect(()=>{
+    //fetch deposit data
+    //check for deposits on token
+    //if no token deposits, fetch tokens for deposit
+    if(!withdrawals && appState){
+      const subscription = PubSub.subscribe(NomyxEvent.GemforceStateChange, function(event:any, data:any){
+        if(data.tokenWithdrawals){
+          setWithdrawals(data.tokenWithdrawals);
+          PubSub.unsubscribe(subscription);
+        }
+      });
+
+      appState.selectedToken = token;
+      setWithdrawals(appState.tokenWithdrawals);
+    }
+
+  } ,[appState, token, withdrawals]);
+
+  return <Table rowKey="objectId" columns={columns} dataSource={withdrawals} pagination={false} scroll={{ y: 400 }} />;
+};
+
+export default InterestClaimHistory;

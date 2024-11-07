@@ -1,0 +1,54 @@
+.asset-details {
+  display: flex;
+  justify-content: space-between;
+  align-items: inherit;
+  background-color: #fff;
+  padding: 20px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  margin-left: 25px;
+}
+
+.asset-details > div {
+  text-align: left;
+  flex-basis: calc(
+    33.333% - 20px
+  ); /* Divide the space evenly and account for padding */
+}
+
+.asset-details span {
+  display: block;
+  color: #6c757d; /* Dark grey color for the labels */
+  font-size: 1rem;
+  margin-bottom: 0.5rem; /* Space between label and value */
+}
+
+.asset-details p {
+  color: #212529; /* Dark color for the values */
+  font-size: 1.5rem;
+  font-weight: bold;
+  margin: 0; /* Remove default paragraph margins */
+}
+
+/* Responsive layout for smaller screens */
+@media (max-width: 768px) {
+  .asset-details {
+    flex-direction: column;
+  }
+
+  .asset-details > div {
+    flex-basis: auto; /* Let each block take the needed space */
+    margin-bottom: 15px; /* Space between items when stacked */
+  }
+
+  .asset-details > div:last-child {
+    margin-bottom: 0; /* Remove bottom margin for the last item */
+  }
+}
+.chart-placeholder {
+  background-color: #ddd; /* Placeholder color */
+  height: 150px; /* Adjust height as needed */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  border-radius: 5px;
+}

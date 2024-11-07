@@ -1,0 +1,37 @@
+:root{
+  --table-height: 530px;
+  --table-inner-height: 520px;
+}
+
+.marketplace{
+
+  .ant-card-body{
+    position: relative;
+
+    .actions{
+      position: absolute;
+      top: -48px;
+      right: 15px;
+    }
+  }
+}
+
+
+.modalTable {
+
+  > div {
+    height: var(--table-height);
+
+    > div {
+      height: var(--table-height);
+
+      > div {
+        height: var(--table-inner-height);
+
+        > div {
+          min-height: var(--table-inner-height);
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,102 @@
+/* styles/nftDetailHeader.module.css */
+.nft-detail-header {
+  display: flex;
+  padding: 20px;
+  background-color: #fff;
+  box-shadow: 2px -2px 12px rgba(255, 253, 253, 0.465);
+  border-radius: 5px;
+  margin-top: 10px;
+  width: 100%;
+}
+
+.nft-header-section {
+  display: flex; /* Change to column layout */
+}
+
+.nft-actions {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  margin-left: 80px;
+  margin-top: 0px; /* Adjust margin as needed */
+  flex-direction: row; /* Make the flex container horizontal */
+}
+
+.nft-header-section button.claim-button {
+  background-color: #ff5722; /* Button background color */
+  color: #ffffff; /* Button text color */
+  border: none;
+  border-radius: 5px;
+  padding: 5px 15px;
+  cursor: pointer;
+  font-size: 16px;
+  transition: background-color 0.3s; /* Smooth color transition on hover */
+}
+
+.nft-header-section button.claim-button:hover {
+  color: #000; /* Cool rollover color */
+}
+
+/* Update the CSS for navigation buttons */
+.nft-navigation {
+  display: flex;
+  align-items: center;
+  margin-left: 100px;
+}
+
+.nft-navigation button {
+  background-color: #ccc;
+  color: #ffffff;
+  border: none;
+  border-radius: 3px;
+  padding: 2px 10px 2px 10px;
+  margin-right: 5px;
+  cursor: pointer;
+  transition: background-color 0.3s;
+}
+
+.nft-navigation button:first-child {
+  margin-right: 10px; /* Add margin only to the first button for spacing */
+}
+
+.nft-navigation button:hover {
+  background-color: #110ed3; /* Cool rollover color */
+}
+
+.nft-title,
+.nft-subtitle {
+  color: rgb(0, 0, 0); /* Text color for title and subtitle */
+  font-family: "Poppins", sans-serif;
+  margin-bottom: 5px;
+  margin-top: 0px;
+}
+
+.nft-purchase-info {
+  color: black; /* Text color for purchase info and yield */
+}
+
+.nft-yield-label {
+  color: rgb(0, 6, 128); /* Text color for purchase label */
+  font-family: "Poppins", sans-serif;
+  font-size: 28px;
+  font-weight: 700;
+}
+
+.nft-purchase-label {
+  color: rgb(0, 6, 128); /* Text color for purchase label */
+  font-family: "Poppins", sans-serif;
+  font-size: 18px;
+  font-weight: 700;
+}
+
+.nft-yield-value {
+  font-size: 28px;
+  color: black;
+  margin-bottom: 10px;
+}
+
+.nft-purchase-price {
+  font-size: 18px;
+}
+
+/* Additional styles can be added as needed */

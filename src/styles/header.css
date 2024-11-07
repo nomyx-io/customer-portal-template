@@ -1,0 +1,51 @@
+/* styles/globals.scss or wherever your global styles are */
+.dashboard-header {
+  padding: 15px; /* Increased padding for a bit wider header */
+  background-color: #fff; /* Off-white background color */
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+  width: 100%; /* Take up the full width with 60px less */
+  /* Ensure the header is above other elements on the page */
+}
+
+.dashboard-header input {
+  padding: 7px;
+  border-radius: 5px;
+  margin-right: 10px;
+  font-size: 16px;
+  outline: none;
+  width: 300px;
+  float: left;
+  background-color: #fff;
+  border: 1px solid #ccc;
+  color: #000;
+}
+
+.participant-info {
+  display: inline-block;
+  align-items: center;
+  margin-left: 15px;
+}
+
+.participant-info button {
+  background-color: #080486; /* Button background color */
+  color: #ffffff; /* Button text color */
+  border: none;
+  border-radius: 5px;
+  padding: 10px 15px;
+  margin-right: 10px;
+  cursor: pointer;
+  font-size: 16px;
+  transition: background-color 0.3s; /* Smooth color transition on hover */
+}
+
+.participant-info button:hover {
+  background-color: #110ed3; /* Cool rollover color */
+}
+
+.participant-info span {
+  color: #808080;
+  font-family: "Poppins", sans-serif;
+  font-size: 16px;
+  font-weight: 700;
+  vertical-align: sub;
+}
