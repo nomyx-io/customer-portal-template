@@ -468,6 +468,7 @@ const ProjectDetails: React.FC<ProjectDetailsProps> = ({ project, onBack }) => {
           <MarketPlaceTokenDetail
             token={selectedToken}
             tokens={filteredListings}
+            project={project}
             currentIndex={filteredListings.findIndex(
               (listing) => listing.tokenId === selectedToken.tokenId
             )}
