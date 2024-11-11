@@ -8,7 +8,7 @@ import { useRouter } from "next/router";
 import { toast } from "react-toastify";
 import TokenCardView from "@/components/marketplace/TokenCardView";
 import TokenListView from "@/components/marketplace/TokenListView";
-import MarketPlaceTokenDetail from "./MarketPlaceTokenDetail";
+import TokenDetail from "@/components/TokenDetail";
 import { SearchNormal1, Category, RowVertical, ArrowLeft } from "iconsax-react";
 import projectBackground from "@/images/projects_background.png"; // Import the background image
 import BlockchainService from "@/services/BlockchainService";
@@ -20,11 +20,9 @@ interface ProjectDetailsProps {
 }
 
 const ProjectDetails: React.FC<ProjectDetailsProps> = ({ project, onBack }) => {
-  const router = useRouter();
   const { appState }: any = useGemforceApp();
   const [listings, setListings] = useState<any[]>([]);
   const [sales, setSales] = useState<any[]>([]);
-  const [showPurchaseModal, setShowPurchaseModal] = useState(false);
   const [selectedListings, setSelectedListings] = useState<any[]>([]);
   const [activeTab, setActiveTab] = useState("1");
   const [searchQuery, setSearchQuery] = useState<string>("");
@@ -37,15 +35,9 @@ const ProjectDetails: React.FC<ProjectDetailsProps> = ({ project, onBack }) => {
     const searchInObject = (obj: any): boolean => {
       for (let key in obj) {
         const value = obj[key];
-        if (
-          typeof value === "string" &&
-          value.toLowerCase().includes(query.toLowerCase())
-        ) {
+        if (typeof value === "string" && value.toLowerCase().includes(query.toLowerCase())) {
           return true;
-        } else if (
-          typeof value === "number" &&
-          value.toString().includes(query)
-        ) {
+        } else if (typeof value === "number" && value.toString().includes(query)) {
           return true;
         } else if (typeof value === "object" && value !== null) {
           if (searchInObject(value)) {
@@ -61,14 +53,17 @@ const ProjectDetails: React.FC<ProjectDetailsProps> = ({ project, onBack }) => {
 
   // Memoize the filtered listings and sales
   const filteredListings = useMemo(() => {
-    return listings.filter((listing) =>
-      searchAllProperties(listing, searchQuery)
-    );
+    return listings.filter((listing) => searchAllProperties(listing, searchQuery));
   }, [listings, searchQuery]);
 
   const filteredSales = useMemo(() => {
     return sales.filter((sale) => searchAllProperties(sale, searchQuery));
   }, [sales, searchQuery]);
+
+  // Cleanup Listings object to pass just tokens to the MarketPlaceTokenDetail component
+  const tokens = useMemo(() => {
+    return filteredListings.map((listing) => listing.token);
+  }, [filteredListings]);
 
   // Handle search bar input change
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -97,10 +92,6 @@ const ProjectDetails: React.FC<ProjectDetailsProps> = ({ project, onBack }) => {
     };
   }, []);
 
-  const handleCloseModal = () => {
-    setShowPurchaseModal(false);
-  };
-
   const handleDetailsClick = (token: any) => {
     setSelectedToken(token);
   };
@@ -123,17 +114,11 @@ const ProjectDetails: React.FC<ProjectDetailsProps> = ({ project, onBack }) => {
         }
 
         // Create a Set of listed token IDs for efficient lookup
-        const listedTokenIds = new Set(
-          listedTokens.map((token: any) => String(token["1"]))
-        );
+        const listedTokenIds = new Set(listedTokens.map((token: any) => String(token["1"])));
 
         // Function to filter listings based on project ID and listedTokenIds
         const filterListings = (dataListings: any) => {
-          return dataListings.filter(
-            (listing: any) =>
-              listing.token?.projectId === project?.id &&
-              listedTokenIds.has(String(listing.token.tokenId))
-          );
+          return dataListings.filter((listing: any) => listing.token?.projectId === project?.id && listedTokenIds.has(String(listing.token.tokenId)));
         };
 
         // Function to filter sales based on project ID
@@ -143,8 +128,7 @@ const ProjectDetails: React.FC<ProjectDetailsProps> = ({ project, onBack }) => {
             .map((sale: any) => {
               return {
                 ...sale,
-                price:
-                  Number(sale.token.price) * Number(sale.token.existingCredits),
+                price: Number(sale.token.price) * Number(sale.token.existingCredits),
               };
             });
         };
@@ -152,16 +136,13 @@ const ProjectDetails: React.FC<ProjectDetailsProps> = ({ project, onBack }) => {
         // Handle Listings
         if (!listings?.length) {
           // Subscribe to state changes for listings
-          const listingsSubscription = PubSub.subscribe(
-            NomyxEvent.GemforceStateChange,
-            (event, data) => {
-              if (data.listings) {
-                const filtered = filterListings(data.listings);
-                setListings(filtered);
-                PubSub.unsubscribe(listingsSubscription);
-              }
+          const listingsSubscription = PubSub.subscribe(NomyxEvent.GemforceStateChange, (event, data) => {
+            if (data.listings) {
+              const filtered = filterListings(data.listings);
+              setListings(filtered);
+              PubSub.unsubscribe(listingsSubscription);
             }
-          );
+          });
 
           // Initial setting of listings from appState
           if (appState.listings) {
@@ -175,16 +156,13 @@ const ProjectDetails: React.FC<ProjectDetailsProps> = ({ project, onBack }) => {
         // Handle Sales
         if (!sales?.length) {
           // Subscribe to state changes for sales
-          const salesSubscription = PubSub.subscribe(
-            NomyxEvent.GemforceStateChange,
-            (event, data) => {
-              if (data.sales) {
-                const filtered = filterSales(data.sales);
-                setSales(filtered);
-                PubSub.unsubscribe(salesSubscription);
-              }
+          const salesSubscription = PubSub.subscribe(NomyxEvent.GemforceStateChange, (event, data) => {
+            if (data.sales) {
+              const filtered = filterSales(data.sales);
+              setSales(filtered);
+              PubSub.unsubscribe(salesSubscription);
             }
-          );
+          });
 
           if (appState.sales) {
             const initialFiltered = filterSales(appState.sales);
@@ -200,28 +178,7 @@ const ProjectDetails: React.FC<ProjectDetailsProps> = ({ project, onBack }) => {
 
     // Invoke the asynchronous function
     fetchAndFilterListings();
-  }, [
-    appState,
-    listings?.length,
-    sales?.length,
-    project.id,
-    setListings,
-    setSales,
-  ]);
-
-  const fetchListings = async () => {
-    const newListingData = await KronosCustomerService.getListings();
-    if (newListingData) {
-      setListings(
-        newListingData.filter(
-          ({ token: { projectId } }: { token: { projectId: string } }) =>
-            projectId === project.id
-        )
-      );
-    } else {
-      setListings([]);
-    }
-  };
+  }, [appState, listings?.length, sales?.length, project.id, setListings, setSales]);
 
   const fetchSales = async () => {
     const newSalesData = await KronosCustomerService.getSales("");
@@ -249,22 +206,18 @@ const ProjectDetails: React.FC<ProjectDetailsProps> = ({ project, onBack }) => {
       console.log("DFNS Token:", dfnsToken);
       console.log("Price:", price);
 
-      const { initiateResponse: approvalResponse, error: approvalError } =
-        await KronosCustomerService.initiateApproval(
-          walletId,
-          price, //needs to be a string here to send to the server
-          dfnsToken
-        );
+      const { initiateResponse: approvalResponse, error: approvalError } = await KronosCustomerService.initiateApproval(
+        walletId,
+        price, //needs to be a string here to send to the server
+        dfnsToken
+      );
 
       if (approvalError) {
         throw approvalError;
       }
 
       // Step 2: Complete Approval
-      const {
-        completeResponse: approvalCompleteResponse,
-        error: completeApprovalError,
-      } = await KronosCustomerService.completeApproval(
+      const { completeResponse: approvalCompleteResponse, error: completeApprovalError } = await KronosCustomerService.completeApproval(
         walletId,
         dfnsToken,
         approvalResponse.challenge,
@@ -276,10 +229,7 @@ const ProjectDetails: React.FC<ProjectDetailsProps> = ({ project, onBack }) => {
       }
 
       // Step 3: Initiate Purchase
-      const {
-        initiateResponse: purchaseResponse,
-        error: purchaseInitiateError,
-      } = await KronosCustomerService.initiatePurchase(
+      const { initiateResponse: purchaseResponse, error: purchaseInitiateError } = await KronosCustomerService.initiatePurchase(
         walletId,
         tokenId,
         dfnsToken
@@ -290,10 +240,7 @@ const ProjectDetails: React.FC<ProjectDetailsProps> = ({ project, onBack }) => {
       }
 
       // Step 4: Complete Purchase
-      const {
-        completeResponse: purchaseCompleteResponse,
-        error: completePurchaseError,
-      } = await KronosCustomerService.completePurchase(
+      const { completeResponse: purchaseCompleteResponse, error: completePurchaseError } = await KronosCustomerService.completePurchase(
         walletId,
         dfnsToken,
         purchaseResponse.challenge,
@@ -306,7 +253,7 @@ const ProjectDetails: React.FC<ProjectDetailsProps> = ({ project, onBack }) => {
 
       // Success: Clear all pending states and store final response
       let response = purchaseCompleteResponse;
-    } catch (error: any) {
+    } catch (error) {
       //toast.error("Error during approval and purchase process:" + error + "");
       throw error;
     } finally {
@@ -320,9 +267,7 @@ const ProjectDetails: React.FC<ProjectDetailsProps> = ({ project, onBack }) => {
         try {
           const processPurchase = async () => {
             await new Promise((resolve) => setTimeout(resolve, 5000));
-            setListings((prevListings) =>
-              prevListings.filter((item) => item.tokenId !== token.tokenId)
-            );
+            setListings((prevListings) => prevListings.filter((item) => item.tokenId !== token.tokenId));
             await fetchSales(); // Refresh sales list if needed
             await appState.refreshTokens();
           };
@@ -339,13 +284,13 @@ const ProjectDetails: React.FC<ProjectDetailsProps> = ({ project, onBack }) => {
             try {
               await handleApprovalAndPurchase(token.tokenId, token.price);
               await processPurchase();
-            } catch (e: any) {
+            } catch (e) {
               throw e;
             }
           } else {
             throw "Invalid wallet preference";
           }
-        } catch (e: any) {
+        } catch (e) {
           console.log(e);
           throw e;
         }
@@ -355,14 +300,7 @@ const ProjectDetails: React.FC<ProjectDetailsProps> = ({ project, onBack }) => {
         success: `Successfully purchased token ${token.tokenId}`,
         error: {
           render({ data }: { data: any }) {
-            return (
-              <div>
-                {data?.reason ||
-                  data?.message ||
-                  data ||
-                  `An error occurred while purchasing token ${token.tokenId}`}
-              </div>
-            );
+            return <div>{data?.reason || data?.message || data || `An error occurred while purchasing token ${token.tokenId}`}</div>;
           },
         },
       }
@@ -382,23 +320,14 @@ const ProjectDetails: React.FC<ProjectDetailsProps> = ({ project, onBack }) => {
           const processSelectedPurchase = async () => {
             await new Promise((resolve) => setTimeout(resolve, 5000)); // Simulate delay
             // Remove purchased tokens from listings
-            setListings((prevListings) =>
-              prevListings.filter(
-                (item) =>
-                  !selectedListings.find(
-                    (selected) => selected.tokenId === item.tokenId
-                  )
-              )
-            );
+            setListings((prevListings) => prevListings.filter((item) => !selectedListings.find((selected) => selected.tokenId === item.tokenId)));
             setSelectedListings([]); // Clear the selected listings after purchase
             await fetchSales(); // Refresh sales list if needed
             await appState.refreshTokens();
           };
 
           if (walletPreference == WalletPreference.PRIVATE) {
-            var response = await BlockchainService.purchaseTokens(
-              selectedListings
-            );
+            var response = await BlockchainService.purchaseTokens(selectedListings);
             if (response == "rejected") {
               throw "The purchase was rejected.";
             } else {
@@ -411,13 +340,13 @@ const ProjectDetails: React.FC<ProjectDetailsProps> = ({ project, onBack }) => {
                 await handleApprovalAndPurchase(listing.tokenId, listing.price);
               }
               await processSelectedPurchase();
-            } catch (e: any) {
+            } catch (e) {
               throw e;
             }
           } else {
             throw "Invalid wallet preference";
           }
-        } catch (e: any) {
+        } catch (e) {
           console.log(e);
           throw e;
         }
@@ -427,36 +356,11 @@ const ProjectDetails: React.FC<ProjectDetailsProps> = ({ project, onBack }) => {
         success: "Successfully purchased selected tokens",
         error: {
           render({ data }: { data: any }) {
-            return (
-              <div>
-                {data?.reason ||
-                  data ||
-                  "An error occurred while purchasing selected tokens"}
-              </div>
-            );
+            return <div>{data?.reason || data || "An error occurred while purchasing selected tokens"}</div>;
           },
         },
       }
     );
-  };
-
-  const handleNextToken = () => {
-    const currentIndex = filteredListings.findIndex(
-      (listing) => listing.tokenId === selectedToken.tokenId
-    );
-    // Move to the next token, or loop to the first if at the end
-    const nextIndex = (currentIndex + 1) % filteredListings.length;
-    setSelectedToken(filteredListings[nextIndex]);
-  };
-
-  const handlePreviousToken = () => {
-    const currentIndex = filteredListings.findIndex(
-      (listing) => listing.tokenId === selectedToken.tokenId
-    );
-    // Move to the previous token, or loop to the last if at the beginning
-    const prevIndex =
-      (currentIndex - 1 + filteredListings.length) % filteredListings.length;
-    setSelectedToken(filteredListings[prevIndex]);
   };
 
   const totalTokens = listings.length + sales.length;
@@ -465,17 +369,12 @@ const ProjectDetails: React.FC<ProjectDetailsProps> = ({ project, onBack }) => {
       {selectedToken ? (
         <>
           {/* Token Detail View */}
-          <MarketPlaceTokenDetail
-            token={selectedToken}
-            tokens={filteredListings}
-            project={project}
-            currentIndex={filteredListings.findIndex(
-              (listing) => listing.tokenId === selectedToken.tokenId
-            )}
-            next={handleNextToken}
-            prev={handlePreviousToken}
+          <TokenDetail
+            tokens={tokens}
+            currentIndex={tokens.findIndex((t) => t.tokenId === selectedToken.tokenId)}
             onBack={handleBackToListings}
-            onPurchaseToken={handleIndividualPurchase}
+            onTokenAction={handleIndividualPurchase}
+            tokenActionLabel="Purchase"
           />
         </>
       ) : (
@@ -504,23 +403,14 @@ const ProjectDetails: React.FC<ProjectDetailsProps> = ({ project, onBack }) => {
               {/* Project Image, Title, and Description */}
               <div className="absolute bottom-4 left-0 flex items-center p-4 rounded-lg">
                 {/* Project Image */}
-                <div
-                  className="project-logo rounded-lg overflow-hidden"
-                  style={{ width: "100px", height: "100px" }}
-                >
-                  <img
-                    src={project.coverImage?.url()}
-                    alt="Project Logo"
-                    className="object-cover w-full h-full"
-                  />
+                <div className="project-logo rounded-lg overflow-hidden" style={{ width: "100px", height: "100px" }}>
+                  <img src={project.coverImage?.url()} alt="Project Logo" className="object-cover w-full h-full" />
                 </div>
 
                 {/* Project Title and Description */}
                 <div className="text-white flex-1 mx-4">
                   <h1 className="text-3xl font-bold">{project.title}</h1>
-                  <p className="text-sm mt-2 max-w-md break-words">
-                    {project.description}
-                  </p>
+                  <p className="text-sm mt-2 max-w-md break-words">{project.description}</p>
                 </div>
               </div>
 
@@ -567,11 +457,7 @@ const ProjectDetails: React.FC<ProjectDetailsProps> = ({ project, onBack }) => {
               {/* View Toggle and Purchase Selected Button */}
               <div className="flex items-center">
                 {/* Purchase Selected Button */}
-                <Button
-                  type="primary"
-                  className="mr-4 !text-white"
-                  onClick={handlePurchaseSelectedTokens}
-                >
+                <Button type="primary" className="mr-4 !text-white" onClick={handlePurchaseSelectedTokens}>
                   Purchase Selected
                 </Button>
 
@@ -579,28 +465,16 @@ const ProjectDetails: React.FC<ProjectDetailsProps> = ({ project, onBack }) => {
                 <button
                   onClick={() => setViewMode("card")}
                   className={`p-0.5 rounded-sm mr-2 ${
-                    viewMode === "card"
-                      ? "bg-nomyx-dark1-light dark:bg-nomyx-dark1-dark text-nomyx-blue-light"
-                      : ""
+                    viewMode === "card" ? "bg-nomyx-dark1-light dark:bg-nomyx-dark1-dark text-nomyx-blue-light" : ""
                   }`}
                 >
-                  <Category
-                    size="20"
-                    variant={viewMode === "card" ? "Bold" : "Linear"}
-                  />
+                  <Category size="20" variant={viewMode === "card" ? "Bold" : "Linear"} />
                 </button>
                 <button
                   onClick={() => setViewMode("table")}
-                  className={`p-0.5 rounded-sm ${
-                    viewMode === "table"
-                      ? "bg-nomyx-dark1-light dark:bg-nomyx-dark1-dark text-nomyx-blue-light"
-                      : ""
-                  }`}
+                  className={`p-0.5 rounded-sm ${viewMode === "table" ? "bg-nomyx-dark1-light dark:bg-nomyx-dark1-dark text-nomyx-blue-light" : ""}`}
                 >
-                  <RowVertical
-                    size="20"
-                    variant={viewMode === "table" ? "Bold" : "Linear"}
-                  />
+                  <RowVertical size="20" variant={viewMode === "table" ? "Bold" : "Linear"} />
                 </button>
               </div>
             </div>
@@ -642,17 +516,9 @@ const ProjectDetails: React.FC<ProjectDetailsProps> = ({ project, onBack }) => {
                     label: "Sales History",
                     children:
                       viewMode === "table" ? (
-                        <TokenListView
-                          projects={filteredSales}
-                          onProjectClick={handleDetailsClick}
-                          isSalesHistory={true}
-                        />
+                        <TokenListView projects={filteredSales} onProjectClick={handleDetailsClick} isSalesHistory={true} />
                       ) : (
-                        <TokenCardView
-                          projects={filteredSales}
-                          onProjectClick={handleDetailsClick}
-                          isSalesHistory={true}
-                        />
+                        <TokenCardView projects={filteredSales} onProjectClick={handleDetailsClick} isSalesHistory={true} />
                       ),
                   },
                 ]}
