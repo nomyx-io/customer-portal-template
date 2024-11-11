@@ -185,12 +185,6 @@ const TokenListView: React.FC<TokenListViewProps> = ({
         a.token.nftTitle.localeCompare(b.token.nftTitle),
     },
     {
-      title: "Price Per Credit",
-      dataIndex: ["token", "price"],
-      render: (price: number) => `${formatPrice(price, "USD")}`,
-      sorter: (a: any, b: any) => a.token.price - b.token.price,
-    },
-    {
       title: "Total Price",
       dataIndex: "price", // Total price coming from TokenListing in parse
       render: (price: number) =>
@@ -198,36 +192,6 @@ const TokenListView: React.FC<TokenListViewProps> = ({
           ? formatPrice(price, "USD")
           : formatPrice(price / 1_000_000, "USD"), // Convert from small units to regular price format
       sorter: (a: any, b: any) => a.price - b.price,
-    },
-    {
-      title: "Registry ID",
-      dataIndex: ["token", "registerId"],
-      render: (registerId: string) => <span>{registerId}</span>,
-      sorter: (a: any, b: any) =>
-        a.token.registerId.localeCompare(b.token.registerId),
-    },
-    {
-      title: "Tranche Cutoff",
-      dataIndex: ["token", "trancheCutoff"],
-      render: (trancheCutoff: string) => <span>{trancheCutoff}</span>,
-      sorter: (a: any, b: any) =>
-        a.token.trancheCutoff.localeCompare(b.token.trancheCutoff),
-    },
-    {
-      title: "Carbon Offset (Tons)",
-      dataIndex: ["token", "existingCredits"],
-      sorter: (a: any, b: any) =>
-        a.token.existingCredits - b.token.existingCredits,
-      render: (existingCredits: any) => {
-        return new Intl.NumberFormat("en-US").format(existingCredits);
-      },
-    },
-    {
-      title: "Auditor",
-      dataIndex: ["token", "auditor"],
-      render: (auditor: string) => <span>{auditor}</span>,
-      sorter: (a: any, b: any) =>
-        a.token.auditor.localeCompare(b.token.auditor),
     },
     {
       title: "Issuance Date",
