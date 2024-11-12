@@ -1,6 +1,8 @@
 import React, { useState } from "react";
-import { Layout, Select } from "antd";
+
 import { DownOutlined } from "@ant-design/icons";
+import { Layout, Select } from "antd";
+import Image from "next/image";
 import Link from "next/link";
 
 const { Header } = Layout;
@@ -47,10 +49,12 @@ const AppHeader: React.FC = () => {
       {/* Logo */}
       <div className="logo">
         <Link href="/">
-          <img
+          <Image
             src="/images/nomyx_logo_black.svg"
             alt="Logo"
-            style={{ height: "25px", cursor: "pointer" }}
+            width={100}
+            height={25}
+            style={{ cursor: "pointer" }}
           />
         </Link>
       </div>

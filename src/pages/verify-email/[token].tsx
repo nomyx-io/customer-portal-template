@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useEffect, useRef } from "react";
+
 import { useRouter } from "next/navigation";
 import Parse from "parse";
 import { toast } from "react-toastify";
@@ -24,9 +25,7 @@ const VerifyEmailPage = ({ token }: { token: string }) => {
                 if (verifyResponse.success) {
                   toast.success("Email verified successfully!");
                   // Pass email as a query param to the onboarding component
-                  const onboardingUrl = `/onboarding?email=${encodeURIComponent(
-                    email
-                  )}`;
+                  const onboardingUrl = `/onboarding?email=${encodeURIComponent(email)}`;
                   // Redirect to onboarding after a short delay
                   setTimeout(() => {
                     router.push(onboardingUrl);
@@ -68,9 +67,7 @@ const VerifyEmailPage = ({ token }: { token: string }) => {
 
   return (
     <NotificationCard title="Verifying Email...">
-      <p className="mb-4 text-center text-nomyxWhite font-normal text-base">
-        Please wait while we verify your email.
-      </p>
+      <p className="mb-4 text-center text-nomyxWhite font-normal text-base">Please wait while we verify your email.</p>
     </NotificationCard>
   );
 };
@@ -78,9 +75,7 @@ const VerifyEmailPage = ({ token }: { token: string }) => {
 export default VerifyEmailPage;
 
 // Define getServerSideProps
-export const getServerSideProps = async (context: {
-  params: { token: string };
-}) => {
+export const getServerSideProps = async (context: { params: { token: string } }) => {
   const { params } = context;
 
   // Check if params exists and has the token property

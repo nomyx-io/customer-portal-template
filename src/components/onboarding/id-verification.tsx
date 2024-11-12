@@ -1,9 +1,11 @@
 import React, { useEffect, useState } from "react";
+
 import { Button, Modal } from "antd";
 import dynamic from "next/dynamic";
-import { Registration, NomyxEvent } from "@/utils/Constants";
 import PubSub from "pubsub-js";
 import { toast } from "react-toastify";
+
+import { Registration, NomyxEvent } from "@/utils/Constants";
 
 interface IDVerificationProps {
   setActiveTab: (tabKey: string) => void; // Function to set the active tab
@@ -12,38 +14,30 @@ interface IDVerificationProps {
   onPersonaVerified: (inquiryId: string) => void; // Callback for handling form submission
 }
 
-const IDVerification: React.FC<IDVerificationProps> = ({
-  setActiveTab,
-  setRegistration,
-  registration,
-  onPersonaVerified,
-}) => {
+const IDVerification: React.FC<IDVerificationProps> = ({ setActiveTab, setRegistration, registration, onPersonaVerified }) => {
   const [modalVisible, setModalVisible] = useState(false);
   const [verificationCompleted, setVerificationCompleted] = useState(false);
   const [templateId, setTemplateId] = useState<string | null>(null);
 
   useEffect(() => {
-    const subscription = PubSub.subscribe(
-      NomyxEvent.PersonaVerified,
-      (event, data) => {
-        if (data.status === "failed") {
-          toast.error("Persona verification failed: " + data?.failure_description);
-          console.error("Persona verification failed:", data);
-        } else if (data.status === "completed") {
-          setRegistration((prev) => ({
-            ...prev,
-            personaReferenceId: data.inquiryId,
-          }));
-          onPersonaVerified(data.inquiryId);
-          setVerificationCompleted(true);
-        }
-        setModalVisible(false);
+    const subscription = PubSub.subscribe(NomyxEvent.PersonaVerified, (event, data) => {
+      if (data.status === "failed") {
+        toast.error("Persona verification failed: " + data?.failure_description);
+        console.error("Persona verification failed:", data);
+      } else if (data.status === "completed") {
+        setRegistration((prev) => ({
+          ...prev,
+          personaReferenceId: data.inquiryId,
+        }));
+        onPersonaVerified(data.inquiryId);
+        setVerificationCompleted(true);
       }
-    );
+      setModalVisible(false);
+    });
     return () => {
       PubSub.unsubscribe(subscription);
     };
-  }, [registration.personaReferenceId]); // Add setRegistration as a dependency
+  }, [registration.personaReferenceId, onPersonaVerified, setRegistration]); // Add setRegistration as a dependency
 
   const handleNext = () => {
     setActiveTab("walletSetup"); // Replace with the actual next tab key
@@ -77,13 +71,10 @@ const IDVerification: React.FC<IDVerificationProps> = ({
       <div className="flex flex-col justify-center items-center flex-grow">
         {!verificationCompleted && (
           <>
-            <h2 className="text-2xl font-extrabold text-[#1F1F1F] text-center">
-              Please verify your identity
-            </h2>
+            <h2 className="text-2xl font-extrabold text-[#1F1F1F] text-center">Please verify your identity</h2>
             <p className="text-base mt-4 text-[#1F1F1F] text-center max-w-[600px]">
-              We will use Persona to verify your identity. Click the
-              &apos;KYC&apos; button for individual verification and the
-              &apos;KYB&apos; button for business verification to proceed!
+              We will use Persona to verify your identity. Click the &apos;KYC&apos; button for individual verification and the &apos;KYB&apos; button
+              for business verification to proceed!
             </p>
             <div className="flex space-x-4 mt-8">
               <Button type="primary" onClick={handleKYC}>
@@ -97,12 +88,8 @@ const IDVerification: React.FC<IDVerificationProps> = ({
         )}
         {verificationCompleted && (
           <>
-            <h2 className="text-2xl font-extrabold text-[#1F1F1F] text-center">
-              Your identity is verified!
-            </h2>
-            <p className="text-base mt-4 text-[#1F1F1F] text-center max-w-[600px]">
-              Proceed to the next step.
-            </p>
+            <h2 className="text-2xl font-extrabold text-[#1F1F1F] text-center">Your identity is verified!</h2>
+            <p className="text-base mt-4 text-[#1F1F1F] text-center max-w-[600px]">Proceed to the next step.</p>
           </>
         )}
       </div>
@@ -131,11 +118,7 @@ const IDVerification: React.FC<IDVerificationProps> = ({
         <button onClick={handleBack} className="text-blue-500">
           Back
         </button>
-        <button
-          onClick={handleNext}
-          className="bg-blue-500 text-white px-4 py-2 rounded"
-          disabled={!verificationCompleted}
-        >
+        <button onClick={handleNext} className="bg-blue-500 text-white px-4 py-2 rounded" disabled={!verificationCompleted}>
           Next
         </button>
       </div>

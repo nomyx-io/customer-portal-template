@@ -2,13 +2,16 @@
 "use client";
 
 import React, { useState } from "react";
-import { GetServerSideProps } from "next";
-import { Layout } from "antd";
-import { useRouter } from "next/navigation";
-import { Form, Input, Card, Button } from "antd";
+
 import { CheckOutlined } from "@ant-design/icons";
-import { toast } from "react-toastify";
+import { Layout } from "antd";
+import { Form, Input, Card, Button } from "antd";
+import { GetServerSideProps } from "next";
+import Image from "next/image";
+import { useRouter } from "next/navigation";
 import Parse from "parse";
+import { toast } from "react-toastify";
+
 import Header from "../../components/global/auth_header";
 
 // Define the form inputs type
@@ -67,7 +70,7 @@ const ResetPassword = ({ token }: { token: string }) => {
 
       if (response.success) {
         toast.success(
-          response.message || "Password has been reset successfully!"
+          response.message || "Password has been reset successfully!",
         );
         router.push("/login"); // Redirect to login page after successful reset
       } else {
@@ -91,8 +94,10 @@ const ResetPassword = ({ token }: { token: string }) => {
       <Header />
       <div className="flex h-screen w-full">
         <div className="w-1/2 flex justify-center items-center bg-black">
-          <img
+          <Image
             src="/images/Kronos-Carbon-Logo.png"
+            width={100}
+            height={25}
             alt="Logo"
             className="h-156"
           />
@@ -155,7 +160,7 @@ const ResetPassword = ({ token }: { token: string }) => {
                         return Promise.resolve();
                       }
                       return Promise.reject(
-                        new Error("Passwords do not match!")
+                        new Error("Passwords do not match!"),
                       );
                     },
                   }),
@@ -179,11 +184,7 @@ const ResetPassword = ({ token }: { token: string }) => {
                 <p className="flex items-center">
                   {renderIcon(passwordCriteria.minLength)}
                   <span
-                    className={`ml-2 ${
-                      passwordCriteria.minLength
-                        ? "text-green-500"
-                        : "text-gray-500"
-                    }`}
+                    className={`ml-2 ${passwordCriteria.minLength ? "text-green-500" : "text-gray-500"}`}
                   >
                     At least 8 characters
                   </span>
@@ -191,11 +192,7 @@ const ResetPassword = ({ token }: { token: string }) => {
                 <p className="flex items-center">
                   {renderIcon(passwordCriteria.hasUppercase)}
                   <span
-                    className={`ml-2 ${
-                      passwordCriteria.hasUppercase
-                        ? "text-green-500"
-                        : "text-gray-500"
-                    }`}
+                    className={`ml-2 ${passwordCriteria.hasUppercase ? "text-green-500" : "text-gray-500"}`}
                   >
                     At least 1 uppercase letter
                   </span>
@@ -203,11 +200,7 @@ const ResetPassword = ({ token }: { token: string }) => {
                 <p className="flex items-center">
                   {renderIcon(passwordCriteria.hasLowercase)}
                   <span
-                    className={`ml-2 ${
-                      passwordCriteria.hasLowercase
-                        ? "text-green-500"
-                        : "text-gray-500"
-                    }`}
+                    className={`ml-2 ${passwordCriteria.hasLowercase ? "text-green-500" : "text-gray-500"}`}
                   >
                     At least 1 lowercase letter
                   </span>
@@ -215,11 +208,7 @@ const ResetPassword = ({ token }: { token: string }) => {
                 <p className="flex items-center">
                   {renderIcon(passwordCriteria.hasNumber)}
                   <span
-                    className={`ml-2 ${
-                      passwordCriteria.hasNumber
-                        ? "text-green-500"
-                        : "text-gray-500"
-                    }`}
+                    className={`ml-2 ${passwordCriteria.hasNumber ? "text-green-500" : "text-gray-500"}`}
                   >
                     At least 1 number
                   </span>
@@ -227,11 +216,7 @@ const ResetPassword = ({ token }: { token: string }) => {
                 <p className="flex items-center">
                   {renderIcon(passwordCriteria.hasSpecialChar)}
                   <span
-                    className={`ml-2 ${
-                      passwordCriteria.hasSpecialChar
-                        ? "text-green-500"
-                        : "text-gray-500"
-                    }`}
+                    className={`ml-2 ${passwordCriteria.hasSpecialChar ? "text-green-500" : "text-gray-500"}`}
                   >
                     At least 1 special character
                   </span>

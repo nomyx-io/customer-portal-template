@@ -1,9 +1,11 @@
-import { Button, DatePicker, Input, Select, Table, TableProps, theme as antdTheme } from "antd";
 import { useEffect, useState } from "react";
-import { Dayjs } from "dayjs";
-import { DataType, NomyxEvent } from "@/utils/Constants";
-import { getValue } from "@/utils";
+
 import { FilterFilled, FilterOutlined } from "@ant-design/icons";
+import { Button, DatePicker, Input, Select, Table, TableProps, theme as antdTheme } from "antd";
+import { Dayjs } from "dayjs";
+
+import { getValue } from "@/utils";
+import { DataType, NomyxEvent } from "@/utils/Constants";
 
 interface FilterProps {
   dataIndex: string | string[];
@@ -48,7 +50,9 @@ const StringFilter: React.FC<FilterProps> = ({ dataIndex, onFilter, onClearFilte
         className="text-nomyx-text-light dark:text-nomyx-text-dark placeholder-nomyx-gray3-light dark:placeholder-nomyx-gray3-dark bg-nomyx-dark2-light dark:bg-nomyx-dark2-dark hover:bg-nomyx-dark2-light hover:dark:bg-nomyx-dark2-dark foucs:bg-nomyx-dark2-light focus:dark:bg-nomyx-dark2-dark focus-within:bg-nomyx-dark2-light focus-within:dark:bg-nomyx-dark2-dark border-nomyx-gray4-light dark:border-nomyx-gray4-dark"
       />
       <div className="actions">
-        <Button className="text-nomyx-text-light dark:text-nomyx-text-dark hover:!bg-transparent"onClick={clearFilter}>Clear</Button>
+        <Button className="text-nomyx-text-light dark:text-nomyx-text-dark hover:!bg-transparent" onClick={clearFilter}>
+          Clear
+        </Button>
         <Button type="primary" onClick={handleFilter}>
           Apply
         </Button>

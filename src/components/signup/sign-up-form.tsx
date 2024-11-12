@@ -1,6 +1,9 @@
 import React, { useState } from "react";
+
 import { Card, Form, Input, Button } from "antd";
+import Image from "next/image";
 import Link from "next/link";
+
 import CheckUserOnboarding from "./check-user-onboarding";
 
 const SignUpForm = ({ onNext, formData }: any) => {
@@ -22,8 +25,10 @@ const SignUpForm = ({ onNext, formData }: any) => {
     <div className="flex h-screen w-full">
       {/* Left Section - Custom Gradient Background and Logo */}
       <div className="w-1/2 flex justify-center items-center bg-black">
-        <img
+        <Image
           src="/images/Kronos-Carbon-Logo.png"
+          width={100}
+          height={25}
           alt="Logo"
           className="h-156"
         />

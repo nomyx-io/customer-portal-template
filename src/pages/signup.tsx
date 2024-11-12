@@ -1,12 +1,14 @@
 import React, { useState } from "react";
+
 import { Layout } from "antd";
 import { useRouter } from "next/router";
-import { toast } from "react-toastify"; // Assuming you are using react-toastify
-import SignUpForm from "../components/signup/sign-up-form";
-import PasswordForm from "../components/signup/password-form";
-import ConfirmMessage from "../components/signup/confirm-message";
-import Header from "../components/global/auth_header";
 import Parse from "parse";
+import { toast } from "react-toastify"; // Assuming you are using react-toastify
+
+import Header from "../components/global/auth_header";
+import ConfirmMessage from "../components/signup/confirm-message";
+import PasswordForm from "../components/signup/password-form";
+import SignUpForm from "../components/signup/sign-up-form";
 
 const { Content } = Layout;
 

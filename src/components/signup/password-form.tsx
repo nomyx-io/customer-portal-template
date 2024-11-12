@@ -1,6 +1,8 @@
 import React, { useState } from "react";
-import { Card, Form, Input, Button } from "antd";
+
 import { CheckOutlined } from "@ant-design/icons";
+import { Card, Form, Input, Button } from "antd";
+import Image from "next/image";
 
 interface PasswordFormProps {
   onBack: () => void;
@@ -36,8 +38,10 @@ const PasswordForm: React.FC<PasswordFormProps> = ({ onBack, onSubmit }) => {
     <div className="flex h-screen w-full">
       {/* Left Section - Custom Gradient Background and Logo */}
       <div className="w-1/2 flex justify-center items-center bg-black">
-        <img
+        <Image
           src="/images/Kronos-Carbon-Logo.png"
+          width={100}
+          height={25}
           alt="Logo"
           className="h-156"
         />
@@ -108,11 +112,7 @@ const PasswordForm: React.FC<PasswordFormProps> = ({ onBack, onSubmit }) => {
               <p className="flex items-center">
                 {renderIcon(passwordCriteria.minLength)}
                 <span
-                  className={`ml-2 ${
-                    passwordCriteria.minLength
-                      ? "text-green-500"
-                      : "text-gray-500"
-                  }`}
+                  className={`ml-2 ${passwordCriteria.minLength ? "text-green-500" : "text-gray-500"}`}
                 >
                   At least 8 characters
                 </span>
@@ -120,11 +120,7 @@ const PasswordForm: React.FC<PasswordFormProps> = ({ onBack, onSubmit }) => {
               <p className="flex items-center">
                 {renderIcon(passwordCriteria.hasUppercase)}
                 <span
-                  className={`ml-2 ${
-                    passwordCriteria.hasUppercase
-                      ? "text-green-500"
-                      : "text-gray-500"
-                  }`}
+                  className={`ml-2 ${passwordCriteria.hasUppercase ? "text-green-500" : "text-gray-500"}`}
                 >
                   At least 1 uppercase letter
                 </span>
@@ -132,11 +128,7 @@ const PasswordForm: React.FC<PasswordFormProps> = ({ onBack, onSubmit }) => {
               <p className="flex items-center">
                 {renderIcon(passwordCriteria.hasLowercase)}
                 <span
-                  className={`ml-2 ${
-                    passwordCriteria.hasLowercase
-                      ? "text-green-500"
-                      : "text-gray-500"
-                  }`}
+                  className={`ml-2 ${passwordCriteria.hasLowercase ? "text-green-500" : "text-gray-500"}`}
                 >
                   At least 1 lowercase letter
                 </span>
@@ -144,11 +136,7 @@ const PasswordForm: React.FC<PasswordFormProps> = ({ onBack, onSubmit }) => {
               <p className="flex items-center">
                 {renderIcon(passwordCriteria.hasNumber)}
                 <span
-                  className={`ml-2 ${
-                    passwordCriteria.hasNumber
-                      ? "text-green-500"
-                      : "text-gray-500"
-                  }`}
+                  className={`ml-2 ${passwordCriteria.hasNumber ? "text-green-500" : "text-gray-500"}`}
                 >
                   At least 1 number
                 </span>
@@ -156,11 +144,7 @@ const PasswordForm: React.FC<PasswordFormProps> = ({ onBack, onSubmit }) => {
               <p className="flex items-center">
                 {renderIcon(passwordCriteria.hasSpecialChar)}
                 <span
-                  className={`ml-2 ${
-                    passwordCriteria.hasSpecialChar
-                      ? "text-green-500"
-                      : "text-gray-500"
-                  }`}
+                  className={`ml-2 ${passwordCriteria.hasSpecialChar ? "text-green-500" : "text-gray-500"}`}
                 >
                   At least 1 special character
                 </span>

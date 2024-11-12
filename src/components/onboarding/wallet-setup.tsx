@@ -1,18 +1,14 @@
 import React, { useState, useEffect, useRef } from "react";
-import { useAccount } from "wagmi";
+
 import { Radio } from "antd/es"; // Importing only what you need
 import PubSub from "pubsub-js"; // Ensure you have PubSub imported
-import {
-  NomyxEvent,
-  Registration,
-  WalletPreference,
-  RecoveryKey,
-} from "@/utils/Constants";
-import KronosCustomerService from "@/services/KronosCustomerService";
 import { toast } from "react-toastify";
-import GenerateUserRecoveryKit, {
-  UserRecoveryKitRef,
-} from "./GenerateUserRecoveryKit";
+import { useAccount } from "wagmi";
+
+import KronosCustomerService from "@/services/KronosCustomerService";
+import { NomyxEvent, Registration, WalletPreference, RecoveryKey } from "@/utils/Constants";
+
+import GenerateUserRecoveryKit, { UserRecoveryKitRef } from "./GenerateUserRecoveryKit";
 
 interface WalletSetupProps {
   setActiveTab: (tabKey: string) => void; // Function to set the active tab
@@ -21,19 +17,10 @@ interface WalletSetupProps {
   email?: string;
 }
 
-const WalletSetup: React.FC<WalletSetupProps> = ({
-  setActiveTab,
-  setRegistration,
-  onSubmit,
-  email,
-}) => {
-  const [walletPreference, setWalletPreference] = useState<WalletPreference>(
-    WalletPreference.MANAGED
-  ); // Local state for wallet preference
+const WalletSetup: React.FC<WalletSetupProps> = ({ setActiveTab, setRegistration, onSubmit, email }) => {
+  const [walletPreference, setWalletPreference] = useState<WalletPreference>(WalletPreference.MANAGED); // Local state for wallet preference
   const [walletAddress, setWalletAddress] = useState<string | null>(null);
-  const [dfnsWalletAddress, setDfnsWalletAddress] = useState<string | null>(
-    null
-  );
+  const [dfnsWalletAddress, setDfnsWalletAddress] = useState<string | null>(null);
   const [credentialId, setCredentialId] = useState<string | null>(null);
   const [secret, setSecret] = useState<string | null>(null);
 
@@ -93,16 +80,11 @@ const WalletSetup: React.FC<WalletSetupProps> = ({
   };
 
   const dfnsRegistration = async () => {
-    const { challenge, error } =
-      await KronosCustomerService.initiateDfnsRegistration(email || "");
+    const { challenge, error } = await KronosCustomerService.initiateDfnsRegistration(email || "");
     if (error) {
       toast.error(error);
     } else {
-      const { registration, recoveryKey, error } =
-        await KronosCustomerService.completeDfnsRegistration(
-          challenge,
-          window.location.origin
-        );
+      const { registration, recoveryKey, error } = await KronosCustomerService.completeDfnsRegistration(challenge, window.location.origin);
 
       if (error) {
         toast.error(error);
@@ -133,9 +115,7 @@ const WalletSetup: React.FC<WalletSetupProps> = ({
   return (
     <div className="font-poppins flex flex-col min-h-[75vh]">
       <div className="flex flex-col justify-center items-center flex-grow">
-        <h2 className="text-2xl font-extrabold text-[#1F1F1F] text-center">
-          Let&apos;s Create Your Wallet
-        </h2>
+        <h2 className="text-2xl font-extrabold text-[#1F1F1F] text-center">Let&apos;s Create Your Wallet</h2>
         <p className="text-base mt-4 text-[#1F1F1F] text-center max-w-[600px]">
           A wallet will be created for you and linked to your <br />
           <b>{email}</b>
@@ -145,39 +125,25 @@ const WalletSetup: React.FC<WalletSetupProps> = ({
           <Radio.Group
             value={walletPreference} // Set the value from local state
             buttonStyle="solid"
-            onChange={(e) =>
-              handleWalletPreferenceChange(e.target.value as WalletPreference)
-            } // Handle change
+            onChange={(e) => handleWalletPreferenceChange(e.target.value as WalletPreference)} // Handle change
           >
-            <Radio.Button value={WalletPreference.MANAGED}>
-              Create your Wallet
-            </Radio.Button>
-            <Radio.Button value={WalletPreference.PRIVATE}>
-              Connect your Wallet
-            </Radio.Button>
+            <Radio.Button value={WalletPreference.MANAGED}>Create your Wallet</Radio.Button>
+            <Radio.Button value={WalletPreference.PRIVATE}>Connect your Wallet</Radio.Button>
           </Radio.Group>
         </div>
 
         {walletPreference === WalletPreference.MANAGED && (
           <div className="text-center mt-5">
             {!dfnsWalletAddress ? (
-              <button
-                onClick={dfnsRegistration}
-                className="bg-[#47a1ff] text-white px-4 py-2 rounded-full font-bold"
-              >
+              <button onClick={dfnsRegistration} className="bg-[#47a1ff] text-white px-4 py-2 rounded-full font-bold">
                 Create Wallet
               </button>
             ) : (
               <>
-                <p className="text-base mt-4 text-[#1F1F1F]">
-                  Your wallet has been successfully created, and your signature
-                  saved.
-                </p>
+                <p className="text-base mt-4 text-[#1F1F1F]">Your wallet has been successfully created, and your signature saved.</p>
                 <p className="text-base mt-6 text-[#1F1F1F]">
-                  Your recovery file has been generated. Please print
-                  and store it in a safe place. This file is essential for
-                  recovering your account in the event of any issues. Do not
-                  share it with anyone
+                  Your recovery file has been generated. Please print and store it in a safe place. This file is essential for recovering your account
+                  in the event of any issues. Do not share it with anyone
                 </p>
                 <GenerateUserRecoveryKit
                   ref={userRecoveryKitRef} // Pass the ref to the child component

@@ -4,7 +4,7 @@ import { NextApiRequest, NextApiResponse } from "next";
 import Parse from "parse/node";
 
 // Initialize Parse
-Parse.initialize(process.env.NEXT_PUBLIC_PARSE_APPLICATION_ID || '', process.env.NEXT_PUBLIC_PARSE_JAVASCRIPT_KEY);
+Parse.initialize(process.env.NEXT_PUBLIC_PARSE_APPLICATION_ID || "", process.env.NEXT_PUBLIC_PARSE_JAVASCRIPT_KEY);
 Parse.serverURL = `${process.env.NEXT_PUBLIC_PARSE_SERVER_URL}/parse`;
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
@@ -13,7 +13,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   }
 
   const { email, registration, recoveryKey } = req.body;
-  
+
   if (!email || !registration || !recoveryKey) {
     return res.status(400).json({ message: "Invalid data" });
   }

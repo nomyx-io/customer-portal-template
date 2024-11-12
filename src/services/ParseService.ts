@@ -8,7 +8,7 @@ const globalErrorHandler = (error: Parse.Error) => {
       console.log("Invalid session token");
       signOut();
   }
-}
+};
 
 export default class ParseService {
   static createdSchemas: any = [];
@@ -38,10 +38,8 @@ export default class ParseService {
     query.equalTo("objectId", id);
     return query.first().catch((e) => {
       globalErrorHandler(e);
-      console.log(
-        `get: Error getting record with collectionName ${collectionName} and id ${id} with error ${e}`
-        );
-      });
+      console.log(`get: Error getting record with collectionName ${collectionName} and id ${id} with error ${e}`);
+    });
   }
 
   /**
@@ -62,9 +60,7 @@ export default class ParseService {
       throw new Error("The number of whereFields and whereValues must match");
     }
     const query = new Parse.Query(className);
-    whereFields.forEach((whereField, i) =>
-      query.equalTo(whereField, whereValues[i])
-    );
+    whereFields.forEach((whereField, i) => query.equalTo(whereField, whereValues[i]));
     includesValues.forEach((includeValue) => query.include(includeValue));
     const record = await query.first().catch(globalErrorHandler);
     return record || undefined;
@@ -131,9 +127,7 @@ export default class ParseService {
       const records = await query.find().catch(globalErrorHandler);
       return records;
     } catch (e) {
-      console.log(
-        `getRecords: Error getting records with className ${className} and whereFields ${whereFields} and whereValues ${whereValues}`
-      );
+      console.log(`getRecords: Error getting records with className ${className} and whereFields ${whereFields} and whereValues ${whereValues}`);
     }
   }
 
@@ -146,11 +140,7 @@ export default class ParseService {
    * @constructor
    * @throws {Error} if the number of whereFields and whereValues do not match
    */
-  static async getFirstRecord(
-    className: string,
-    whereFields: string[],
-    whereValues: any[]
-  ) {
+  static async getFirstRecord(className: string, whereFields: string[], whereValues: any[]) {
     try {
       if (whereFields.length !== whereValues.length) {
         throw new Error("The number of whereFields and whereValues must match");
@@ -162,17 +152,11 @@ export default class ParseService {
       const record = await query.first().catch(globalErrorHandler);
       return record;
     } catch (e) {
-      console.log(
-        `getFirstRecord: Error getting record with className ${className} and whereFields ${whereFields} and whereValues ${whereValues}`
-      );
+      console.log(`getFirstRecord: Error getting record with className ${className} and whereFields ${whereFields} and whereValues ${whereValues}`);
     }
   }
 
-  static async getLatestRecord(
-    className: string,
-    whereFields: string[],
-    whereValues: any[]
-  ) {
+  static async getLatestRecord(className: string, whereFields: string[], whereValues: any[]) {
     try {
       if (whereFields.length !== whereValues.length) {
         throw new Error("The number of whereFields and whereValues must match");
@@ -185,9 +169,7 @@ export default class ParseService {
       const record = await query.first().catch(globalErrorHandler);
       return record;
     } catch (e) {
-      console.log(
-        `getLatestRecord: Error getting record with className ${className} and whereFields ${whereFields} and whereValues ${whereValues}`
-      );
+      console.log(`getLatestRecord: Error getting record with className ${className} and whereFields ${whereFields} and whereValues ${whereValues}`);
     }
   }
 
@@ -207,16 +189,12 @@ export default class ParseService {
   ): Promise<Parse.Object | undefined> {
     const Collection = Parse.Object.extend(collectionName);
     const query = new Parse.Query(Collection);
-    collectionIdFields.forEach((cif: any, i: number) =>
-      query.equalTo(cif, collectionIds[i])
-    );
+    collectionIdFields.forEach((cif: any, i: number) => query.equalTo(cif, collectionIds[i]));
     let record: any;
     try {
       record = await query.first().catch(globalErrorHandler);
       if (record) {
-        Object.keys(data).forEach((key: any, i: number) =>
-          (record as any).set(key, data[key])
-        );
+        Object.keys(data).forEach((key: any, i: number) => (record as any).set(key, data[key]));
         return record.save();
       }
     } catch (e) {
@@ -224,9 +202,7 @@ export default class ParseService {
     }
 
     if (!record) {
-      collectionIdFields.forEach(
-        (cif: any, i: number) => ((data as any)[cif] = collectionIds[i])
-      );
+      collectionIdFields.forEach((cif: any, i: number) => ((data as any)[cif] = collectionIds[i]));
       record = new Collection(data);
       return record.save();
     }
@@ -240,23 +216,14 @@ export default class ParseService {
    * @param data
    * @returns
    */
-  static async updateExistingRecord(
-    collectionName: any,
-    collectionIdFields: any,
-    collectionIds: any,
-    data: any
-  ) {
+  static async updateExistingRecord(collectionName: any, collectionIdFields: any, collectionIds: any, data: any) {
     try {
       const Collection = Parse.Object.extend(collectionName);
       const query = new Parse.Query(Collection);
-      collectionIdFields.forEach((cif: any, i: number) =>
-        query.equalTo(cif, collectionIds[i])
-      );
+      collectionIdFields.forEach((cif: any, i: number) => query.equalTo(cif, collectionIds[i]));
       return query.first().then((record: any) => {
         if (record) {
-          Object.keys(data).forEach((key: any, i: number) =>
-            record.set(key, data[key])
-          );
+          Object.keys(data).forEach((key: any, i: number) => record.set(key, data[key]));
           return record.save();
         } else {
           throw new Error("Record not found");
@@ -287,9 +254,7 @@ export default class ParseService {
       const Collection = Parse.Object.extend(collectionName);
       const query = new Parse.Query(Collection);
       if (collectionIdFields.length > 0) {
-        collectionIdFields.forEach((cif: any, i: number) =>
-          query.equalTo(cif, collectionIdsValues[i])
-        );
+        collectionIdFields.forEach((cif: any, i: number) => query.equalTo(cif, collectionIdsValues[i]));
         const record = await query.first().catch(globalErrorHandler);
         if (record) {
           throw new Error("Record already exists");
@@ -318,9 +283,7 @@ export default class ParseService {
       const Collection = Parse.Object.extend(collectionName);
       const query = new Parse.Query(Collection);
       if (collectionIdFields.length > 0) {
-        collectionIdFields.forEach((cif: any, i: number) =>
-          query.equalTo(cif, collectionIdsValues[i])
-        );
+        collectionIdFields.forEach((cif: any, i: number) => query.equalTo(cif, collectionIdsValues[i]));
         const record = await query.first().catch(globalErrorHandler);
         if (record) {
           throw new Error("Record already exists");
@@ -355,9 +318,7 @@ export default class ParseService {
         return await record.destroy().catch(globalErrorHandler);
       }
     } catch (e) {
-      console.log(
-        `deleteRecord: Error deleting record with collectionName ${collectionName} and collectionId ${collectionId}`
-      );
+      console.log(`deleteRecord: Error deleting record with collectionName ${collectionName} and collectionId ${collectionId}`);
     }
   }
 
@@ -530,9 +491,7 @@ export default class ParseService {
       const records = await query.find().catch(globalErrorHandler);
       if (records) return await Parse.Object.destroyAll(records);
     } catch (e) {
-      console.log(
-        `deleteCollection: Error deleting collection ${collectionName}`
-      );
+      console.log(`deleteCollection: Error deleting collection ${collectionName}`);
     }
   }
 
@@ -568,11 +527,7 @@ export default class ParseService {
    * @param id
    * @param fields
    */
-  static async updateRecord(
-    collectionName: string | { className: string },
-    id: string,
-    fields: { [x: string]: any }
-  ) {
+  static async updateRecord(collectionName: string | { className: string }, id: string, fields: { [x: string]: any }) {
     const Collection = Parse.Object.extend(collectionName);
     const collection = new Collection();
     collection.id = id;
@@ -605,11 +560,7 @@ export default class ParseService {
    * @param objectToInsert
    * @returns
    */
-  static async update(
-    collName: string | { className: string },
-    existingRecordId: string,
-    objectToInsert: { [x: string]: any }
-  ) {
+  static async update(collName: string | { className: string }, existingRecordId: string, objectToInsert: { [x: string]: any }) {
     const Collection = Parse.Object.extend(collName);
     const collection = new Collection();
     collection.id = existingRecordId;

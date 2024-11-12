@@ -1,18 +1,22 @@
+import React, { useEffect, useState } from "react";
+
+import { Layout } from "antd";
+import { Form, Input, Card, Radio, Button } from "antd/es";
 import type {
   GetServerSidePropsContext,
   InferGetServerSidePropsType,
 } from "next";
-import React, { useEffect, useState } from "react";
-import { Layout } from "antd";
-import { useRouter } from "next/navigation";
+import Image from "next/image";
 import Link from "next/link";
-import { useAccount, useDisconnect } from "wagmi";
+import { useRouter } from "next/navigation";
 import { signIn, getCsrfToken } from "next-auth/react";
-import { Form, Input, Card, Radio, Button } from "antd/es";
-import { LoginPreference } from "@/utils/Constants";
-import { StandardCredentials, EthereumCredentials } from "@/auth/Credentials";
-import Header from "../components/global/auth_header";
 import { toast } from "react-toastify";
+import { useAccount, useDisconnect } from "wagmi";
+
+import { StandardCredentials, EthereumCredentials } from "@/auth/Credentials";
+import { LoginPreference } from "@/utils/Constants";
+
+import Header from "../components/global/auth_header";
 
 const Credentials = [StandardCredentials, EthereumCredentials];
 
@@ -24,7 +28,7 @@ const Login = function ({
   const ethereumAccount = useAccount();
   const { disconnect } = useDisconnect();
   const [loginPreference, setLoginPreference] = useState(
-    LoginPreference.USERNAME_PASSWORD
+    LoginPreference.USERNAME_PASSWORD,
   );
 
   const walletLogin = loginPreference == LoginPreference.WALLET;
@@ -42,7 +46,7 @@ const Login = function ({
         toast.error("Login failed. This user is not authorized.");
       } else {
         toast.error(
-          "An authorization error occurred. Please try again later or contact your administrator."
+          "An authorization error occurred. Please try again later or contact your administrator.",
         );
       }
     } else {
@@ -61,7 +65,7 @@ const Login = function ({
     if (ethereumAccount.address) {
       handleWalletDisconnect();
     }
-  }, []);
+  }, [disconnect, ethereumAccount.address]);
 
   return (
     <Layout
@@ -76,9 +80,11 @@ const Login = function ({
       <div className="flex h-screen w-full">
         {/* Left Section - Custom Gradient Background and Logo */}
         <div className="w-1/2 flex justify-center items-center bg-black">
-          <img
+          <Image
             src="/images/Kronos-Carbon-Logo.png"
             alt="Logo"
+            width={100}
+            height={25}
             className="h-156"
           />
         </div>
@@ -123,7 +129,7 @@ const Login = function ({
                               {loginOptionLabel}
                             </Radio.Button>
                           );
-                        }
+                        },
                       )}
                   </Radio.Group>
                 }
@@ -174,7 +180,7 @@ const Login = function ({
 
                                 {credentialConfig?.options?.credentials &&
                                   Object.keys(
-                                    credentialConfig.options.credentials
+                                    credentialConfig.options.credentials,
                                   ).map((key: any, index: number) => {
                                     const c =
                                       credentialConfig.options.credentials[key];

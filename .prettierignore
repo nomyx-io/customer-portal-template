@@ -1,0 +1,102 @@
+# Ignore the build output
+.next
+
+# Ignore the build output from Vercel deployments (if using Vercel)
+.vercel
+
+# Ignore the output directory for static files
+out
+
+# Ignore the node_modules directory
+node_modules
+
+# Ignore environment files
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+.env.example
+
+# Ignore package lock files
+package-lock.json
+yarn.lock
+pnpm-lock.yaml
+
+# Ignore any lock files for code editors
+*.lock
+
+# Ignore the public/static directory if you're not formatting assets
+public/static
+public/assets
+
+# Ignore coverage files
+coverage
+
+# Ignore any specific config or file types not relevant to formatting
+**/*.svg
+**/*.png
+**/*.jpg
+**/*.jpeg
+**/*.gif
+**/*.webp
+**/*.ico
+**/*.mp4
+**/*.mp3
+**/*.zip
+**/*.pdf
+
+# Ignore Docker files
+Dockerfile
+docker-compose.yml
+
+# Ignore test coverage directories
+coverage
+
+# Ignore lint and prettier config files themselves
+.eslintcache
+.prettierignore
+.eslintignore
+.eslintrc.json
+.prettierrc
+
+
+# Ignore specific files or directories that don't require formatting
+docs
+README.md
+CHANGELOG.md
+
+# Ignore configuration files
+tsconfig.json
+
+# Ignore git files
+.gitignore
+
+# Ingore vscode files
+.vscode/*
+
+# Ignore package files
+package.json
+
+# Ignore manifest files
+manifest.json
+
+# Ignore css files
+*.css
+
+# Ignore scss files
+*.scss
+
+# Specific files
+parse.json
+combined.txt
+create-project-prop.json
+platformTerms.html
+CarbonCreditFacet.json
+ITreasury.json
+MarketplaceFacet.json
+USDC.json
+tailwind_style_guide.md
+
+# Ignore husky files
+.husky/*

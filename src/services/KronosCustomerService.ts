@@ -1,15 +1,11 @@
-import ParseService from "./ParseService";
-import { formatUnits, parseUnits, ethers } from "ethers";
-// import BlockchainService from "@/services/BlockchainService";
-import {
-  createRecoveryCredential,
-  KeyClientData,
-  signRecoveryCredentials,
-  validateRecoveryKey,
-} from "@/utils/dfnsRecoveryKey";
-import { base64url } from "@/utils/base64url";
 import { WebAuthnSigner } from "@dfns/sdk-browser";
+import { formatUnits } from "ethers";
 import Parse from "parse";
+
+import { base64url } from "@/utils/base64url";
+import { createRecoveryCredential, KeyClientData, signRecoveryCredentials, validateRecoveryKey } from "@/utils/dfnsRecoveryKey";
+
+import ParseService from "./ParseService";
 
 class KronosCustomerService {
   private static _instance: KronosCustomerService;
@@ -32,23 +28,13 @@ class KronosCustomerService {
   }
 
   public async getProjectsByIds(projectIds: string[]) {
-    let records = await ParseService.getRecords(
-      "TokenProject",
-      ["objectId"],
-      [projectIds],
-      ["*"]
-    );
+    let records = await ParseService.getRecords("TokenProject", ["objectId"], [projectIds], ["*"]);
     return records || [];
   }
 
   public async getTokensForUser(address: string) {
     const lowerCaseAddress = address.toLocaleLowerCase();
-    let records = await ParseService.getRecords(
-      "Token",
-      ["owner"],
-      [lowerCaseAddress],
-      ["*"]
-    );
+    let records = await ParseService.getRecords("Token", ["owner"], [lowerCaseAddress], ["*"]);
     let sanitizedRecords: any[] = [];
 
     if (records && records.length > 0) {
@@ -64,22 +50,14 @@ class KronosCustomerService {
       });
     }
 
-    const projectIds = sanitizedRecords.reduce(
-      (uniqueIds: any[], record: any) => {
-        if (!uniqueIds.includes(record.projectId)) {
-          uniqueIds.push(record.projectId);
-        }
-        return uniqueIds;
-      },
-      []
-    );
+    const projectIds = sanitizedRecords.reduce((uniqueIds: any[], record: any) => {
+      if (!uniqueIds.includes(record.projectId)) {
+        uniqueIds.push(record.projectId);
+      }
+      return uniqueIds;
+    }, []);
 
-    const projects = await ParseService.getRecords(
-      "TokenProject",
-      ["objectId"],
-      [projectIds],
-      []
-    );
+    const projects = await ParseService.getRecords("TokenProject", ["objectId"], [projectIds], []);
     // Create a map of projectId to projectName for quick lookup
     const projectMap: { [key: string]: string } = {};
     projects?.forEach((project: any) => {
@@ -99,12 +77,7 @@ class KronosCustomerService {
       objectId: tokenId,
     };
 
-    let records = await ParseService.getRecords(
-      "TokenDeposit",
-      ["token"],
-      [pointer],
-      ["*"]
-    );
+    let records = await ParseService.getRecords("TokenDeposit", ["token"], [pointer], ["*"]);
     let sanitizedRecords = [];
 
     if (records && records.length > 0) {
@@ -126,12 +99,7 @@ class KronosCustomerService {
       };
     });
 
-    let records = await ParseService.getRecords(
-      "TokenWithdrawal",
-      ["token"],
-      [pointers],
-      ["*"]
-    );
+    let records = await ParseService.getRecords("TokenWithdrawal", ["token"], [pointers], ["*"]);
     let sanitizedRecords = [];
 
     if (records && records.length > 0) {
@@ -150,12 +118,7 @@ class KronosCustomerService {
       objectId: tokenId,
     };
 
-    let records = await ParseService.getRecords(
-      "TokenWithdrawal",
-      ["token"],
-      [pointer],
-      ["*"]
-    );
+    let records = await ParseService.getRecords("TokenWithdrawal", ["token"], [pointer], ["*"]);
     let sanitizedRecords = [];
 
     if (records && records.length > 0) {
@@ -170,31 +133,17 @@ class KronosCustomerService {
   public async getRetiredTokensForUser(address: string) {
     const tokens = await this.getTokensForUser(address);
     const tokenIds = tokens.map((t: any) => t.tokenId);
-    const retiredTokens = await ParseService.getRecords(
-      "CarbonCreditsRetired__e",
-      ["tokenId"],
-      [tokenIds],
-      ["*"]
-    );
+    const retiredTokens = await ParseService.getRecords("CarbonCreditsRetired__e", ["tokenId"], [tokenIds], ["*"]);
 
-    const retiredTokenIds = retiredTokens?.map(
-      (t: any) => t.attributes.tokenId
-    );
+    const retiredTokenIds = retiredTokens?.map((t: any) => t.attributes.tokenId);
 
-    const filteredTokens = tokens?.filter((t: any) =>
-      retiredTokenIds?.includes(t.tokenId)
-    );
+    const filteredTokens = tokens?.filter((t: any) => retiredTokenIds?.includes(t.tokenId));
 
     return filteredTokens || [];
   }
 
   public async getPortfolioPerformance(walletAddress: string) {
-    let records = await ParseService.getRecords(
-      "CustomerPortfolioSnapshot",
-      ["customerAddress"],
-      [walletAddress],
-      ["*"]
-    );
+    let records = await ParseService.getRecords("CustomerPortfolioSnapshot", ["customerAddress"], [walletAddress], ["*"]);
     let sanitizedRecords = [];
 
     if (records && records.length > 0) {
@@ -220,9 +169,7 @@ class KronosCustomerService {
     // IdentityCreated
     // IdentityAdded
     const eventTypes = ["CarbonCreditsRetired", "ERC721ATransfer", "Sales"];
-    const myTokens = (await this.getTokensForUser(address)).map(
-      (t: any) => t.tokenId
-    );
+    const myTokens = (await this.getTokensForUser(address)).map((t: any) => t.tokenId);
 
     let records = await ParseService.getRecords(
       "Event",
@@ -287,38 +234,21 @@ class KronosCustomerService {
   // }
 
   public async getListings() {
-    const records = await ParseService.getRecords(
-      "TokenListing",
-      ["sold"],
-      [false],
-      ["*"],
-      undefined,
-      undefined,
-      undefined,
-      "desc"
-    );
+    const records = await ParseService.getRecords("TokenListing", ["sold"], [false], ["*"], undefined, undefined, undefined, "desc");
     let sanitizedRecords = [];
 
     if (records && records.length > 0) {
       sanitizedRecords = JSON.parse(JSON.stringify(records || []));
     }
-    
-    const projectIds = sanitizedRecords.reduce(
-      (uniqueIds: any[], record: any) => {
-        if (!uniqueIds.includes(record.token?.projectId)) {
-          uniqueIds.push(record.token?.projectId);
-        }
-        return uniqueIds;
-      },
-      []
-    );
 
-    const projects = await ParseService.getRecords(
-      "TokenProject",
-      ["objectId"],
-      [projectIds],
-      []
-    );
+    const projectIds = sanitizedRecords.reduce((uniqueIds: any[], record: any) => {
+      if (!uniqueIds.includes(record.token?.projectId)) {
+        uniqueIds.push(record.token?.projectId);
+      }
+      return uniqueIds;
+    }, []);
+
+    const projects = await ParseService.getRecords("TokenProject", ["objectId"], [projectIds], []);
     // Create a map of projectId to projectName for quick lookup
     const projectMap: { [key: string]: string } = {};
     projects?.forEach((project: any) => {
@@ -340,16 +270,7 @@ class KronosCustomerService {
    */
 
   public async getSales(walletAddress: string) {
-    const records = await ParseService.getRecords(
-      "TokenSale",
-      [],
-      [],
-      ["*"],
-      undefined,
-      undefined,
-      undefined,
-      "desc"
-    );
+    const records = await ParseService.getRecords("TokenSale", [], [], ["*"], undefined, undefined, undefined, "desc");
     let sanitizedRecords = [];
 
     if (records && records.length > 0) {
@@ -368,12 +289,7 @@ class KronosCustomerService {
       };
     });
 
-    let records = await ParseService.getRecords(
-      "Event",
-      ["tokens"],
-      [pointers],
-      ["*"]
-    );
+    let records = await ParseService.getRecords("Event", ["tokens"], [pointers], ["*"]);
 
     let sanitizedRecords = [];
 
@@ -389,12 +305,7 @@ class KronosCustomerService {
   }
 
   public async getRedemptionHistory(tokenId: number[]) {
-    const records = await ParseService.getRecords(
-      "CarbonCreditsRetired__e",
-      ["tokenId"],
-      [tokenId],
-      ["*"]
-    );
+    const records = await ParseService.getRecords("CarbonCreditsRetired__e", ["tokenId"], [tokenId], ["*"]);
     let sanitizedRecords = [];
     if (records && records.length > 0) {
       sanitizedRecords = JSON.parse(JSON.stringify(records || []));
@@ -403,12 +314,7 @@ class KronosCustomerService {
   }
 
   public async getAllRedemptionHistoryToken() {
-    const records = await ParseService.getRecords(
-      "CarbonCreditsRetired__e",
-      [],
-      [],
-      ["tokenId"]
-    );
+    const records = await ParseService.getRecords("CarbonCreditsRetired__e", [], [], ["tokenId"]);
     // Extracting only the tokenId from each record using the get() method
     const sanitizedRecords = records?.map((record) => record.get("tokenId"));
     return sanitizedRecords;
@@ -431,10 +337,7 @@ class KronosCustomerService {
     }
   }
 
-  public async completeDfnsRegistration(
-    pendingRegistrationChallenge: any,
-    windowOrigin: string
-  ) {
+  public async completeDfnsRegistration(pendingRegistrationChallenge: any, windowOrigin: string) {
     if (!pendingRegistrationChallenge) {
       throw new Error("No pending registration challenge found.");
     }
@@ -453,17 +356,13 @@ class KronosCustomerService {
       console.log("Client Data: ", clientData);
 
       // Create a recovery key credential
-      const newRecoveryKey = await createRecoveryCredential(
-        clientData,
-        pendingRegistrationChallenge.user.name
-      );
+      const newRecoveryKey = await createRecoveryCredential(clientData, pendingRegistrationChallenge.user.name);
 
       console.log("New Recovery Key:", newRecoveryKey);
 
       // Use Parse.Cloud.run to call registerComplete
       const registration = await Parse.Cloud.run("registerComplete", {
-        temporaryAuthenticationToken:
-          pendingRegistrationChallenge.temporaryAuthenticationToken,
+        temporaryAuthenticationToken: pendingRegistrationChallenge.temporaryAuthenticationToken,
         signedChallenge: {
           firstFactorCredential: attestation,
           recoveryCredential: newRecoveryKey.credential,
@@ -477,8 +376,7 @@ class KronosCustomerService {
         recoveryKey: {
           secret: newRecoveryKey.recoveryKey.secret,
           credentialId: newRecoveryKey.recoveryKey.credentialId,
-          encryptedPrivateKey:
-            newRecoveryKey.credential.encryptedPrivateKey ?? "",
+          encryptedPrivateKey: newRecoveryKey.credential.encryptedPrivateKey ?? "",
         },
         error: null,
       };
@@ -508,11 +406,7 @@ class KronosCustomerService {
 
   // Dfns Token purchase methods
 
-  public async initiateApproval(
-    walletId: string,
-    price: string,
-    dfnsToken: string
-  ) {
+  public async initiateApproval(walletId: string, price: string, dfnsToken: string) {
     if (!walletId || !price || !dfnsToken) {
       throw new Error("Missing required parameters for approval.");
     }
@@ -533,12 +427,7 @@ class KronosCustomerService {
     }
   }
 
-  public async completeApproval(
-    walletId: string,
-    dfnsToken: string,
-    challenge: any,
-    requestBody: any
-  ) {
+  public async completeApproval(walletId: string, dfnsToken: string, challenge: any, requestBody: any) {
     if (!walletId || !dfnsToken || !challenge || !requestBody) {
       throw new Error("Missing required parameters for completing approval.");
     }
@@ -565,11 +454,7 @@ class KronosCustomerService {
     }
   }
 
-  public async initiatePurchase(
-    walletId: string,
-    tokenId: string,
-    dfnsToken: string
-  ) {
+  public async initiatePurchase(walletId: string, tokenId: string, dfnsToken: string) {
     if (!walletId || !tokenId || !dfnsToken) {
       throw new Error("Missing required parameters for purchase.");
     }
@@ -589,12 +474,7 @@ class KronosCustomerService {
     }
   }
 
-  public async completePurchase(
-    walletId: string,
-    dfnsToken: string,
-    challenge: any,
-    requestBody: any
-  ) {
+  public async completePurchase(walletId: string, dfnsToken: string, challenge: any, requestBody: any) {
     if (!walletId || !dfnsToken || !challenge || !requestBody) {
       throw new Error("Missing required parameters for completing purchase.");
     }
@@ -620,12 +500,7 @@ class KronosCustomerService {
     }
   }
 
-  public async initiateRetire(
-    walletId: string,
-    tokenId: string,
-    amount: string,
-    dfnsToken: string
-  ) {
+  public async initiateRetire(walletId: string, tokenId: string, amount: string, dfnsToken: string) {
     if (!walletId || !tokenId || !amount || !dfnsToken) {
       throw new Error("Missing required parameters for retirement.");
     }
@@ -647,12 +522,7 @@ class KronosCustomerService {
     }
   }
 
-  public async completeRetire(
-    walletId: string,
-    dfnsToken: string,
-    challenge: any,
-    requestBody: any
-  ) {
+  public async completeRetire(walletId: string, dfnsToken: string, challenge: any, requestBody: any) {
     if (!walletId || !dfnsToken || !challenge || !requestBody) {
       throw new Error("Missing required parameters for completing retirement.");
     }
@@ -661,18 +531,15 @@ class KronosCustomerService {
       const webauthn = new WebAuthnSigner();
       const assertion = await webauthn.sign(challenge);
 
-      const completeResponse = await Parse.Cloud.run(
-        "dfnsCompleteRetireCredits",
-        {
-          walletId,
-          dfns_token: dfnsToken,
-          signedChallenge: {
-            challengeIdentifier: challenge.challengeIdentifier,
-            firstFactor: assertion,
-          },
-          requestBody,
-        }
-      );
+      const completeResponse = await Parse.Cloud.run("dfnsCompleteRetireCredits", {
+        walletId,
+        dfns_token: dfnsToken,
+        signedChallenge: {
+          challengeIdentifier: challenge.challengeIdentifier,
+          firstFactor: assertion,
+        },
+        requestBody,
+      });
 
       console.log("Retirement completed:", completeResponse);
 
@@ -683,27 +550,19 @@ class KronosCustomerService {
     }
   }
 
-  public async transferUSDC(
-    walletId: string,
-    dfnsToken: string,
-    recipient: string,
-    amount: string
-  ) {
+  public async transferUSDC(walletId: string, dfnsToken: string, recipient: string, amount: string) {
     if (!walletId || !dfnsToken || !recipient || !amount) {
       throw new Error("Missing required parameters for USDC transfer.");
     }
 
     try {
       // Step 1: Initiate the USDC transfer by calling dfnsInitTransferUSDC
-      const { challenge, requestBody } = await Parse.Cloud.run(
-        "dfnsInitTransferUSDC",
-        {
-          walletId,
-          dfns_token: dfnsToken,
-          recipient,
-          amount,
-        }
-      );
+      const { challenge, requestBody } = await Parse.Cloud.run("dfnsInitTransferUSDC", {
+        walletId,
+        dfns_token: dfnsToken,
+        recipient,
+        amount,
+      });
 
       console.log("Transfer initiation successful. Challenge:", challenge);
 
@@ -714,23 +573,17 @@ class KronosCustomerService {
       console.log("Challenge signed successfully.");
 
       // Step 3: Complete the transfer by calling dfnsCompleteTransferUSDC
-      const { transactionHash, broadcastResponse } = await Parse.Cloud.run(
-        "dfnsCompleteTransferUSDC",
-        {
-          walletId,
-          dfns_token: dfnsToken,
-          signedChallenge: {
-            challengeIdentifier: challenge.challengeIdentifier,
-            firstFactor: assertion,
-          },
-          requestBody,
-        }
-      );
+      const { transactionHash, broadcastResponse } = await Parse.Cloud.run("dfnsCompleteTransferUSDC", {
+        walletId,
+        dfns_token: dfnsToken,
+        signedChallenge: {
+          challengeIdentifier: challenge.challengeIdentifier,
+          firstFactor: assertion,
+        },
+        requestBody,
+      });
 
-      console.log(
-        "USDC transfer completed successfully. Transaction Hash:",
-        transactionHash
-      );
+      console.log("USDC transfer completed successfully. Transaction Hash:", transactionHash);
 
       // Step 4: Return the transaction details
       return {
@@ -746,18 +599,13 @@ class KronosCustomerService {
 
   // Dfns key recovery
 
-  public async initiateRecovery(
-    username: string,
-    storedRecoveryKey: { credentialId: string }
-  ) {
+  public async initiateRecovery(username: string, storedRecoveryKey: { credentialId: string }) {
     if (!username) {
       throw new Error("Username is required for recovery");
     }
     // Ensure that the stored recovery key is available
     if (!storedRecoveryKey || !storedRecoveryKey.credentialId) {
-      throw new Error(
-        "Recovery key information is missing or could not be retrieved."
-      );
+      throw new Error("Recovery key information is missing or could not be retrieved.");
     }
     try {
       // Call Parse.Cloud.run to initiate recovery
@@ -781,14 +629,9 @@ class KronosCustomerService {
     }
   }
 
-  public async completeRecovery(
-    pendingRecoveryRequest: any,
-    storedRecoveryKey: any
-  ) {
+  public async completeRecovery(pendingRecoveryRequest: any, storedRecoveryKey: any) {
     if (!pendingRecoveryRequest) {
-      throw new Error(
-        "No pending recovery request. Please initiate the recovery first."
-      );
+      throw new Error("No pending recovery request. Please initiate the recovery first.");
     }
     // Extract required data for recovery
     const username = pendingRecoveryRequest.username;
@@ -797,9 +640,7 @@ class KronosCustomerService {
     }
     const recoveryKeySecret = storedRecoveryKey?.secret;
     const credentialId = storedRecoveryKey?.credentialId;
-    const encryptedRecoveryKey =
-      pendingRecoveryRequest?.allowedRecoveryCredentials[0]
-        ?.encryptedRecoveryKey;
+    const encryptedRecoveryKey = pendingRecoveryRequest?.allowedRecoveryCredentials[0]?.encryptedRecoveryKey;
 
     if (!recoveryKeySecret || !credentialId || !encryptedRecoveryKey) {
       throw new Error("Recovery key data is missing or invalid");
@@ -819,10 +660,7 @@ class KronosCustomerService {
         origin: window.location.origin,
         crossOrigin: false,
       };
-      const newRecoveryKey = await createRecoveryCredential(
-        clientData,
-        username
-      );
+      const newRecoveryKey = await createRecoveryCredential(clientData, username);
       // Step 3: Generate new attestation using WebAuthnSigner
       const webauthn = new WebAuthnSigner();
       const attestation = await webauthn.create(pendingRecoveryRequest);
@@ -855,8 +693,7 @@ class KronosCustomerService {
         newStoredRecoveryKey: {
           secret: newRecoveryKey.recoveryKey.secret,
           credentialId: newRecoveryKey.recoveryKey.credentialId,
-          encryptedPrivateKey:
-            newRecoveryKey.credential.encryptedPrivateKey ?? "",
+          encryptedPrivateKey: newRecoveryKey.credential.encryptedPrivateKey ?? "",
         },
         completeResponse,
         error: null,

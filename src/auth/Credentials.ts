@@ -1,29 +1,28 @@
 import CredentialsProvider from "next-auth/providers/credentials";
 
 const EthereumCredentials = CredentialsProvider({
-    id: "ethereum",
-    name: 'Ethereum',
-    credentials: {
-        message: { label: "Message", type: "password" },
-        signature: {  label: "Signature", type: "password" }
-    },
-    async authorize(credentials, req) {
+  id: "ethereum",
+  name: "Ethereum",
+  credentials: {
+    message: { label: "Message", type: "password" },
+    signature: { label: "Signature", type: "password" },
+  },
+  async authorize(credentials, req) {
+    const res = await fetch(`${process.env.NEXT_PUBLIC_PARSE_SERVER_URL}/auth/login`, {
+      method: "POST",
+      body: JSON.stringify(credentials),
+      headers: { "Content-Type": "application/json" },
+    });
 
-        const res = await fetch(`${process.env.NEXT_PUBLIC_PARSE_SERVER_URL}/auth/login`, {
-            method: 'POST',
-            body: JSON.stringify(credentials),
-            headers: { "Content-Type": "application/json" }
-        });
+    const response = await res.json();
+    const { personaVerificationData, ...userWithoutPersonaData } = response.user; // Exclude personaVerificationData
 
-        const response = await res.json();
-        const { personaVerificationData, ...userWithoutPersonaData } = response.user; // Exclude personaVerificationData
-
-        if (res.ok && userWithoutPersonaData) {
-            return { ...userWithoutPersonaData, accessToken: response.access_token };
-        }
-
-        return null;
+    if (res.ok && userWithoutPersonaData) {
+      return { ...userWithoutPersonaData, accessToken: response.access_token };
     }
+
+    return null;
+  },
 });
 
 const StandardCredentials = CredentialsProvider({
@@ -61,4 +60,3 @@ const StandardCredentials = CredentialsProvider({
 });
 
 export { EthereumCredentials, StandardCredentials };
-export default [EthereumCredentials, StandardCredentials];

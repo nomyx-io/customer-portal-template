@@ -1,16 +1,12 @@
 import React, { useState } from "react";
+
 import { Modal, Form, Input, Button, notification } from "antd";
 import { useRouter } from "next/navigation";
-import KronosCustomerService from "@/services/KronosCustomerService";
 import { toast } from "react-toastify";
 
-const CheckUserOnboarding = ({
-  visible,
-  onClose,
-}: {
-  visible: boolean;
-  onClose: () => void;
-}) => {
+import KronosCustomerService from "@/services/KronosCustomerService";
+
+const CheckUserOnboarding = ({ visible, onClose }: { visible: boolean; onClose: () => void }) => {
   const [loading, setLoading] = useState(false);
   const router = useRouter();
   const [form] = Form.useForm();
@@ -18,8 +14,7 @@ const CheckUserOnboarding = ({
   const handleSubmit = async (values: any) => {
     const { email } = values;
     setLoading(true);
-    const { isOnboarded, error } =
-      await KronosCustomerService.checkUserOnboarding(email);
+    const { isOnboarded, error } = await KronosCustomerService.checkUserOnboarding(email);
 
     setLoading(false);
 
@@ -52,11 +47,7 @@ const CheckUserOnboarding = ({
       className="custom-modal"
     >
       <Form form={form} layout="vertical" onFinish={handleSubmit}>
-        <Form.Item
-          name="email"
-          label="Email"
-          rules={[{ required: true, message: "Please enter your email!" }]}
-        >
+        <Form.Item name="email" label="Email" rules={[{ required: true, message: "Please enter your email!" }]}>
           <Input placeholder="Enter your email" />
         </Form.Item>
 
@@ -68,13 +59,10 @@ const CheckUserOnboarding = ({
               gap: "8px",
             }}
           >
-            <Button onClick={handleCancel} className="text-black dark:text-white hover:!bg-transparent">Close</Button>
-            <Button
-              type="primary"
-              htmlType="submit"
-              loading={loading}
-              className="ml-3"
-            >
+            <Button onClick={handleCancel} className="text-black dark:text-white hover:!bg-transparent">
+              Close
+            </Button>
+            <Button type="primary" htmlType="submit" loading={loading} className="ml-3">
               Submit
             </Button>
           </div>

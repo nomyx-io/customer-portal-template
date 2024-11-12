@@ -72,15 +72,8 @@ export type RecoveryKey = {
   secret: string;
   credentialId: string;
   encryptedPrivateKey: string;
-}
-
-export {
-  LoginPreference,
-  NomyxEvent,
-  NomyxAction,
-  OnboardingStep,
-  WalletPreference,
-  DataType,
 };
 
-export const DFNS_END_USER_TOKEN_COOKIE = 'dfnsEndUserToken'
+export { LoginPreference, NomyxEvent, NomyxAction, OnboardingStep, WalletPreference, DataType };
+
+export const DFNS_END_USER_TOKEN_COOKIE = "dfnsEndUserToken";

@@ -2,10 +2,10 @@
 
 import { ethers, parseUnits } from "ethers";
 
+import CarbonCreditFacet from "@/abi/CarbonCreditFacet.json";
 import TreasuryRegistry from "@/abi/ITreasury.json";
-import USDCRegistry from "@/abi/USDC.json";
 import MarketplaceRegistry from "@/abi/MarketplaceFacet.json";
-import CarbonCreditFacet from "@/abi/CarbonCreditFacet.json"
+import USDCRegistry from "@/abi/USDC.json";
 import { getProvider, getSigner } from "@/utils/ethereumProvider";
 
 class BlockchainService {
@@ -56,21 +56,9 @@ class BlockchainService {
     this.treasuryAddress = process.env.NEXT_PUBLIC_HARDHAT_TREASURY_ADDRESS;
     this.usdcAddress = process.env.NEXT_PUBLIC_HARDHAT_USDC_ADDRESS;
 
-    this.treasuryService = new ethers.Contract(
-      this.treasuryAddress,
-      this.treasuryAbi,
-      this.provider
-    );
-    this.usdcService = new ethers.Contract(
-      this.usdcAddress,
-      this.usdcAbi,
-      this.provider
-    );
-    this.marketplaceService = new ethers.Contract(
-      this.contractAddress,
-      this.marketplaceAbi,
-      this.provider
-    );
+    this.treasuryService = new ethers.Contract(this.treasuryAddress, this.treasuryAbi, this.provider);
+    this.usdcService = new ethers.Contract(this.usdcAddress, this.usdcAbi, this.provider);
+    this.marketplaceService = new ethers.Contract(this.contractAddress, this.marketplaceAbi, this.provider);
   }
 
   public static get instance(): BlockchainService {
@@ -83,9 +71,7 @@ class BlockchainService {
   async getTokenBalances(tokenIds: number[]) {
     try {
       if (this.signer) {
-        const contractWithSigner: any = this.treasuryService?.connect(
-          this.signer
-        );
+        const contractWithSigner: any = this.treasuryService?.connect(this.signer);
         return await contractWithSigner.getTokenPaymentBalance(tokenIds);
       }
 
@@ -99,9 +85,7 @@ class BlockchainService {
   async withdraw(tokenIds: number[]) {
     try {
       if (this.signer) {
-        const contractWithSigner: any = this.treasuryService?.connect(
-          this.signer
-        );
+        const contractWithSigner: any = this.treasuryService?.connect(this.signer);
         return await contractWithSigner.withdraw(tokenIds);
       }
     } catch (e) {
@@ -111,31 +95,24 @@ class BlockchainService {
   }
 
   async approve(price: bigint) {
-      // contract address
-      try {
-        if (this.signer) {
-          const contractWithSigner: any = this.usdcService?.connect(
-            this.signer
-          );
-          return await contractWithSigner.approve(this.contractAddress, price);
-        }
-      } catch (e: any) {
-        console.log(e);
-        if (e.reason != "rejected") throw e;
-        else return "rejected";
+    // contract address
+    try {
+      if (this.signer) {
+        const contractWithSigner: any = this.usdcService?.connect(this.signer);
+        return await contractWithSigner.approve(this.contractAddress, price);
       }
+    } catch (e: any) {
+      console.log(e);
+      if (e.reason != "rejected") throw e;
+      else return "rejected";
+    }
   }
 
   async purchase(tokenId: string) {
     try {
       if (this.signer) {
-        const contractWithSigner: any = this.marketplaceService?.connect(
-          this.signer
-        );
-        return await contractWithSigner.purchaseItem(
-          this.contractAddress,
-          tokenId
-        );
+        const contractWithSigner: any = this.marketplaceService?.connect(this.signer);
+        return await contractWithSigner.purchaseItem(this.contractAddress, tokenId);
       }
     } catch (e: any) {
       console.log(e);
@@ -162,9 +139,9 @@ class BlockchainService {
       if (this.signer) {
         // Create a contract instance for CarbonCreditFacet with the signer
         const carbonCreditContract = new ethers.Contract(
-          this.contractAddress,   // Diamond contract address
-          this.CarbonCreditFacet,  // ABI of CarbonCreditFacet
-          this.signer             // Signer to interact with the blockchain
+          this.contractAddress, // Diamond contract address
+          this.CarbonCreditFacet, // ABI of CarbonCreditFacet
+          this.signer // Signer to interact with the blockchain
         );
 
         // Call the retireCarbonCredits function with the tokenId and amount
@@ -187,11 +164,7 @@ class BlockchainService {
       // Check if the signer is available
       if (this.dedicatedProvider) {
         // Create a contract instance for CarbonCreditFacet with the signer
-        const carbonCreditContract = new ethers.Contract(
-          this.contractAddress,   
-          this.CarbonCreditFacet,
-          this.dedicatedProvider
-        );
+        const carbonCreditContract = new ethers.Contract(this.contractAddress, this.CarbonCreditFacet, this.dedicatedProvider);
 
         // Call the getCarbonCreditBalance method with the tokenId
         const balance = await carbonCreditContract.getCarbonCreditBalance(tokenId);
@@ -200,18 +173,17 @@ class BlockchainService {
 
       return null;
     } catch (e) {
-      console.error('Error fetching carbon credit balance:', e);
+      console.error("Error fetching carbon credit balance:", e);
       throw e; // Re-throw error to be handled by calling function
     }
   }
-  
 
   async fetchItems() {
     try {
       if (!this.dedicatedProvider) {
         throw new Error("Signer is not available.");
       }
-  
+
       const contractWithSigner: any = this.marketplaceService?.connect(this.dedicatedProvider);
       const items = await contractWithSigner?.fetchItems();
       return items;
@@ -220,9 +192,6 @@ class BlockchainService {
       throw e;
     }
   }
-
 }
-
-
 
 export default BlockchainService.instance;

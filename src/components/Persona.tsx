@@ -1,7 +1,9 @@
-import persona from "persona";
 import React, { useState } from "react";
-import KronosSpin from "@/components/KronosSpin";
+
+import persona from "persona";
 import PubSub from "pubsub-js";
+
+import KronosSpin from "@/components/KronosSpin";
 import { NomyxEvent } from "@/utils/Constants";
 
 interface PersonaProps {

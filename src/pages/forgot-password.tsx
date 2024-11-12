@@ -1,12 +1,15 @@
 "use client";
 
 import React from "react";
-import Link from "next/link"; // Import Link from next/link
+
 import { Layout } from "antd";
+import { Form, Input, Card, Radio, Button } from "antd/es";
+import Image from "next/image";
+import Link from "next/link"; // Import Link from next/link
 import Parse from "parse";
 import { SubmitHandler } from "react-hook-form";
 import { toast } from "react-toastify";
-import { Form, Input, Card, Radio, Button } from "antd/es";
+
 import Header from "../components/global/auth_header";
 
 type ForgotPasswordFormInputs = {
@@ -25,7 +28,7 @@ const ForgotPassword = () => {
         toast.success(
           "We have sent an email to " +
             data.email +
-            " with a reset password link, open your email and click the link to assign a new password"
+            " with a reset password link, open your email and click the link to assign a new password",
         );
       } else {
         toast.error("Failed to send password reset email!");
@@ -51,8 +54,10 @@ const ForgotPassword = () => {
       <div className="flex h-screen w-full">
         {/* Left Section - Custom Gradient Background and Logo */}
         <div className="w-1/2 flex justify-center items-center bg-black">
-          <img
+          <Image
             src="/images/Kronos-Carbon-Logo.png"
+            width={100}
+            height={25}
             alt="Logo"
             className="h-156"
           />

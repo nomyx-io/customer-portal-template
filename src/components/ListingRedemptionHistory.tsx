@@ -1,6 +1,8 @@
 import React, { useEffect, useState } from "react";
+
 import { Table, TableColumnType, Input, Button } from "antd";
 import { FilterSquare } from "iconsax-react";
+
 import KronosCustomerService from "@/services/KronosCustomerService";
 
 interface RedemptionHistory {
@@ -12,28 +14,17 @@ interface RedemptionHistory {
 }
 
 const ListingRedemptionHistory = ({ token }: any) => {
-  const [redemptionHistory, setRedemptionHistory] = useState<
-    RedemptionHistory[]
-  >([]);
+  const [redemptionHistory, setRedemptionHistory] = useState<RedemptionHistory[]>([]);
   const [searchText, setSearchText] = useState<string>("");
 
   // Generic filter function for columns
-  const getColumnSearchProps = (
-    dataIndex: keyof RedemptionHistory
-  ): TableColumnType<RedemptionHistory> => ({
-    filterDropdown: ({
-      setSelectedKeys,
-      selectedKeys,
-      confirm,
-      clearFilters,
-    }) => (
+  const getColumnSearchProps = (dataIndex: keyof RedemptionHistory): TableColumnType<RedemptionHistory> => ({
+    filterDropdown: ({ setSelectedKeys, selectedKeys, confirm, clearFilters }) => (
       <div style={{ padding: 8 }}>
         <Input
           placeholder={`Search ${dataIndex}`}
           value={selectedKeys[0]}
-          onChange={(e) =>
-            setSelectedKeys(e.target.value ? [e.target.value] : [])
-          }
+          onChange={(e) => setSelectedKeys(e.target.value ? [e.target.value] : [])}
           onPressEnter={() => confirm()}
           style={{ marginBottom: 8, display: "block", width: "100%" }}
         />
@@ -61,9 +52,7 @@ const ListingRedemptionHistory = ({ token }: any) => {
         </div>
       </div>
     ),
-    filterIcon: (filtered) => (
-      <FilterSquare style={{ color: filtered ? "#1890ff" : undefined }} />
-    ),
+    filterIcon: (filtered) => <FilterSquare style={{ color: filtered ? "#1890ff" : undefined }} />,
     onFilter: (value, record) => {
       return String(record[dataIndex])
         .toLowerCase()
@@ -82,8 +71,7 @@ const ListingRedemptionHistory = ({ token }: any) => {
     {
       title: "Date",
       dataIndex: "createdAt",
-      sorter: (a, b) =>
-        new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime(),
+      sorter: (a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime(),
       render: (createdAt: Date) => new Date(createdAt).toLocaleDateString(),
       ...getColumnSearchProps("createdAt"),
     },
@@ -110,8 +98,7 @@ const ListingRedemptionHistory = ({ token }: any) => {
 
   useEffect(() => {
     const fetchRedemptionHistory = async () => {
-      const redemptionHistoryData =
-        await KronosCustomerService.getRedemptionHistory(token.tokenId);
+      const redemptionHistoryData = await KronosCustomerService.getRedemptionHistory(token.tokenId);
       if (redemptionHistoryData) {
         setRedemptionHistory(redemptionHistoryData);
       } else {
@@ -121,15 +108,7 @@ const ListingRedemptionHistory = ({ token }: any) => {
     fetchRedemptionHistory();
   }, [token.tokenId]);
 
-  return (
-    <Table
-      rowKey="objectId"
-      columns={columns}
-      dataSource={redemptionHistory}
-      pagination={false}
-      scroll={{ y: 400 }}
-    />
-  );
+  return <Table rowKey="objectId" columns={columns} dataSource={redemptionHistory} pagination={false} scroll={{ y: 400 }} />;
 };
 
 export default ListingRedemptionHistory;

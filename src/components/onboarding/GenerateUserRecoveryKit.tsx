@@ -1,4 +1,5 @@
 import React, { forwardRef, useImperativeHandle, useRef } from "react";
+
 import { jsPDF } from "jspdf";
 
 // Define a custom type for the ref
@@ -14,10 +15,7 @@ interface UserRecoveryKitProps {
 }
 
 // Create a ref-forwarding component
-const GenerateUserRecoveryKit = forwardRef<
-  UserRecoveryKitRef,
-  UserRecoveryKitProps
->(({ username, credentialId, secret }, ref) => {
+const GenerateUserRecoveryKit = forwardRef<UserRecoveryKitRef, UserRecoveryKitProps>(({ username, credentialId, secret }, ref) => {
   const pdfRef = useRef<HTMLDivElement>(null);
 
   const generatePDF = async () => {
@@ -77,8 +75,7 @@ const GenerateUserRecoveryKit = forwardRef<
           marginBottom: "1rem",
         }}
       >
-        <span style={{ fontWeight: "600" }}>Created on:</span>{" "}
-        {new Date().toLocaleDateString()}
+        <span style={{ fontWeight: "600" }}>Created on:</span> {new Date().toLocaleDateString()}
       </p>
       <div style={{ marginBottom: "1rem" }}>
         <label

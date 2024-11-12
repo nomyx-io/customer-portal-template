@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from "react";
+
 import { EyeOutlined } from "@ant-design/icons";
 import { Table, Checkbox, Button } from "antd";
+
 import { hashToColor } from "@/utils/colorUtils";
 import { formatPrice } from "@/utils/currencyFormater";
 
@@ -12,13 +14,7 @@ interface TokenListViewProps {
   isSalesHistory: boolean; // New prop to determine if this is a sales history view
 }
 
-const TokenListView: React.FC<TokenListViewProps> = ({
-  projects,
-  onProjectClick,
-  onSelectionChange,
-  onPurchaseToken,
-  isSalesHistory,
-}) => {
+const TokenListView: React.FC<TokenListViewProps> = ({ projects, onProjectClick, onSelectionChange, onPurchaseToken, isSalesHistory }) => {
   const [selectAllChecked, setSelectAllChecked] = useState(false);
   const [filteredProjects, setFilteredProjects] = useState(projects);
   const [filterQuery, setFilterQuery] = useState("");
@@ -34,11 +30,7 @@ const TokenListView: React.FC<TokenListViewProps> = ({
     const query = e.target.value.toLowerCase();
     setFilterQuery(query);
     setFilteredProjects(
-      projects.filter(
-        (project) =>
-          project.token?.nftTitle.toLowerCase().includes(query) ||
-          project.price.toString().includes(query)
-      )
+      projects.filter((project) => project.token?.nftTitle.toLowerCase().includes(query) || project.price.toString().includes(query))
     );
   };
 
@@ -70,9 +62,7 @@ const TokenListView: React.FC<TokenListViewProps> = ({
     setSelectAllChecked(updatedSelectedKeys.length === filteredProjects.length);
 
     // Update the parent with the newly selected projects
-    const selectedProjects = filteredProjects.filter((project) =>
-      updatedSelectedKeys.includes(project.tokenId)
-    );
+    const selectedProjects = filteredProjects.filter((project) => updatedSelectedKeys.includes(project.tokenId));
 
     // If onSelectionChange prop is provided, notify the parent component
     onSelectionChange?.(selectedProjects);
@@ -81,30 +71,14 @@ const TokenListView: React.FC<TokenListViewProps> = ({
   // Generate SVG Icon
   const generateSvgIcon = (color: string) => {
     return (
-      <svg
-        xmlns="http://www.w3.org/2000/svg"
-        width="24"
-        height="24"
-        viewBox="0 0 100 100"
-      >
+      <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 100 100">
         <defs>
-          <linearGradient
-            id={`gradient-${color}`}
-            x1="0%"
-            y1="0%"
-            x2="0%"
-            y2="100%"
-          >
+          <linearGradient id={`gradient-${color}`} x1="0%" y1="0%" x2="0%" y2="100%">
             <stop offset="0%" stopColor={color} />
             <stop offset="100%" stopColor="#003366" stopOpacity="1" />
           </linearGradient>
         </defs>
-        <rect
-          width="100"
-          height="100"
-          rx="15"
-          fill={`url(#gradient-${color})`}
-        />
+        <rect width="100" height="100" rx="15" fill={`url(#gradient-${color})`} />
         <text
           x="50%"
           y="50%"
@@ -130,22 +104,14 @@ const TokenListView: React.FC<TokenListViewProps> = ({
               <div style={{ display: "flex", alignItems: "center" }}>
                 <Checkbox
                   checked={selectAllChecked}
-                  indeterminate={
-                    selectedRowKeys.length > 0 &&
-                    selectedRowKeys.length < filteredProjects.length
-                  }
+                  indeterminate={selectedRowKeys.length > 0 && selectedRowKeys.length < filteredProjects.length}
                   onChange={handleSelectAllChange}
                 />
               </div>
             ),
             dataIndex: "tokenId",
             render: (tokenId: string, record: any) => (
-              <Checkbox
-                checked={selectedRowKeys.includes(tokenId)}
-                onChange={(e) =>
-                  handleRowSelectChange(tokenId, e.target.checked)
-                }
-              />
+              <Checkbox checked={selectedRowKeys.includes(tokenId)} onChange={(e) => handleRowSelectChange(tokenId, e.target.checked)} />
             ),
           },
         ]
@@ -175,40 +141,30 @@ const TokenListView: React.FC<TokenListViewProps> = ({
               />
             )}
             {generateSvgIcon(color)}
-            <span style={{ marginLeft: "10px", fontWeight: "bold" }}>
-              {record.token?.nftTitle}
-            </span>
+            <span style={{ marginLeft: "10px", fontWeight: "bold" }}>{record.token?.nftTitle}</span>
           </div>
         );
       },
-      sorter: (a: any, b: any) =>
-        a.token.nftTitle.localeCompare(b.token.nftTitle),
+      sorter: (a: any, b: any) => a.token.nftTitle.localeCompare(b.token.nftTitle),
     },
     {
       title: "Total Price",
       dataIndex: "price", // Total price coming from TokenListing in parse
-      render: (price: number) =>
-        isSalesHistory
-          ? formatPrice(price, "USD")
-          : formatPrice(price / 1_000_000, "USD"), // Convert from small units to regular price format
+      render: (price: number) => (isSalesHistory ? formatPrice(price, "USD") : formatPrice(price / 1_000_000, "USD")), // Convert from small units to regular price format
       sorter: (a: any, b: any) => a.price - b.price,
     },
     {
       title: "Issuance Date",
       dataIndex: ["token", "issuanceDate"],
       render: (issuanceDate: string) => <span>{issuanceDate}</span>,
-      sorter: (a: any, b: any) =>
-        a.token.issuanceDate.localeCompare(b.token.issuanceDate),
+      sorter: (a: any, b: any) => a.token.issuanceDate.localeCompare(b.token.issuanceDate),
     },
     ...(!isSalesHistory
       ? [
           {
             title: "Actions",
             render: (_: any, record: any) => (
-              <Button
-                type="primary"
-                onClick={() => onPurchaseToken && onPurchaseToken(record)}
-              >
+              <Button type="primary" onClick={() => onPurchaseToken && onPurchaseToken(record)}>
                 Purchase
               </Button>
             ),

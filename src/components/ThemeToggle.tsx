@@ -1,6 +1,7 @@
-import { useTheme } from "next-themes";
 import { useState, useEffect } from "react";
+
 import { Moon, Sun1 } from "iconsax-react";
+import { useTheme } from "next-themes";
 
 export default function ThemeToggle() {
   const { theme, setTheme } = useTheme();
