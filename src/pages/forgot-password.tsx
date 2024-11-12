@@ -56,7 +56,7 @@ const ForgotPassword = () => {
         <div className="w-1/2 flex justify-center items-center bg-black">
           <Image
             src="/images/Kronos-Carbon-Logo.png"
-            width={100}
+            width={300}
             height={25}
             alt="Logo"
             className="h-156"

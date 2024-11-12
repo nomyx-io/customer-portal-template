@@ -40,10 +40,9 @@ const PasswordForm: React.FC<PasswordFormProps> = ({ onBack, onSubmit }) => {
       <div className="w-1/2 flex justify-center items-center bg-black">
         <Image
           src="/images/Kronos-Carbon-Logo.png"
-          width={100}
+          width={300}
           height={25}
           alt="Logo"
-          className="h-156"
         />
       </div>
       <div className="flex flex-col justify-center items-center w-1/2 bg-white auth-pages">

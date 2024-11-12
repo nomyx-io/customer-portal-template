@@ -83,7 +83,7 @@ const Login = function ({
           <Image
             src="/images/Kronos-Carbon-Logo.png"
             alt="Logo"
-            width={100}
+            width={300}
             height={25}
             className="h-156"
           />
