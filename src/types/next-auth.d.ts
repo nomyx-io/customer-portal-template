@@ -10,7 +10,7 @@ declare module "next-auth" {
     expires: string;
   }
 
-  interface User extends CustomUser { }
+  interface User extends CustomUser {}
 }
 
 interface CustomUser {
@@ -29,7 +29,3 @@ interface CustomUser {
   exp: number;
   jti: string;
 }
-
-
-
-

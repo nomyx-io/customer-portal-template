@@ -1,5 +1,7 @@
 import React, { useState } from "react";
+
 import { Card, Button, Checkbox } from "antd";
+
 import { hashToColor } from "@/utils/colorUtils";
 import { formatPrice } from "@/utils/currencyFormater";
 
@@ -11,13 +13,7 @@ interface TokenCardViewProps {
   isSalesHistory: boolean; // New prop to determine if this is a sales history view
 }
 
-const TokenCardView: React.FC<TokenCardViewProps> = ({
-  projects,
-  onProjectClick,
-  onSelectionChange,
-  onPurchaseToken,
-  isSalesHistory,
-}) => {
+const TokenCardView: React.FC<TokenCardViewProps> = ({ projects, onProjectClick, onSelectionChange, onPurchaseToken, isSalesHistory }) => {
   const [selectedProjects, setSelectedProjects] = useState<string[]>([]);
 
   // Handle individual card selection change
@@ -33,9 +29,7 @@ const TokenCardView: React.FC<TokenCardViewProps> = ({
     setSelectedProjects(updatedSelectedProjects);
 
     // Update the parent with the newly selected projects
-    const selectedTokens = projects.filter((project) =>
-      updatedSelectedProjects.includes(project.tokenId)
-    );
+    const selectedTokens = projects.filter((project) => updatedSelectedProjects.includes(project.tokenId));
     if (onSelectionChange) {
       onSelectionChange(selectedTokens);
     }
@@ -43,30 +37,14 @@ const TokenCardView: React.FC<TokenCardViewProps> = ({
 
   const generateSvgIcon = (color: string) => {
     return (
-      <svg
-        xmlns="http://www.w3.org/2000/svg"
-        width="100%"
-        height="100%"
-        viewBox="0 0 100 100"
-      >
+      <svg xmlns="http://www.w3.org/2000/svg" width="100%" height="100%" viewBox="0 0 100 100">
         <defs>
-          <linearGradient
-            id={`gradient-${color}`}
-            x1="0%"
-            y1="0%"
-            x2="0%"
-            y2="100%"
-          >
+          <linearGradient id={`gradient-${color}`} x1="0%" y1="0%" x2="0%" y2="100%">
             <stop offset="0%" stopColor={color} stopOpacity="1" />
             <stop offset="100%" stopColor="#003366" stopOpacity="1" />
           </linearGradient>
         </defs>
-        <rect
-          width="100"
-          height="100"
-          rx="15"
-          fill={`url(#gradient-${color})`}
-        />
+        <rect width="100" height="100" rx="15" fill={`url(#gradient-${color})`} />
         <text
           x="50%"
           y="50%"
@@ -101,14 +79,10 @@ const TokenCardView: React.FC<TokenCardViewProps> = ({
               padding: "0",
               overflow: "hidden",
               boxSizing: "border-box",
-              transform: !isSalesHistory
-                ? "translateY(0)"
-                : "translateY(-10px)",
+              transform: !isSalesHistory ? "translateY(0)" : "translateY(-10px)",
               transition: "transform 0.3s ease-in-out",
             }}
-            onClick={
-              !isSalesHistory ? () => onProjectClick(project) : undefined
-            }
+            onClick={!isSalesHistory ? () => onProjectClick(project) : undefined}
           >
             {/* Logo Section */}
             <div
@@ -122,9 +96,7 @@ const TokenCardView: React.FC<TokenCardViewProps> = ({
                 padding: "20px",
                 boxSizing: "border-box",
               }}
-              onClick={
-                !isSalesHistory ? () => onProjectClick(project) : undefined
-              }
+              onClick={!isSalesHistory ? () => onProjectClick(project) : undefined}
             >
               <div
                 style={{
@@ -139,9 +111,7 @@ const TokenCardView: React.FC<TokenCardViewProps> = ({
             {/* Content Section */}
             <div className="p-4">
               {/* Title and Description */}
-              <h2 className="text-lg font-bold">
-                {project.token?.nftTitle || "Token Title"}
-              </h2>
+              <h2 className="text-lg font-bold">{project.token?.nftTitle || "Token Title"}</h2>
               <p className="text-sm text-gray-600 mt-1 line-clamp-1">
                 {project.token?.description ||
                   "This is a placeholder description for the token. Lorem ipsum dolor sit amet, consectetur adipiscing elit."}
@@ -152,11 +122,7 @@ const TokenCardView: React.FC<TokenCardViewProps> = ({
                 {[
                   {
                     label: "Total Price",
-                    value: `${formatPrice(
-                      Number(project.token.price) *
-                        Number(project.token?.existingCredits),
-                      "USD"
-                    )}`,
+                    value: `${formatPrice(Number(project.token.price) * Number(project.token?.existingCredits), "USD")}`,
                   },
                   {
                     label: "Registry ID",
@@ -168,10 +134,7 @@ const TokenCardView: React.FC<TokenCardViewProps> = ({
                   },
                   {
                     label: "Carbon Offset (Tons)",
-                    value:
-                      Intl.NumberFormat("en-US").format(
-                        project.token?.existingCredits
-                      ) || "-",
+                    value: Intl.NumberFormat("en-US").format(project.token?.existingCredits) || "-",
                   },
                   { label: "Auditor", value: project.token?.auditor || "-" },
                   {
@@ -184,9 +147,7 @@ const TokenCardView: React.FC<TokenCardViewProps> = ({
                     <span className="font-semibold flex-1">{item.label}</span>
 
                     {/* Value on the right with consistent width */}
-                    <span className="bg-gray-100 dark:bg-nomyx-dark1-dark p-2 rounded text-right w-2/3">
-                      {item.value}
-                    </span>
+                    <span className="bg-gray-100 dark:bg-nomyx-dark1-dark p-2 rounded text-right w-2/3">{item.value}</span>
                   </div>
                 ))}
               </div>

@@ -1,19 +1,13 @@
 import React, { useState, useRef } from "react";
-import { Modal, Button, Form, Input } from "antd";
-import KronosCustomerService from "@/services/KronosCustomerService";
-import { useGemforceApp } from "@/context/GemforceAppContext";
-import { toast } from "react-toastify";
-import GenerateUserRecoveryKit, {
-  UserRecoveryKitRef,
-} from "@/components/onboarding/GenerateUserRecoveryKit";
 
-const RecoverDfnsKeyModal = ({
-  visible,
-  onClose,
-}: {
-  visible: boolean;
-  onClose: () => void;
-}) => {
+import { Modal, Button, Form, Input } from "antd";
+import { toast } from "react-toastify";
+
+import GenerateUserRecoveryKit, { UserRecoveryKitRef } from "@/components/onboarding/GenerateUserRecoveryKit";
+import { useGemforceApp } from "@/context/GemforceAppContext";
+import KronosCustomerService from "@/services/KronosCustomerService";
+
+const RecoverDfnsKeyModal = ({ visible, onClose }: { visible: boolean; onClose: () => void }) => {
   const { appState }: any = useGemforceApp();
   const [form] = Form.useForm();
   const userRecoveryKitRef = useRef<UserRecoveryKitRef | null>(null);
@@ -38,10 +32,7 @@ const RecoverDfnsKeyModal = ({
         tempAuthToken,
         recoveryKey,
         error: initError,
-      } = await KronosCustomerService.initiateRecovery(
-        username,
-        storedRecoveryKey
-      );
+      } = await KronosCustomerService.initiateRecovery(username, storedRecoveryKey);
 
       if (initError) {
         toast.error(initError);
@@ -114,9 +105,7 @@ const RecoverDfnsKeyModal = ({
           <Form.Item
             name="secret"
             label={<span>Recovery Key ID</span>} // Tailwind for label
-            rules={[
-              { required: true, message: "Please enter Recovery Key ID" },
-            ]}
+            rules={[{ required: true, message: "Please enter Recovery Key ID" }]}
           >
             <Input placeholder="Recovery Key ID" />
           </Form.Item>
@@ -140,10 +129,7 @@ const RecoverDfnsKeyModal = ({
 
         {newCredentialId && (
           <>
-            <p className="text-gray-500 text-base mt-6">
-              Your recovery file has been generated. Please print and store it
-              in a safe place.
-            </p>
+            <p className="text-gray-500 text-base mt-6">Your recovery file has been generated. Please print and store it in a safe place.</p>
             <GenerateUserRecoveryKit
               ref={userRecoveryKitRef} // Pass the ref to the child component
               username={username || ""}

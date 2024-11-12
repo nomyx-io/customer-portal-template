@@ -1,4 +1,5 @@
 import { Button } from "antd";
+import Image from "next/image";
 import { useRouter } from "next/navigation";
 
 const AccountActivation = () => {
@@ -10,7 +11,13 @@ const AccountActivation = () => {
   return (
     <div className="font-poppins flex flex-col min-h-[75vh]">
       <div className="flex flex-col justify-center items-center flex-grow">
-        <img src="/images/tick_green.svg" alt="Success" className="h-32" />
+        <Image
+          src="/images/tick_green.svg"
+          width={100}
+          height={25}
+          alt="Success"
+          className="h-32"
+        />
         <h2 className="text-2xl font-extrabold text-[#1F1F1F] text-center">
           Account Activated!
         </h2>

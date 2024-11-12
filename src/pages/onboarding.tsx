@@ -1,24 +1,21 @@
 // OnboardingComponent.tsx
-import { Tabs, Card } from "antd";
 import React from "react";
 import { useEffect, useState } from "react";
+
+import { Tabs, Card } from "antd";
+import { InfoCircle, DocumentText, Personalcard, WalletAdd1, UserTick } from "iconsax-react";
 import { useRouter } from "next/router";
-import {
-  InfoCircle,
-  DocumentText,
-  Personalcard,
-  WalletAdd1,
-  UserTick,
-} from "iconsax-react";
-import { toast } from "react-toastify";
-// Import the individual tab content components
-import AboutUs from "../components/onboarding/about-us";
-import TermsConditions from "../components/onboarding/terms-conditions";
-import IDVerification from "../components/onboarding/id-verification";
-import WalletSetup from "../components/onboarding/wallet-setup";
-import AccountActivation from "../components/onboarding/account-activation";
-import { Registration } from "@/utils/Constants";
 import Parse from "parse";
+import { toast } from "react-toastify";
+
+// Import the individual tab content components
+import { Registration } from "@/utils/Constants";
+
+import AboutUs from "../components/onboarding/about-us";
+import AccountActivation from "../components/onboarding/account-activation";
+import IDVerification from "../components/onboarding/id-verification";
+import TermsConditions from "../components/onboarding/terms-conditions";
+import WalletSetup from "../components/onboarding/wallet-setup";
 
 // Define the tab type
 interface Tab {
@@ -93,13 +90,11 @@ const OnboardingComponent = () => {
         }),
       });
       const data = await response.json();
-
-
     } catch (error) {
       toast.error("Failed to submit to Persona: " + error);
       console.error("Failed to onboard:", error);
     }
-  }
+  };
 
   // Define an array of tab configuration
   const tabs: Tab[] = [
@@ -139,14 +134,7 @@ const OnboardingComponent = () => {
       key: "walletSetup",
       label: "Wallet Setup",
       icon: <WalletAdd1 className="text-[#626262]" />,
-      content: (
-        <WalletSetup
-          setActiveTab={setActiveTab}
-          setRegistration={setRegistration}
-          onSubmit={submitRegistration}
-          email={userEmail}
-        />
-      ),
+      content: <WalletSetup setActiveTab={setActiveTab} setRegistration={setRegistration} onSubmit={submitRegistration} email={userEmail} />,
     },
     {
       key: "accountActivation",
@@ -186,11 +174,7 @@ const OnboardingComponent = () => {
                   {tab.icon}
                   <span className="text-[#626262]">{tab.label}</span>
                   {/* Show dot only if the tab is NOT active */}
-                  {activeTab !== tab.key && (
-                    <span className="dot absolute bottom-[-20px] text-3xl text-[#409C43]">
-                      •
-                    </span>
-                  )}
+                  {activeTab !== tab.key && <span className="dot absolute bottom-[-20px] text-3xl text-[#409C43]">•</span>}
                 </div>
               }
             />

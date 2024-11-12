@@ -4,17 +4,12 @@ function arrayBufferToBase64(buffer) {
 }
 
 function arrayBufferToBase64Url(buffer) {
-  return arrayBufferToBase64(buffer)
-    .replace(/=/g, "")
-    .replace(/\+/g, "-")
-    .replace(/\//g, "_");
+  return arrayBufferToBase64(buffer).replace(/=/g, "").replace(/\+/g, "-").replace(/\//g, "_");
 }
 
 function arrayBufferToHex(buffer) {
   const bytes = new Uint8Array(buffer);
-  return [...new Uint8Array(buffer)]
-    .map((x) => x.toString(16).padStart(2, "0"))
-    .join("");
+  return [...new Uint8Array(buffer)].map((x) => x.toString(16).padStart(2, "0")).join("");
 }
 
 function base64ToArrayBuffer(base64) {
@@ -28,10 +23,7 @@ function base64ToArrayBuffer(base64) {
 
 async function usernameToSalt(username) {
   const normalizedUsername = username.toLowerCase().trim();
-  const usernameHash = await crypto.subtle.digest(
-    "SHA-256",
-    new TextEncoder().encode(normalizedUsername)
-  );
+  const usernameHash = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(normalizedUsername));
   return new Uint8Array(usernameHash);
 }
 
@@ -63,39 +55,19 @@ function rawSignatureToAns1(rawSignature) {
   const minR = minimizeBigInt(r);
   const minS = minimizeBigInt(s);
 
-  return new Uint8Array([
-    0x30,
-    minR.length + minS.length + 4,
-    0x02,
-    minR.length,
-    ...minR,
-    0x02,
-    minS.length,
-    ...minS,
-  ]);
+  return new Uint8Array([0x30, minR.length + minS.length + 4, 0x02, minR.length, ...minR, 0x02, minS.length, ...minS]);
 }
 
-async function generateSignature(
-  encryptedPrivateKey,
-  message,
-  password,
-  username,
-  encoding = "hex"
-) {
+async function generateSignature(encryptedPrivateKey, message, password, username, encoding = "hex") {
   const salt = await usernameToSalt(username);
-  const { key: base64Key, iv: base64Iv } = JSON.parse(
-    atob(encryptedPrivateKey)
-  );
+  const { key: base64Key, iv: base64Iv } = JSON.parse(atob(encryptedPrivateKey));
   const iv = base64ToArrayBuffer(base64Iv);
   const key = base64ToArrayBuffer(base64Key);
 
-  const keyMaterial = await crypto.subtle.importKey(
-    "raw",
-    new TextEncoder().encode(password),
-    { name: "PBKDF2" },
-    false,
-    ["deriveBits", "deriveKey"]
-  );
+  const keyMaterial = await crypto.subtle.importKey("raw", new TextEncoder().encode(password), { name: "PBKDF2" }, false, [
+    "deriveBits",
+    "deriveKey",
+  ]);
   const unwrappingKey = await crypto.subtle.deriveKey(
     {
       name: "PBKDF2",
@@ -122,27 +94,19 @@ async function generateSignature(
     ["sign"]
   );
 
-  const signature = await crypto.subtle.sign(
-    { name: "ECDSA", hash: { name: "SHA-256" } },
-    privateKey,
-    new TextEncoder().encode(message)
-  );
+  const signature = await crypto.subtle.sign({ name: "ECDSA", hash: { name: "SHA-256" } }, privateKey, new TextEncoder().encode(message));
 
   if (encoding === "hex") {
     return arrayBufferToHex(rawSignatureToAns1(new Uint8Array(signature)));
   } else if (encoding === "base64url") {
-    return arrayBufferToBase64Url(
-      rawSignatureToAns1(new Uint8Array(signature))
-    );
+    return arrayBufferToBase64Url(rawSignatureToAns1(new Uint8Array(signature)));
   }
   throw new Error("encoding not supported.");
 }
 
 async function exportPublicKeyInPemFormat(key) {
   const exported = await crypto.subtle.exportKey("spki", key);
-  const pem = `-----BEGIN PUBLIC KEY-----\n${arrayBufferToBase64(
-    exported
-  )}\n-----END PUBLIC KEY-----`;
+  const pem = `-----BEGIN PUBLIC KEY-----\n${arrayBufferToBase64(exported)}\n-----END PUBLIC KEY-----`;
   return pem;
 }
 
@@ -150,19 +114,12 @@ async function generateEncryptedPrivateKeyAndPublicKey(password, username) {
   const salt = await usernameToSalt(username);
   const iv = crypto.getRandomValues(new Uint8Array(16));
 
-  const keyPair = await crypto.subtle.generateKey(
-    { name: "ECDSA", namedCurve: "P-256" },
-    true,
-    ["sign", "verify"]
-  );
+  const keyPair = await crypto.subtle.generateKey({ name: "ECDSA", namedCurve: "P-256" }, true, ["sign", "verify"]);
 
-  const keyMaterial = await crypto.subtle.importKey(
-    "raw",
-    new TextEncoder().encode(password),
-    { name: "PBKDF2" },
-    false,
-    ["deriveBits", "deriveKey"]
-  );
+  const keyMaterial = await crypto.subtle.importKey("raw", new TextEncoder().encode(password), { name: "PBKDF2" }, false, [
+    "deriveBits",
+    "deriveKey",
+  ]);
 
   const wrappingKey = await crypto.subtle.deriveKey(
     {
@@ -177,15 +134,10 @@ async function generateEncryptedPrivateKeyAndPublicKey(password, username) {
     ["wrapKey", "unwrapKey"]
   );
 
-  const encryptedPrivateKey = await crypto.subtle.wrapKey(
-    "pkcs8",
-    keyPair.privateKey,
-    wrappingKey,
-    {
-      name: "AES-GCM",
-      iv,
-    }
-  );
+  const encryptedPrivateKey = await crypto.subtle.wrapKey("pkcs8", keyPair.privateKey, wrappingKey, {
+    name: "AES-GCM",
+    iv,
+  });
   const pemPublicKey = await exportPublicKeyInPemFormat(keyPair.publicKey);
 
   const privateKey = btoa(
@@ -229,12 +181,9 @@ const generateRecoveryKey = () => {
 
 const generateRecoveryKeyCredential = async (username, clientData) => {
   const recoveryKey = generateRecoveryKey();
-  const { encryptedPrivateKey, pemPublicKey } =
-    await generateEncryptedPrivateKeyAndPublicKey(recoveryKey, username);
+  const { encryptedPrivateKey, pemPublicKey } = await generateEncryptedPrivateKeyAndPublicKey(recoveryKey, username);
 
-  const clientDataHash = arrayBufferToHex(
-    await crypto.subtle.digest("SHA-256", new TextEncoder().encode(clientData))
-  );
+  const clientDataHash = arrayBufferToHex(await crypto.subtle.digest("SHA-256", new TextEncoder().encode(clientData)));
   const signature = await generateSignature(
     encryptedPrivateKey,
     JSON.stringify({
@@ -251,10 +200,7 @@ const generateRecoveryKeyCredential = async (username, clientData) => {
     algorithm: "SHA256",
   });
 
-  const privateKeyHash = await crypto.subtle.digest(
-    "SHA-256",
-    new TextEncoder().encode(encryptedPrivateKey)
-  );
+  const privateKeyHash = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(encryptedPrivateKey));
 
   self.postMessage({
     type: "encryptedPrivateKeyAndPublicKey",
@@ -274,15 +220,8 @@ self.addEventListener("message", async (event) => {
         break;
       }
       case "generateSignature": {
-        const { encryptedPrivateKey, message, recoveryKey, username } =
-          event.data;
-        const signature = await generateSignature(
-          encryptedPrivateKey,
-          message,
-          recoveryKey,
-          username,
-          "base64url"
-        );
+        const { encryptedPrivateKey, message, recoveryKey, username } = event.data;
+        const signature = await generateSignature(encryptedPrivateKey, message, recoveryKey, username, "base64url");
         self.postMessage({
           type: "signature",
           signature,
@@ -292,12 +231,7 @@ self.addEventListener("message", async (event) => {
       case "validateRecoveryKey": {
         const { encryptedPrivateKey, recoveryKey, username } = event.data;
         const message = crypto.getRandomValues(new Uint8Array(64));
-        await generateSignature(
-          encryptedPrivateKey,
-          message,
-          recoveryKey,
-          username
-        );
+        await generateSignature(encryptedPrivateKey, message, recoveryKey, username);
         self.postMessage({
           type: "recoveryKeyIsValid",
         });

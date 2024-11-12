@@ -1,4 +1,5 @@
 import PubSub from "pubsub-js";
+
 import KronosCustomerService from "@/services/KronosCustomerService";
 import { NomyxEvent } from "@/utils/Constants";
 
@@ -23,7 +24,7 @@ class GemforceAppState {
   _activity: any = null;
   _listings: any = null;
   _sales: any = null;
-  _listingTokens: Token[]|null = null;
+  _listingTokens: Token[] | null = null;
   _carouselStart: any = null;
 
   constructor(session: any) {
@@ -33,13 +34,11 @@ class GemforceAppState {
   get tokens() {
     if (!this._tokens) {
       const user = this.session?.user;
-      KronosCustomerService.getTokensForUser(user?.walletAddress).then(
-        async (ts) => {
-          PubSub.publish(NomyxEvent.GemforceStateChange, { tokens: ts });
-          this._tokens = ts;
-          return ts;
-        }
-      );
+      KronosCustomerService.getTokensForUser(user?.walletAddress).then(async (ts) => {
+        PubSub.publish(NomyxEvent.GemforceStateChange, { tokens: ts });
+        this._tokens = ts;
+        return ts;
+      });
     }
 
     return this._tokens;
@@ -64,13 +63,11 @@ class GemforceAppState {
   get retiredTokens() {
     if (!this._retiredTokens) {
       const user = this.session?.user;
-      KronosCustomerService.getRetiredTokensForUser(user?.walletAddress).then(
-        async (ts) => {
-          PubSub.publish(NomyxEvent.GemforceStateChange, { retiredTokens: ts });
-          this._retiredTokens = ts;
-          return ts;
-        }
-      );
+      KronosCustomerService.getRetiredTokensForUser(user?.walletAddress).then(async (ts) => {
+        PubSub.publish(NomyxEvent.GemforceStateChange, { retiredTokens: ts });
+        this._retiredTokens = ts;
+        return ts;
+      });
     }
 
     return this._retiredTokens;
@@ -82,13 +79,8 @@ class GemforceAppState {
 
   get deposits() {
     if (!this._selectedToken?.deposits) {
-      if (!this._selectedToken)
-        throw new Error(
-          "set the selectedToken in the appState to get deposits for it"
-        );
-      KronosCustomerService.getDepositsForToken(
-        this._selectedToken?.objectId
-      ).then((ds) => {
+      if (!this._selectedToken) throw new Error("set the selectedToken in the appState to get deposits for it");
+      KronosCustomerService.getDepositsForToken(this._selectedToken?.objectId).then((ds) => {
         PubSub.publish(NomyxEvent.GemforceStateChange, { deposits: ds });
         this._deposits = ds;
         if (this._selectedToken) this._selectedToken.deposits;
@@ -106,9 +98,7 @@ class GemforceAppState {
 
   get withdrawals() {
     if (!this._withdrawals && this.tokens) {
-      KronosCustomerService.getWithdrawals(
-        this.tokens.map((t: any) => t.objectId)
-      ).then((ws: any) => {
+      KronosCustomerService.getWithdrawals(this.tokens.map((t: any) => t.objectId)).then((ws: any) => {
         PubSub.publish(NomyxEvent.GemforceStateChange, { withdrawals: ws });
         this._withdrawals = ws;
         return ws;
@@ -124,13 +114,8 @@ class GemforceAppState {
 
   get tokenWithdrawals() {
     if (!this._selectedToken?.tokenWithdrawals) {
-      if (!this._selectedToken)
-        throw new Error(
-          "set the selectedToken in the appState to get deposits for it"
-        );
-      KronosCustomerService.getWithdrawalsForToken(
-        this._selectedToken?.objectId
-      ).then((ws) => {
+      if (!this._selectedToken) throw new Error("set the selectedToken in the appState to get deposits for it");
+      KronosCustomerService.getWithdrawalsForToken(this._selectedToken?.objectId).then((ws) => {
         PubSub.publish(NomyxEvent.GemforceStateChange, { tokenWithdrawals: ws });
         this._tokenWithdrawals = ws;
         if (this._selectedToken) this._selectedToken.tokenWithdrawals;
@@ -149,15 +134,13 @@ class GemforceAppState {
     const user = this.session?.user;
 
     if (user && this.tokens && !this._portfolioPerformance) {
-      KronosCustomerService.getPortfolioPerformance(user.walletAddress).then(
-        (pps: any) => {
-          PubSub.publish(NomyxEvent.GemforceStateChange, {
-            portfolioPerformance: pps,
-          });
-          this._portfolioPerformance = pps;
-          return pps;
-        }
-      );
+      KronosCustomerService.getPortfolioPerformance(user.walletAddress).then((pps: any) => {
+        PubSub.publish(NomyxEvent.GemforceStateChange, {
+          portfolioPerformance: pps,
+        });
+        this._portfolioPerformance = pps;
+        return pps;
+      });
     }
 
     return this._portfolioPerformance;
@@ -186,13 +169,11 @@ class GemforceAppState {
   get sales() {
     const user = this.session?.user;
     if (user && !this._sales) {
-      KronosCustomerService.getSales(user?.walletAddress).then(
-        async (ss) => {
+      KronosCustomerService.getSales(user?.walletAddress).then(async (ss) => {
         PubSub.publish(NomyxEvent.GemforceStateChange, { sales: ss });
         this._sales = ss;
         return ss;
-        }
-      );
+      });
     }
 
     return this._sales;

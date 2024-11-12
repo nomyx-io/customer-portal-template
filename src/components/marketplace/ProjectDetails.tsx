@@ -1,18 +1,21 @@
 import React, { useEffect, useState, useMemo } from "react";
-import PubSub from "pubsub-js";
-import { NomyxEvent, WalletPreference } from "@/utils/Constants";
-import { useGemforceApp } from "@/context/GemforceAppContext";
+
 import { Button, Card, Modal, Tabs, Table } from "antd";
-import KronosCustomerService from "@/services/KronosCustomerService";
+import { ethers } from "ethers";
+import { SearchNormal1, Category, RowVertical, ArrowLeft } from "iconsax-react";
+import Image from "next/image";
 import { useRouter } from "next/router";
+import PubSub from "pubsub-js";
 import { toast } from "react-toastify";
+
 import TokenCardView from "@/components/marketplace/TokenCardView";
 import TokenListView from "@/components/marketplace/TokenListView";
 import TokenDetail from "@/components/TokenDetail";
-import { SearchNormal1, Category, RowVertical, ArrowLeft } from "iconsax-react";
+import { useGemforceApp } from "@/context/GemforceAppContext";
 import projectBackground from "@/images/projects_background.png"; // Import the background image
 import BlockchainService from "@/services/BlockchainService";
-import { ethers } from "ethers";
+import KronosCustomerService from "@/services/KronosCustomerService";
+import { NomyxEvent, WalletPreference } from "@/utils/Constants";
 
 interface ProjectDetailsProps {
   project: Project;
@@ -404,7 +407,7 @@ const ProjectDetails: React.FC<ProjectDetailsProps> = ({ project, onBack }) => {
               <div className="absolute bottom-4 left-0 flex items-center p-4 rounded-lg">
                 {/* Project Image */}
                 <div className="project-logo rounded-lg overflow-hidden" style={{ width: "100px", height: "100px" }}>
-                  <img src={project.coverImage?.url()} alt="Project Logo" className="object-cover w-full h-full" />
+                  <Image src={project.coverImage?.url()} width={100} height={25} alt="Project Logo" className="object-cover w-full h-full" />
                 </div>
 
                 {/* Project Title and Description */}

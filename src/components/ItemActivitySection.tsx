@@ -1,9 +1,11 @@
 import React, { useCallback, useEffect, useState } from "react";
+
 import { Input, DatePicker, Button, TableColumnType, Table } from "antd";
 import dayjs, { Dayjs } from "dayjs";
 import isBetween from "dayjs/plugin/isBetween";
-import KronosCustomerService from "@/services/KronosCustomerService";
 import { FilterSquare } from "iconsax-react";
+
+import KronosCustomerService from "@/services/KronosCustomerService";
 
 dayjs.extend(isBetween);
 const { RangePicker } = DatePicker;
@@ -18,10 +20,7 @@ const ItemActivity = ({ token, shouldApplyActivityFilter = false }: any) => {
   const [activityData, setActivityData] = useState<ActivityRecord[]>([]);
   const [filteredData, setFilteredData] = useState<ActivityRecord[]>([]);
   const [activityFilter, setActivityFilter] = useState<string>("");
-  const [dateRange, setDateRange] = useState<[Dayjs | null, Dayjs | null]>([
-    null,
-    null,
-  ]);
+  const [dateRange, setDateRange] = useState<[Dayjs | null, Dayjs | null]>([null, null]);
 
   const formatActivityData = useCallback((data: any) => {
     return data.map((act: any, index: number) => ({
@@ -38,18 +37,11 @@ const ItemActivity = ({ token, shouldApplyActivityFilter = false }: any) => {
     }
 
     try {
-      const data = await KronosCustomerService.getTokenActivity([
-        token.objectId,
-      ]);
+      const data = await KronosCustomerService.getTokenActivity([token.objectId]);
 
       // Determine whether to apply the activity filter
       const filteredActivity = shouldApplyActivityFilter
-        ? data.filter((act: any) =>
-            act.tokens.some(
-              (activityToken: { tokenId: string }) =>
-                activityToken.tokenId === token.tokenId
-            )
-          )
+        ? data.filter((act: any) => act.tokens.some((activityToken: { tokenId: string }) => activityToken.tokenId === token.tokenId))
         : data;
 
       // Format the (filtered) activity data
@@ -68,25 +60,13 @@ const ItemActivity = ({ token, shouldApplyActivityFilter = false }: any) => {
   }, [fetchActivityData]);
 
   // Generic filter function for columns
-  const getColumnSearchProps = (
-    dataIndex: keyof ActivityRecord,
-    dataType: "string" | "date"
-  ): TableColumnType<ActivityRecord> => ({
-    filterDropdown: ({
-      setSelectedKeys,
-      selectedKeys,
-      confirm,
-      clearFilters,
-    }) => (
+  const getColumnSearchProps = (dataIndex: keyof ActivityRecord, dataType: "string" | "date"): TableColumnType<ActivityRecord> => ({
+    filterDropdown: ({ setSelectedKeys, selectedKeys, confirm, clearFilters }) => (
       <div style={{ padding: 8 }}>
         {dataType === "date" ? (
           <RangePicker
             onChange={(dates) => {
-              setSelectedKeys(
-                dates && dates[0] && dates[1]
-                  ? [dates[0].toISOString(), dates[1].toISOString()]
-                  : []
-              );
+              setSelectedKeys(dates && dates[0] && dates[1] ? [dates[0].toISOString(), dates[1].toISOString()] : []);
             }}
             style={{ marginBottom: 8, display: "block", width: "100%" }}
           />
@@ -94,20 +74,13 @@ const ItemActivity = ({ token, shouldApplyActivityFilter = false }: any) => {
           <Input
             placeholder={`Search ${dataIndex}`}
             value={selectedKeys[0]}
-            onChange={(e) =>
-              setSelectedKeys(e.target.value ? [e.target.value] : [])
-            }
+            onChange={(e) => setSelectedKeys(e.target.value ? [e.target.value] : [])}
             onPressEnter={() => confirm()}
             style={{ marginBottom: 8, display: "block", width: "100%" }}
           />
         )}
         <div style={{ display: "flex", justifyContent: "space-between" }}>
-          <Button
-            type="primary"
-            onClick={() => confirm()}
-            size="small"
-            style={{ width: "48%", height: "10%" }}
-          >
+          <Button type="primary" onClick={() => confirm()} size="small" style={{ width: "48%", height: "10%" }}>
             Search
           </Button>
           <Button
@@ -123,9 +96,7 @@ const ItemActivity = ({ token, shouldApplyActivityFilter = false }: any) => {
         </div>
       </div>
     ),
-    filterIcon: (filtered) => (
-      <FilterSquare style={{ color: filtered ? "#1890ff" : undefined }} />
-    ),
+    filterIcon: (filtered) => <FilterSquare style={{ color: filtered ? "#1890ff" : undefined }} />,
     onFilter: (value, record) => {
       if (!value) return true;
       if (dataType === "date" && Array.isArray(value) && value.length === 2) {
@@ -135,9 +106,7 @@ const ItemActivity = ({ token, shouldApplyActivityFilter = false }: any) => {
       }
 
       if (typeof value === "string") {
-        return String(record[dataIndex])
-          .toLowerCase()
-          .includes(value.toLowerCase());
+        return String(record[dataIndex]).toLowerCase().includes(value.toLowerCase());
       }
 
       return false;
@@ -160,15 +129,7 @@ const ItemActivity = ({ token, shouldApplyActivityFilter = false }: any) => {
     },
   ];
 
-  return (
-    <Table
-      rowKey="key"
-      columns={columns}
-      dataSource={filteredData}
-      pagination={false}
-      scroll={{ y: 600 }}
-    />
-  );
+  return <Table rowKey="key" columns={columns} dataSource={filteredData} pagination={false} scroll={{ y: 600 }} />;
 };
 
 export default ItemActivity;

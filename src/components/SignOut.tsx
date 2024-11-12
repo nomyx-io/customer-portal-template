@@ -1,7 +1,9 @@
 import React, { useState } from "react";
+
 import { Button } from "antd";
-import { signOut } from "next-auth/react";
 import { Eye, EyeSlash } from "iconsax-react"; // Import from iconsax-react
+import { signOut } from "next-auth/react";
+
 import ParseService from "@/services/ParseService";
 
 export function SignOut(props: React.ComponentPropsWithRef<typeof Button> & { walletAddress?: string }) {

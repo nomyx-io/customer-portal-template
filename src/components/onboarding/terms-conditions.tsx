@@ -1,5 +1,7 @@
+import { useCallback, useEffect } from "react";
+
 import { Checkbox } from "antd";
-import { useEffect } from "react";
+
 import { Registration } from "@/utils/Constants";
 
 // @ts-ignore
@@ -12,12 +14,7 @@ interface TermsConditionsProps {
   setAgreed: React.Dispatch<React.SetStateAction<boolean>>; // Function to update the checkbox state
 }
 
-const TermsConditions: React.FC<TermsConditionsProps> = ({
-  setActiveTab,
-  setRegistration,
-  agreed,
-  setAgreed,
-}) => {
+const TermsConditions: React.FC<TermsConditionsProps> = ({ setActiveTab, setRegistration, agreed, setAgreed }) => {
   const handleNext = () => {
     setActiveTab("idVerification"); // Switch to ID Verification tab
   };
@@ -26,31 +23,27 @@ const TermsConditions: React.FC<TermsConditionsProps> = ({
     setActiveTab("about"); // Switch to About Us tab
   };
 
-  const handleAcceptTerms = (accepted: boolean) => {
-    const acceptedDate = accepted ? new Date() : null; // Use the date only if accepted
-    setRegistration((prev) => ({
-      ...prev,
-      termsAccepted: acceptedDate,
-    }));
-  };
+  const handleAcceptTerms = useCallback(
+    (accepted: boolean) => {
+      const acceptedDate = accepted ? new Date() : null; // Use the date only if accepted
+      setRegistration((prev) => ({
+        ...prev,
+        termsAccepted: acceptedDate,
+      }));
+    },
+    [setRegistration]
+  );
 
   useEffect(() => {
     handleAcceptTerms(agreed); // Update registration based on agreed state
-  }, [agreed]);
+  }, [agreed, handleAcceptTerms]);
 
   return (
     <div className="font-poppins relative flex flex-col h-full auth-pages">
-      <h2 className="text-2xl font-extrabold text-[#1F1F1F] text-center">
-        Please review and accept the terms and conditions!
-      </h2>
+      <h2 className="text-2xl font-extrabold text-[#1F1F1F] text-center">Please review and accept the terms and conditions!</h2>
       <div className="min-h-[60vh] p-4">
         {/* Load external HTML content */}
-        <iframe
-          title="HTML Content"
-          srcDoc={platformTerms}
-          width="100%"
-          style={{ border: "none", background: "white", height: "60vh" }}
-        />
+        <iframe title="HTML Content" srcDoc={platformTerms} width="100%" style={{ border: "none", background: "white", height: "60vh" }} />
       </div>
       <Checkbox
         checked={agreed} // Use the agreed state from props
@@ -67,9 +60,7 @@ const TermsConditions: React.FC<TermsConditionsProps> = ({
         {/* Next button positioned at the bottom right */}
         <button
           onClick={handleNext}
-          className={`bg-blue-500 text-white px-4 py-2 rounded ${
-            agreed ? "" : "opacity-50 cursor-not-allowed"
-          }`}
+          className={`bg-blue-500 text-white px-4 py-2 rounded ${agreed ? "" : "opacity-50 cursor-not-allowed"}`}
           disabled={!agreed} // Disable the button if not agreed
         >
           Next

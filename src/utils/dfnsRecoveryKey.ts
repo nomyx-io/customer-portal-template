@@ -1,4 +1,5 @@
 import { Fido2Attestation, RecoveryKeyAttestation } from "@dfns/sdk";
+
 import { base64url } from "./base64url";
 
 // Define RecoverUserInput locally
@@ -10,7 +11,6 @@ export type RecoverUserInput = {
     signature: string;
   };
 };
-
 
 export type KeyClientData = {
   type: "key.create";
@@ -49,12 +49,7 @@ export const createRecoveryCredential = async (
     serviceWorker.addEventListener("message", (event) => {
       switch (event.data.type) {
         case "encryptedPrivateKeyAndPublicKey": {
-          const {
-            encryptedPrivateKey,
-            attestationData,
-            recoveryKey,
-            credentialId,
-          } = event.data;
+          const { encryptedPrivateKey, attestationData, recoveryKey, credentialId } = event.data;
           const recoveryKeyCredential: RecoveryKeyAttestation = {
             credentialKind: "RecoveryKey",
             credentialInfo: {

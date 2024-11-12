@@ -1,9 +1,11 @@
 import React, { useState } from "react";
+
 import { Modal, Button, Form, Input } from "antd";
-import KronosCustomerService from "@/services/KronosCustomerService";
-import { toast } from "react-toastify";
-import { useGemforceApp } from "@/context/GemforceAppContext";
 import { parseUnits, ethers } from "ethers";
+import { toast } from "react-toastify";
+
+import { useGemforceApp } from "@/context/GemforceAppContext";
+import KronosCustomerService from "@/services/KronosCustomerService";
 
 const TransferModal = ({ visible, onClose, usdcBalance, walletId }: any) => {
   const [form] = Form.useForm();
@@ -23,23 +25,14 @@ const TransferModal = ({ visible, onClose, usdcBalance, walletId }: any) => {
       }
 
       // Initiate the transfer process
-      const response = await KronosCustomerService.transferUSDC(
-        walletId,
-        dfnsToken,
-        recipient,
-        amount
-      );
+      const response = await KronosCustomerService.transferUSDC(walletId, dfnsToken, recipient, amount);
 
       if (response?.transactionHash) {
-        toast.success(
-          "Transfer successful! Transaction Hash: " + response.transactionHash
-        );
+        toast.success("Transfer successful! Transaction Hash: " + response.transactionHash);
         form.resetFields();
         onClose(); // Close modal on success
       } else {
-        toast.error(
-          "Transfer failed: " + response?.message || "Unknown error."
-        );
+        toast.error("Transfer failed: " + response?.message || "Unknown error.");
       }
     } catch (error: any) {
       toast.error(error?.message || "An error occurred during the transfer.");
@@ -89,9 +82,7 @@ const TransferModal = ({ visible, onClose, usdcBalance, walletId }: any) => {
             },
             {
               validator: (_, value) =>
-                value && parseFloat(value) > parseFloat(usdcBalance)
-                  ? Promise.reject("Insufficient balance")
-                  : Promise.resolve(),
+                value && parseFloat(value) > parseFloat(usdcBalance) ? Promise.reject("Insufficient balance") : Promise.resolve(),
             },
           ]}
         >
@@ -99,14 +90,8 @@ const TransferModal = ({ visible, onClose, usdcBalance, walletId }: any) => {
         </Form.Item>
 
         <Form.Item>
-          <div
-            style={{ display: "flex", justifyContent: "flex-end", gap: "8px" }}
-          >
-            <Button
-              key="back"
-              onClick={handleCancel}
-              className="text-black dark:text-white hover:!bg-transparent"
-            >
+          <div style={{ display: "flex", justifyContent: "flex-end", gap: "8px" }}>
+            <Button key="back" onClick={handleCancel} className="text-black dark:text-white hover:!bg-transparent">
               Close
             </Button>
             <Button type="primary" htmlType="submit">

@@ -12,31 +12,12 @@ const KronosSymbol = (props: any) => {
       fill="none"
       style={{ animation: "spin 2s linear infinite" }}
     >
-      <circle
-        cx="50"
-        cy="50"
-        r="35"
-        strokeWidth="8"
-        stroke="#421cef"
-        strokeDasharray="30 5"
-      />
-      <circle
-        cx="50"
-        cy="50"
-        r="20"
-        strokeWidth="4"
-        stroke="#89acff"
-        strokeDasharray="15 5"
-      />
+      <circle cx="50" cy="50" r="35" strokeWidth="8" stroke="#421cef" strokeDasharray="30 5" />
+      <circle cx="50" cy="50" r="20" strokeWidth="4" stroke="#89acff" strokeDasharray="15 5" />
     </svg>
   );
 };
 
 export default function KronosSpin(props: any) {
-  return (
-    <Spin
-      indicator={<KronosSymbol width={props.width} height={props.height} />}
-      size="large"
-    />
-  );
+  return <Spin indicator={<KronosSymbol width={props.width} height={props.height} />} size="large" />;
 }

@@ -1,12 +1,15 @@
 import "@/styles/globals.scss";
 import "@/styles/globals.css";
-import { AppProps } from "next/app";
-import GemforceAppContextProvider from "@/context/GemforceAppContext";
+
 import React from "react";
+
+import { AppProps } from "next/app";
 import { SessionProvider } from "next-auth/react";
-import { ToastContainer } from "react-toastify";
-import "react-toastify/dist/ReactToastify.css";
 import { ThemeProvider as NextThemesProvider } from "next-themes";
+import { ToastContainer } from "react-toastify";
+
+import GemforceAppContextProvider from "@/context/GemforceAppContext";
+import "react-toastify/dist/ReactToastify.css";
 
 const KronosCustomerPortal = (props: AppProps) => {
   const { Component, pageProps } = props;

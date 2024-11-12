@@ -1,33 +1,24 @@
-import React, {
-  createContext,
-  useState,
-  useContext,
-  useEffect,
-  Component,
-} from "react";
-import initializeParse from "@/InitializeParse";
-import { AppProps } from "next/app";
-import { Chain, sepolia, useAccount, useDisconnect, WagmiConfig } from "wagmi";
-import { createWeb3Modal, defaultWagmiConfig } from "@web3modal/wagmi/react";
-import { signIn, signOut, useSession } from "next-auth/react";
+import React, { createContext, useState, useContext, useEffect, Component } from "react";
 
-import { MainLayout } from "@/components/MainLayout/MainLayout";
-import { ConfigProvider, theme } from "antd/es";
 import { AntdRegistry } from "@ant-design/nextjs-registry";
-import siweConfig from "@/auth/SiweConfig";
-import PubSub from "pubsub-js";
-import GemforceAppState from "@/context/GemforceAppState";
+import { createWeb3Modal, defaultWagmiConfig } from "@web3modal/wagmi/react";
+import { ConfigProvider, theme } from "antd/es";
 import { ethers } from "ethers";
+import { AppProps } from "next/app";
+import { useRouter } from "next/router";
+import { signIn, signOut, useSession } from "next-auth/react";
+import PubSub from "pubsub-js";
+import { toast } from "react-toastify";
+import { Chain, sepolia, useAccount, useDisconnect, WagmiConfig } from "wagmi";
+
+import siweConfig from "@/auth/SiweConfig";
+import { MainLayout } from "@/components/MainLayout/MainLayout";
+import GemforceAppState from "@/context/GemforceAppState";
+import initializeParse from "@/InitializeParse";
+import ParseService from "@/services/ParseService";
 import { generateRandomString } from "@/utils";
 import { NomyxEvent } from "@/utils/Constants";
-import ParseService from "@/services/ParseService";
-import {
-  getEthereumProviderAndSigner,
-  setSigner,
-  setProvider,
-} from "@/utils/ethereumProvider";
-import { useRouter } from "next/router";
-import { toast } from "react-toastify";
+import { getEthereumProviderAndSigner, setSigner, setProvider } from "@/utils/ethereumProvider";
 
 // 1. Get projectId at https://cloud.walletconnect.com
 const projectId = "6b3dd072d7469b88a9bc1c5d49baeefa";
@@ -114,9 +105,7 @@ type GemforceAppContextType = {
   appState: GemforceAppState;
 };
 
-export const GemforceAppContext = createContext<
-  GemforceAppContextType | undefined
->(undefined);
+export const GemforceAppContext = createContext<GemforceAppContextType | undefined>(undefined);
 
 const WalletConnectHandler = ({ children }: any) => {
   const { data: session, status } = useSession();
@@ -150,9 +139,7 @@ const WalletConnectHandler = ({ children }: any) => {
       let provider = "";
 
       if (!session) {
-        const storedSignature = localStorage.getItem("signature")
-          ? JSON.parse(localStorage.getItem("signature") as string)
-          : null;
+        const storedSignature = localStorage.getItem("signature") ? JSON.parse(localStorage.getItem("signature") as string) : null;
 
         if (!storedSignature) {
           const { provider, signer } = await getEthereumProviderAndSigner();
@@ -190,13 +177,9 @@ const WalletConnectHandler = ({ children }: any) => {
           router.push(redirectUrl);
         } else {
           if (result?.status == 401) {
-            toast.error(
-              "Login failed. This user is not authorized. Please disconnect and try again."
-            );
+            toast.error("Login failed. This user is not authorized. Please disconnect and try again.");
           } else {
-            toast.error(
-              "An authorization error occurred. Please try again later or contact your administrator."
-            );
+            toast.error("An authorization error occurred. Please try again later or contact your administrator.");
           }
         }
       }
@@ -216,9 +199,7 @@ const GemforceAppContextProvider: React.FC<AppProps> = (props: AppProps) => {
   const { data: session, status } = useSession();
   const [appState, setAppState] = useState<any>(null);
   const { Component, pageProps } = props;
-  const getLayout =
-    (Component as any).getLayout ??
-    ((page: React.ReactNode) => <MainLayout>{page}</MainLayout>);
+  const getLayout = (Component as any).getLayout ?? ((page: React.ReactNode) => <MainLayout>{page}</MainLayout>);
   const [isDarkMode, setIsDarkMode] = useState(true);
   const { defaultAlgorithm, darkAlgorithm } = theme;
   const algorithm = isDarkMode ? darkAlgorithm : defaultAlgorithm;
@@ -230,8 +211,7 @@ const GemforceAppContextProvider: React.FC<AppProps> = (props: AppProps) => {
       const appState = new GemforceAppState(session);
       setAppState(appState);
       appState.session = session;
-      if (session?.user?.accessToken)
-        ParseService.setUser(session?.user?.accessToken);
+      if (session?.user?.accessToken) ParseService.setUser(session?.user?.accessToken);
     }
   }, [session, status]);
 
@@ -265,9 +245,7 @@ const GemforceAppContextProvider: React.FC<AppProps> = (props: AppProps) => {
               },
             }}
           >
-            <AntdRegistry>
-              {getLayout(<Component {...pageProps} />)}
-            </AntdRegistry>
+            <AntdRegistry>{getLayout(<Component {...pageProps} />)}</AntdRegistry>
           </ConfigProvider>
         </WalletConnectHandler>
       </GemforceAppContext.Provider>

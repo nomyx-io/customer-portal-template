@@ -1,14 +1,16 @@
 import React, { useCallback, useEffect, useRef, useState, useMemo } from "react";
-import PubSub from "pubsub-js";
+
 import { Tabs } from "antd/es";
-import { useGemforceApp } from "@/context/GemforceAppContext";
-import TokenDetail from "@/components/TokenDetail";
-import { NomyxEvent, WalletPreference } from "@/utils/Constants";
-import ListingRetiredTokens from "@/components/ListingRetiredTokens";
-import KronosCustomerService from "@/services/KronosCustomerService";
-import BlockchainService from "@/services/BlockchainService";
 import { FolderCross } from "iconsax-react";
+import PubSub from "pubsub-js";
 import { toast } from "react-toastify";
+
+import ListingRetiredTokens from "@/components/ListingRetiredTokens";
+import TokenDetail from "@/components/TokenDetail";
+import { useGemforceApp } from "@/context/GemforceAppContext";
+import BlockchainService from "@/services/BlockchainService";
+import KronosCustomerService from "@/services/KronosCustomerService";
+import { NomyxEvent, WalletPreference } from "@/utils/Constants";
 
 const ClaimInterest: React.FC = () => {
   const { appState }: any = useGemforceApp();
@@ -20,7 +22,7 @@ const ClaimInterest: React.FC = () => {
 
   useEffect(() => {
     if (appState) {
-      const subscription = PubSub.subscribe(NomyxEvent.GemforceStateChange, function(event: any, data: any) {
+      const subscription = PubSub.subscribe(NomyxEvent.GemforceStateChange, function (event: any, data: any) {
         if (data.tokens) setTokens(data.tokens);
       });
       setTokens(appState.tokens);
@@ -59,13 +61,13 @@ const ClaimInterest: React.FC = () => {
   };
 
   // Ensure filteredTokens is always an array
-  const filteredTokens: any[] = useMemo(() => (
-    console.log("filteredTokens", tokens, redemptionToken),
-    Array.isArray(tokens)
-      ? tokens.filter((t) => !redemptionToken.includes(t.tokenId))
-      : []
-  ), [tokens, redemptionToken]);
-  
+  const filteredTokens: any[] = useMemo(
+    () => (
+      console.log("filteredTokens", tokens, redemptionToken), Array.isArray(tokens) ? tokens.filter((t) => !redemptionToken.includes(t.tokenId)) : []
+    ),
+    [tokens, redemptionToken]
+  );
+
   // New useEffect to set selectedToken as the first token in filteredTokens
   useEffect(() => {
     if (filteredTokens.length > 0) {

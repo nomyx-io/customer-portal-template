@@ -1,13 +1,15 @@
 import React, { useEffect, useState, useMemo, useCallback } from "react";
+
+import { InfoCircleOutlined, WarningOutlined } from "@ant-design/icons";
 import { Card, List, Statistic, Tabs } from "antd/es";
 import { CategoryScale } from "chart.js";
 import Chart from "chart.js/auto";
-import { Bar } from "react-chartjs-2";
-import Ellipsis from "@/components/Ellipsis";
-import { InfoCircleOutlined, WarningOutlined } from "@ant-design/icons";
 import { Setting, DollarCircle, Coin } from "iconsax-react";
-import KronosCustomerService from "@/services/KronosCustomerService";
 import { useSession } from "next-auth/react";
+import { Bar } from "react-chartjs-2";
+
+import Ellipsis from "@/components/Ellipsis";
+import KronosCustomerService from "@/services/KronosCustomerService";
 
 Chart.register(CategoryScale);
 
@@ -22,28 +24,16 @@ const Dashboard: React.FC = () => {
 
   // Derived state
   const carbonRetired = useMemo(() => {
-    return retiredTokens.reduce(
-      (acc: number, token: any) => acc + parseFloat(token.existingCredits),
-      0
-    );
+    return retiredTokens.reduce((acc: number, token: any) => acc + parseFloat(token.existingCredits), 0);
   }, [retiredTokens]);
 
   const { currentValue, totalCarbon } = useMemo(() => {
-    const totalValue = tokens.reduce(
-      (acc: number, token: any) => acc + token.price * token.existingCredits,
-      0
-    );
-    const totalCarbon = tokens.reduce(
-      (acc: number, token: any) => acc + parseFloat(token.existingCredits),
-      0
-    );
+    const totalValue = tokens.reduce((acc: number, token: any) => acc + token.price * token.existingCredits, 0);
+    const totalCarbon = tokens.reduce((acc: number, token: any) => acc + parseFloat(token.existingCredits), 0);
     return { currentValue: totalValue, totalCarbon };
   }, [tokens]);
 
-  const retirableCarbon = useMemo(
-    () => parseFloat(totalCarbon) - parseFloat(carbonRetired),
-    [totalCarbon, carbonRetired]
-  );
+  const retirableCarbon = useMemo(() => parseFloat(totalCarbon) - parseFloat(carbonRetired), [totalCarbon, carbonRetired]);
 
   // Statistics data
   const stats = useMemo(
@@ -53,44 +43,25 @@ const Dashboard: React.FC = () => {
         value: tokens?.length,
         // Icon KronosSymbolDark or KronosSymbolLight depending on the theme
         icon: <Coin />,
-        color:
-          tokens?.length < 1
-            ? "text-nomyx-danger-light dark:text-nomyx-danger-dark"
-            : "text-nomyx-text-light dark:text-nomyx-text-dark",
+        color: tokens?.length < 1 ? "text-nomyx-danger-light dark:text-nomyx-danger-dark" : "text-nomyx-text-light dark:text-nomyx-text-dark",
       },
       {
         title: "Current Value",
-        value: currentValue
-          ? currentValue.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ",")
-          : "0",
-        icon: (
-          <DollarCircle className="text-nomyx-text-light dark:text-nomyx-text-dark" />
-        ),
+        value: currentValue ? currentValue.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ",") : "0",
+        icon: <DollarCircle className="text-nomyx-text-light dark:text-nomyx-text-dark" />,
         color: "text-nomyx-text-light dark:text-nomyx-text-dark",
       },
       {
         title: "Carbon Retired",
-        value: carbonRetired
-          ? Intl.NumberFormat("en-US").format(carbonRetired)
-          : "0",
-        icon: (
-          <Setting className="text-nomyx-text-light dark:text-nomyx-text-dark" />
-        ),
+        value: carbonRetired ? Intl.NumberFormat("en-US").format(carbonRetired) : "0",
+        icon: <Setting className="text-nomyx-text-light dark:text-nomyx-text-dark" />,
         color: "text-nomyx-text-light dark:text-nomyx-text-dark",
       },
       {
         title: "Retirable Carbon",
-        value:
-          retirableCarbon > 0
-            ? Intl.NumberFormat("en-US").format(retirableCarbon)
-            : "0",
-        icon: (
-          <Setting className="text-nomyx-text-light dark:text-nomyx-text-dark" />
-        ),
-        color:
-          retirableCarbon > 0
-            ? "text-nomyx-success-light dark:text-nomyx-success-dark"
-            : "text-nomyx-text-light dark:text-nomyx-text-dark",
+        value: retirableCarbon > 0 ? Intl.NumberFormat("en-US").format(retirableCarbon) : "0",
+        icon: <Setting className="text-nomyx-text-light dark:text-nomyx-text-dark" />,
+        color: retirableCarbon > 0 ? "text-nomyx-success-light dark:text-nomyx-success-dark" : "text-nomyx-text-light dark:text-nomyx-text-dark",
       },
     ],
     [tokens.length, currentValue, carbonRetired, retirableCarbon]
@@ -145,12 +116,8 @@ const Dashboard: React.FC = () => {
         y: {
           beginAtZero: true,
           stacked: false,
-          max: (context: {
-            chart: { data: { datasets: { data: number[] }[] } };
-          }) => {
-            const maxData = Math.max(
-              ...context.chart.data.datasets.flatMap((dataset) => dataset.data)
-            );
+          max: (context: { chart: { data: { datasets: { data: number[] }[] } } }) => {
+            const maxData = Math.max(...context.chart.data.datasets.flatMap((dataset) => dataset.data));
             return maxData * 1.1;
           },
           ticks: {
@@ -174,9 +141,7 @@ const Dashboard: React.FC = () => {
       {
         key: "2",
         label: "Carbon Insights",
-        children: (
-          <Bar data={prepareCarbonChartData()} options={chartOptions} />
-        ),
+        children: <Bar data={prepareCarbonChartData()} options={chartOptions} />,
         className: "chart",
       },
     ],
@@ -184,14 +149,8 @@ const Dashboard: React.FC = () => {
   );
 
   // Filtered events
-  const salesEvents = useMemo(
-    () => events.filter((event: any) => event.event === "Sales"),
-    [events]
-  );
-  const redemptionEvents = useMemo(
-    () => events.filter((event: any) => event.event === "CarbonCreditsRetired"),
-    [events]
-  );
+  const salesEvents = useMemo(() => events.filter((event: any) => event.event === "Sales"), [events]);
+  const redemptionEvents = useMemo(() => events.filter((event: any) => event.event === "CarbonCreditsRetired"), [events]);
 
   const sidebarTabItems = useMemo(
     () => [
@@ -208,16 +167,11 @@ const Dashboard: React.FC = () => {
                   className="px-4 text-nomyx-text-light dark:text-nomyx-text-dark"
                   avatar={<WarningOutlined />}
                   title={
-                    <a
-                      href={`${process.env.NEXT_PUBLIC_ETHERSCAN_BASE_URL}${item.transactionHash}`}
-                      target="_blank"
-                    >
+                    <a href={`${process.env.NEXT_PUBLIC_ETHERSCAN_BASE_URL}${item.transactionHash}`} target="_blank">
                       {item.event}
                     </a>
                   }
-                  description={
-                    <Ellipsis suffixCount={12}>{item.transactionHash}</Ellipsis>
-                  }
+                  description={<Ellipsis suffixCount={12}>{item.transactionHash}</Ellipsis>}
                 />
               </List.Item>
             )}
@@ -238,16 +192,11 @@ const Dashboard: React.FC = () => {
                   className="px-4 text-nomyx-text-light dark:text-nomyx-text-dark"
                   avatar={<InfoCircleOutlined />}
                   title={
-                    <a
-                      href={`${process.env.NEXT_PUBLIC_ETHERSCAN_BASE_URL}${item.transactionHash}`}
-                      target="_blank"
-                    >
+                    <a href={`${process.env.NEXT_PUBLIC_ETHERSCAN_BASE_URL}${item.transactionHash}`} target="_blank">
                       {item.event}
                     </a>
                   }
-                  description={
-                    <Ellipsis suffixCount={12}>{item.transactionHash}</Ellipsis>
-                  }
+                  description={<Ellipsis suffixCount={12}>{item.transactionHash}</Ellipsis>}
                 />
               </List.Item>
             )}
@@ -266,9 +215,7 @@ const Dashboard: React.FC = () => {
       return;
     }
     try {
-      const fetchedEvents = await KronosCustomerService.getCustomerEvents(
-        user.walletAddress
-      );
+      const fetchedEvents = await KronosCustomerService.getCustomerEvents(user.walletAddress);
       setEvents(fetchedEvents);
     } catch (error) {
       console.error("Error fetching events:", error);
@@ -281,8 +228,7 @@ const Dashboard: React.FC = () => {
       return;
     }
     try {
-      const fetchedRetiredTokens =
-        await KronosCustomerService.getRetiredTokensForUser(user.walletAddress);
+      const fetchedRetiredTokens = await KronosCustomerService.getRetiredTokensForUser(user.walletAddress);
       setRetiredTokens(fetchedRetiredTokens);
     } catch (error) {
       console.error("Error fetching retired tokens:", error);
@@ -295,9 +241,7 @@ const Dashboard: React.FC = () => {
       return;
     }
     try {
-      const fetchedTokens = await KronosCustomerService.getTokensForUser(
-        user.walletAddress
-      );
+      const fetchedTokens = await KronosCustomerService.getTokensForUser(user.walletAddress);
       setTokens(fetchedTokens);
     } catch (error) {
       console.error("Error fetching tokens:", error);
@@ -325,11 +269,7 @@ const Dashboard: React.FC = () => {
                 className="flex-1 text-center bg-nomyx-dark2-light dark:bg-nomyx-dark2-dark border-nomyx-gray4-light dark:border-nomyx-gray4-dark"
               >
                 <Statistic
-                  title={
-                    <span className="text-nomyx-gray2-light dark:text-nomyx-gray2-dark">
-                      {stat.title}
-                    </span>
-                  }
+                  title={<span className="text-nomyx-gray2-light dark:text-nomyx-gray2-dark">{stat.title}</span>}
                   value={stat.value}
                   formatter={() => (
                     <div className="flex items-center space-x-2">
