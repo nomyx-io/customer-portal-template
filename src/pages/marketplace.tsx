@@ -32,6 +32,7 @@ const Marketplace: React.FC = () => {
           logo: project.attributes.logo,
           coverImage: project.attributes.coverImage,
           registryURL: project.attributes.registryURL,
+          metadata: project.attributes.metadata,
         })) || []
       );
     } catch (error) {

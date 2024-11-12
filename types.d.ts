@@ -6,4 +6,5 @@ interface Project {
   registryURL: string;
   logo: Parse.File;
   coverImage: Parse.File;
+  metadata: Record<string, any>;
 }

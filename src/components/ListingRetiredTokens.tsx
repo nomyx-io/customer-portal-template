@@ -136,13 +136,6 @@ const ListingRetiredTokens = ({ tokens }: { tokens: Token[] }) => {
       ...getColumnSearchProps("nftTitle"),
     },
     {
-      title: "Price Per Credit",
-      dataIndex: "price",
-      sorter: (a, b) => a.price - b.price,
-      render: (price: number) => `${formatPrice(price, "USD")}`,
-      ...getColumnSearchProps("price"),
-    },
-    {
       title: "Total Price",
       dataIndex: "totalPrice",
       sorter: (a, b) => a.totalPrice - b.totalPrice,
@@ -150,38 +143,11 @@ const ListingRetiredTokens = ({ tokens }: { tokens: Token[] }) => {
       ...getColumnSearchProps("totalPrice"),
     },
     {
-      title: "Registry ID",
-      dataIndex: "registerId",
-      sorter: (a, b) => a.registerId.localeCompare(b.registerId),
-      ...getColumnSearchProps("registerId"),
-    },
-    {
-      title: "Carbon Offset (Tons)",
-      dataIndex: "existingCredits",
-      sorter: (a, b) => a.existingCredits - b.existingCredits,
-      ...getColumnSearchProps("existingCredits"),
-      render: (existingCredits: any) => {
-        return new Intl.NumberFormat("en-US").format(existingCredits);
-      },
-    },
-    {
       title: "Issuance Date",
       dataIndex: "issuanceDate",
       sorter: (a, b) =>
         new Date(a.issuanceDate).getTime() - new Date(b.issuanceDate).getTime(),
       ...getColumnSearchProps("issuanceDate"),
-    },
-    {
-      title: "GHG Reduction Type",
-      dataIndex: "ghgReduction",
-      sorter: (a, b) => a.ghgReduction.localeCompare(b.ghgReduction),
-      ...getColumnSearchProps("ghgReduction"),
-    },
-    {
-      title: "Geography",
-      dataIndex: "state",
-      sorter: (a, b) => a.state.localeCompare(b.state),
-      ...getColumnSearchProps("state"),
     },
   ];
 

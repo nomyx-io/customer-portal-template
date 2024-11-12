@@ -27,8 +27,18 @@ class KronosCustomerService {
   }
 
   public async getProjects() {
-    let records = await ParseService.getRecords("KronosProject", [], [], ["*"]);
+    let records = await ParseService.getRecords("TokenProject", [], [], ["*"]);
     return records;
+  }
+
+  public async getProjectsByIds(projectIds: string[]) {
+    let records = await ParseService.getRecords(
+      "TokenProject",
+      ["objectId"],
+      [projectIds],
+      ["*"]
+    );
+    return records || [];
   }
 
   public async getTokensForUser(address: string) {
@@ -65,7 +75,7 @@ class KronosCustomerService {
     );
 
     const projects = await ParseService.getRecords(
-      "KronosProject",
+      "TokenProject",
       ["objectId"],
       [projectIds],
       []
@@ -304,7 +314,7 @@ class KronosCustomerService {
     );
 
     const projects = await ParseService.getRecords(
-      "KronosProject",
+      "TokenProject",
       ["objectId"],
       [projectIds],
       []
