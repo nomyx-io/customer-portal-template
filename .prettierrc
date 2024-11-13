@@ -19,6 +19,5 @@
   "embeddedLanguageFormatting": "auto",
   "vueIndentScriptAndStyle": false,
   "experimentalTernaries": false,
-  "filepath": "/Users/nathanpatterson/Nomyx/gemforce-customer-ingress-ui/src/app/page.tsx",
   "parser": "typescript"
 }
