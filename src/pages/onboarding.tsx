@@ -158,7 +158,14 @@ const OnboardingComponent = () => {
   };
 
   return (
-    <div className="flex flex-col min-h-screen items-center bg-gradient-to-b bg-black">
+    <div
+      className="relative w-full min-h-screen overflow-hidden flex flex-col items-center"
+      style={{
+        backgroundImage: "url('/images/nomyx_banner.svg')",
+        backgroundSize: "cover",
+        backgroundPosition: "center",
+      }}
+    >
       <Card className="h-[100px] w-[90%] max-w-[1400px] mt-5 onboarding-header-card bg-[#F1F5F9]">
         <Tabs
           activeKey={activeTab}
@@ -182,7 +189,7 @@ const OnboardingComponent = () => {
         </Tabs>
       </Card>
 
-      <Card className="flex-grow mt-5 w-[90%] max-w-[1400px] overflow-auto mb-5 bg-[#F1F5F9]">
+      <Card className="flex-grow mt-5 w-[90%] max-w-[1400px] overflow-auto mb-5 bg-[#3E81C833]">
         <div>{tabs.find((tab) => tab.key === activeTab)?.content}</div>
       </Card>
     </div>

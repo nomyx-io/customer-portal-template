@@ -54,13 +54,13 @@ const TermsConditions: React.FC<TermsConditionsProps> = ({ setActiveTab, setRegi
       </Checkbox>
       {/* Buttons container at the bottom */}
       <div className="flex justify-between mt-auto">
-        <button onClick={handleBack} className="text-blue-500">
+        <button onClick={handleBack} className="text-nomyx-violet-light font-semibold">
           Back
         </button>
         {/* Next button positioned at the bottom right */}
         <button
           onClick={handleNext}
-          className={`bg-blue-500 text-white px-4 py-2 rounded ${agreed ? "" : "opacity-50 cursor-not-allowed"}`}
+          className={`bg-nomyx-violet-light text-white px-4 py-2 rounded ${agreed ? "" : "opacity-50 cursor-not-allowed"}`}
           disabled={!agreed} // Disable the button if not agreed
         >
           Next

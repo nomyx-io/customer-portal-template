@@ -23,7 +23,7 @@ const AboutUs: React.FC<AboutUsProps> = ({ setActiveTab }) => {
         </p>
       </div>
       {/* Next button positioned at the bottom right */}
-      <button className="absolute bottom-5 right-5 bg-blue-500 text-white px-4 py-2 rounded" onClick={handleNextClick}>
+      <button className="absolute bottom-5 right-5 bg-nomyx-violet-light text-white px-4 py-2 rounded" onClick={handleNextClick}>
         Next
       </button>
     </div>
