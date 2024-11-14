@@ -5,6 +5,7 @@ import { Table, Checkbox, Button } from "antd";
 
 import { hashToColor } from "@/utils/colorUtils";
 import { formatPrice } from "@/utils/currencyFormater";
+import { ColumnConfig, EXCLUDED_COLUMNS } from "@/types/dynamicTableColumn";
 
 interface TokenListViewProps {
   projects: any[];
@@ -95,6 +96,40 @@ const TokenListView: React.FC<TokenListViewProps> = ({ projects, onProjectClick,
     );
   };
 
+  const getDynamicColumns = (maxColumns = 7): ColumnConfig[] => {
+    const nonNullColumns: Record<string, ColumnConfig> = {};
+    projects.forEach((token) => {
+      Object.entries(token.token).forEach(([key, value]) => {
+        // Check if the column is non-null, non-undefined, not already in nonNullColumns, and not excluded
+        if (value != null && !(key in nonNullColumns) && !EXCLUDED_COLUMNS.has(key)) {
+          nonNullColumns[key] = {
+            title: key
+              .replace(/([A-Z])/g, " $1") // Add a space before uppercase letters
+              .replace(/^./, (str) => str.toUpperCase()), // Capitalize the first letter
+            key,
+          };
+        }
+      });
+    });
+    return Object.values(nonNullColumns).slice(0, maxColumns);
+  };
+
+  const createColumns = (nonNullColumns: ColumnConfig[]) => {
+    return nonNullColumns.map(({ title, key }) => ({
+      title,
+      dataIndex: ["token", key] as [string, string],
+      render: (value: any) => (typeof value === "object" ? "N/A" : <span>{value}</span>),
+      sorter: (a: any, b: any) => {
+        const aValue = a.token[key];
+        const bValue = b.token[key];
+        return typeof aValue === "string" && typeof bValue === "string" ? aValue.localeCompare(bValue) : 0;
+      },
+    }));
+  };
+
+  const dynamicColumns = getDynamicColumns(); // This would be your method to get the first 7 non-null columns
+  const additionalColumns = createColumns(dynamicColumns);
+
   // Define columns conditionally based on `isSalesHistory`
   const listingColumns = [
     ...(!isSalesHistory
@@ -148,17 +183,13 @@ const TokenListView: React.FC<TokenListViewProps> = ({ projects, onProjectClick,
       sorter: (a: any, b: any) => a.token.nftTitle.localeCompare(b.token.nftTitle),
     },
     {
-      title: "Total Price",
+      title: "Price",
       dataIndex: "price", // Total price coming from TokenListing in parse
       render: (price: number) => (isSalesHistory ? formatPrice(price, "USD") : formatPrice(price / 1_000_000, "USD")), // Convert from small units to regular price format
       sorter: (a: any, b: any) => a.price - b.price,
     },
-    {
-      title: "Issuance Date",
-      dataIndex: ["token", "issuanceDate"],
-      render: (issuanceDate: string) => <span>{issuanceDate}</span>,
-      sorter: (a: any, b: any) => a.token.issuanceDate.localeCompare(b.token.issuanceDate),
-    },
+    ...additionalColumns,
+
     ...(!isSalesHistory
       ? [
           {
