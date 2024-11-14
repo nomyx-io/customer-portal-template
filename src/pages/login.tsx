@@ -2,10 +2,7 @@ import React, { useEffect, useState } from "react";
 
 import { Layout } from "antd";
 import { Form, Input, Card, Radio, Button } from "antd/es";
-import type {
-  GetServerSidePropsContext,
-  InferGetServerSidePropsType,
-} from "next";
+import type { GetServerSidePropsContext, InferGetServerSidePropsType } from "next";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -20,16 +17,11 @@ import Header from "../components/global/auth_header";
 
 const Credentials = [StandardCredentials, EthereumCredentials];
 
-const Login = function ({
-  csrfToken,
-  callbackUrl,
-}: InferGetServerSidePropsType<typeof getServerSideProps>) {
+const Login = function ({ csrfToken, callbackUrl }: InferGetServerSidePropsType<typeof getServerSideProps>) {
   const router = useRouter();
   const ethereumAccount = useAccount();
   const { disconnect } = useDisconnect();
-  const [loginPreference, setLoginPreference] = useState(
-    LoginPreference.USERNAME_PASSWORD,
-  );
+  const [loginPreference, setLoginPreference] = useState(LoginPreference.USERNAME_PASSWORD);
 
   const walletLogin = loginPreference == LoginPreference.WALLET;
 
@@ -45,9 +37,7 @@ const Login = function ({
       if (result.status == 401) {
         toast.error("Login failed. This user is not authorized.");
       } else {
-        toast.error(
-          "An authorization error occurred. Please try again later or contact your administrator.",
-        );
+        toast.error("An authorization error occurred. Please try again later or contact your administrator.");
       }
     } else {
       toast.error(null);
@@ -65,7 +55,8 @@ const Login = function ({
     if (ethereumAccount.address) {
       handleWalletDisconnect();
     }
-  }, [disconnect, ethereumAccount.address]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   return (
     <Layout
@@ -80,20 +71,10 @@ const Login = function ({
       <div className="flex h-screen w-full">
         {/* Left Section - Custom Gradient Background and Logo */}
         <div className="w-1/2 flex justify-center items-center bg-black">
-          <Image
-            src="/images/Kronos-Carbon-Logo.png"
-            alt="Logo"
-            width={300}
-            height={25}
-            className="h-156"
-          />
+          <Image src="/images/Kronos-Carbon-Logo.png" alt="Logo" width={300} height={25} className="h-156" />
         </div>
         <div className="flex flex-col justify-center items-center w-1/2 bg-white auth-pages">
-          <div
-            className={
-              "flex flex-grow justify-center items-center align-middle"
-            }
-          >
+          <div className={"flex flex-grow justify-center items-center align-middle"}>
             <div className="flex justify-center items-center">
               <Card
                 title={<span className="text-black">Sign In</span>} // Set title color to black
@@ -103,34 +84,25 @@ const Login = function ({
                 }}
                 className="signup-card bg-white wallet-setup-radio-group"
                 extra={
-                  <Radio.Group
-                    defaultValue={LoginPreference.USERNAME_PASSWORD}
-                    buttonStyle="solid"
-                  >
+                  <Radio.Group defaultValue={LoginPreference.USERNAME_PASSWORD} buttonStyle="solid">
                     {Credentials &&
-                      Credentials.map(
-                        (credentialConfig: any, index: number) => {
-                          const optionsId = credentialConfig.options.id;
-                          const loginPreferenceOptionValue =
-                            optionsId == "ethereum"
-                              ? LoginPreference.WALLET
-                              : LoginPreference.USERNAME_PASSWORD;
-                          const loginOptionLabel =
-                            credentialConfig.options.name;
+                      Credentials.map((credentialConfig: any, index: number) => {
+                        const optionsId = credentialConfig.options.id;
+                        const loginPreferenceOptionValue = optionsId == "ethereum" ? LoginPreference.WALLET : LoginPreference.USERNAME_PASSWORD;
+                        const loginOptionLabel = credentialConfig.options.name;
 
-                          return (
-                            <Radio.Button
-                              key={`login-option-${credentialConfig.options.id}`}
-                              value={loginPreferenceOptionValue}
-                              onClick={(e: any) => {
-                                setLoginPreference(e.target.value);
-                              }}
-                            >
-                              {loginOptionLabel}
-                            </Radio.Button>
-                          );
-                        },
-                      )}
+                        return (
+                          <Radio.Button
+                            key={`login-option-${credentialConfig.options.id}`}
+                            value={loginPreferenceOptionValue}
+                            onClick={(e: any) => {
+                              setLoginPreference(e.target.value);
+                            }}
+                          >
+                            {loginOptionLabel}
+                          </Radio.Button>
+                        );
+                      })}
                   </Radio.Group>
                 }
               >
@@ -142,11 +114,7 @@ const Login = function ({
                       case "ethereum":
                         return (
                           walletLogin && (
-                            <Card.Grid
-                              key={`login-${index}`}
-                              className="p-0 text-center"
-                              style={{ width: "100%" }}
-                            >
+                            <Card.Grid key={`login-${index}`} className="p-0 text-center" style={{ width: "100%" }}>
                               <w3m-button />
                               <p className="text-black font-medium mt-5 ">
                                 Need an account?&nbsp;
@@ -161,39 +129,20 @@ const Login = function ({
                       default:
                         return (
                           !walletLogin && (
-                            <Card.Grid
-                              key={`login-${index}`}
-                              className="pt-4"
-                              style={{ width: "100%" }}
-                            >
+                            <Card.Grid key={`login-${index}`} className="pt-4" style={{ width: "100%" }}>
                               <Form layout="vertical" onFinish={standardLogin}>
-                                <input
-                                  name="csrfToken"
-                                  type="hidden"
-                                  defaultValue={csrfToken}
-                                />
-                                <input
-                                  name="callbackUrl"
-                                  type="hidden"
-                                  defaultValue={callbackUrl}
-                                />
+                                <input name="csrfToken" type="hidden" defaultValue={csrfToken} />
+                                <input name="callbackUrl" type="hidden" defaultValue={callbackUrl} />
 
                                 {credentialConfig?.options?.credentials &&
-                                  Object.keys(
-                                    credentialConfig.options.credentials,
-                                  ).map((key: any, index: number) => {
-                                    const c =
-                                      credentialConfig.options.credentials[key];
+                                  Object.keys(credentialConfig.options.credentials).map((key: any, index: number) => {
+                                    const c = credentialConfig.options.credentials[key];
 
                                     return (
                                       <Form.Item
                                         key={`form-item-${index}`}
                                         name={key}
-                                        label={
-                                          <span className="text-[#1F1F1F]">
-                                            {c.label}
-                                          </span>
-                                        }
+                                        label={<span className="text-[#1F1F1F]">{c.label}</span>}
                                         rules={[
                                           {
                                             required: true,
@@ -204,9 +153,7 @@ const Login = function ({
                                         <Input
                                           name={key}
                                           type={c.type}
-                                          placeholder={
-                                            c.placeholder || `Enter ${c.label}`
-                                          }
+                                          placeholder={c.placeholder || `Enter ${c.label}`}
                                           style={{
                                             color: "#1F1F1F", // Text color
                                             backgroundColor: "transparent", // Transparent background
@@ -226,19 +173,13 @@ const Login = function ({
                               </Form>
                               <div className="flex">
                                 <p>
-                                  <Link
-                                    href="/forgot-password"
-                                    className="text-blue-600 font-medium"
-                                  >
+                                  <Link href="/forgot-password" className="text-blue-600 font-medium">
                                     Forgot Password?
                                   </Link>
                                 </p>
                                 <p className="ml-auto text-black font-medium">
                                   Need an account?&nbsp;
-                                  <Link
-                                    href="/signup"
-                                    className="text-blue-600"
-                                  >
+                                  <Link href="/signup" className="text-blue-600">
                                     Register here.
                                   </Link>
                                 </p>
