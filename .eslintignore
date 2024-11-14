@@ -24,3 +24,6 @@ next.config.js
 
 # Ignore specific folders (e.g., for custom scripts)
 scripts/
+
+# Ignore specific files (e.g., for custom scripts)
+*.config.js

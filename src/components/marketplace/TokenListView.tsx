@@ -3,9 +3,9 @@ import React, { useState, useEffect } from "react";
 import { EyeOutlined } from "@ant-design/icons";
 import { Table, Checkbox, Button } from "antd";
 
+import { ColumnConfig, EXCLUDED_COLUMNS } from "@/types/dynamicTableColumn";
 import { hashToColor } from "@/utils/colorUtils";
 import { formatPrice } from "@/utils/currencyFormater";
-import { ColumnConfig, EXCLUDED_COLUMNS } from "@/types/dynamicTableColumn";
 
 interface TokenListViewProps {
   projects: any[];
