@@ -74,33 +74,21 @@ const SignUp = () => {
 
   return (
     <Layout
+      className="relative w-full min-h-screen overflow-hidden flex flex-col"
       style={{
-        height: "100vh",
-        display: "flex",
-        flexDirection: "column",
-        overflow: "hidden",
+        backgroundImage: "url('/images/nomyx_banner.svg')",
+        backgroundSize: "cover",
+        backgroundPosition: "center",
       }}
     >
       <Header />
-
-      <Content
-        style={{
-          flexGrow: 1, // Take up remaining space
-          display: "flex",
-          justifyContent: "center",
-          alignItems: "center",
-          backgroundColor: "#f0f2f5",
-          overflow: "hidden", // Prevent scroll
-        }}
-      >
-        {showConfirmMessage ? (
-          <ConfirmMessage email={formData.email} />
-        ) : showPasswordForm ? (
-          <PasswordForm onBack={handleBack} onSubmit={handleSubmit} />
-        ) : (
-          <SignUpForm onNext={handleNext} formData={formData} />
-        )}
-      </Content>
+      {showConfirmMessage ? (
+        <ConfirmMessage email={formData.email} />
+      ) : showPasswordForm ? (
+        <PasswordForm onBack={handleBack} onSubmit={handleSubmit} />
+      ) : (
+        <SignUpForm onNext={handleNext} formData={formData} />
+      )}
     </Layout>
   );
 };

@@ -149,6 +149,10 @@ w3m-button{
   background: #fff;
   color:#000;
 }
+.wallet-setup-radio-group .ant-radio-button-wrapper-checked {
+  background-color: #3F206B !important;
+  border-color:  #3F206B !important;
+}
 .connect-wallet w3m-button {
   @apply bg-nomyx-gray4-light rounded-3xl;
 }
@@ -213,4 +217,18 @@ w3m-button{
 .light .custom-modal input::placeholder {
   color: #888888; 
   opacity: 1;
+}
+.login-radio-button.ant-radio-button-wrapper-checked {
+  background: #3F206B !important;
+  border-color: #3F206B !important;
+}
+.auth-page button.ant-btn-primary:not([disabled]), [type='button'].ant-btn-primary:not([disabled]) {
+  background-color: #3F206B !important;
+}
+.auth-page .ant-card .ant-card-body, .auth-page .ant-card .ant-card-head {
+  background-color: #3E81C833 !important;
+}
+.auth-page .ant-card .ant-card-grid, .auth-page .ant-card-head {
+  background-color: transparent !important;
+  box-shadow: unset !important;
 }

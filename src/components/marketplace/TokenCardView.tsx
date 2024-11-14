@@ -4,6 +4,7 @@ import { Card, Button, Checkbox } from "antd";
 
 import { hashToColor } from "@/utils/colorUtils";
 import { formatPrice } from "@/utils/currencyFormater";
+import { ColumnConfig, EXCLUDED_COLUMNS, ColumnData } from "@/types/dynamicTableColumn";
 
 interface TokenCardViewProps {
   projects: any[];
@@ -61,12 +62,34 @@ const TokenCardView: React.FC<TokenCardViewProps> = ({ projects, onProjectClick,
     );
   };
 
+  const getDynamicColumns = (maxColumns = 5): ColumnConfig[] => {
+    const nonNullColumns: Record<string, ColumnConfig> = {};
+    projects.forEach((token) => {
+      Object.entries(token.token).forEach(([key, value]) => {
+        if (value != null && !(key in nonNullColumns) && !EXCLUDED_COLUMNS.has(key)) {
+          nonNullColumns[key] = {
+            title: key.replace(/([A-Z])/g, " $1").replace(/^./, (str) => str.toUpperCase()),
+            key,
+          };
+        }
+      });
+    });
+    return Object.values(nonNullColumns).slice(0, maxColumns);
+  };
+
+  const dynamicColumns = getDynamicColumns();
+
   return (
     <div className="grid gap-5 grid-cols-2 xl:grid-cols-3 mt-5 p-5">
       {projects.map((project) => {
         const tokenId = project.tokenId ?? "default";
         const color = hashToColor(tokenId);
         const isSelected = selectedProjects.includes(tokenId);
+        // Create column data for each token
+        const dynamicColumnData: ColumnData[] = dynamicColumns.map((column) => ({
+          label: column.title,
+          value: project.token?.[column.key] || "-",
+        }));
 
         return (
           <Card
@@ -124,23 +147,7 @@ const TokenCardView: React.FC<TokenCardViewProps> = ({ projects, onProjectClick,
                     label: "Total Price",
                     value: `${formatPrice(Number(project.token.price) * Number(project.token?.existingCredits), "USD")}`,
                   },
-                  {
-                    label: "Registry ID",
-                    value: project.token?.registerId || "-",
-                  },
-                  {
-                    label: "Tranche Cutoff",
-                    value: project.token?.trancheCutoff || "-",
-                  },
-                  {
-                    label: "Carbon Offset (Tons)",
-                    value: Intl.NumberFormat("en-US").format(project.token?.existingCredits) || "-",
-                  },
-                  { label: "Auditor", value: project.token?.auditor || "-" },
-                  {
-                    label: "Issuance Date",
-                    value: project.token?.issuanceDate || "-",
-                  },
+                  ...dynamicColumnData,
                 ].map((item, index) => (
                   <div key={index} className="flex items-center">
                     {/* Label on the left */}

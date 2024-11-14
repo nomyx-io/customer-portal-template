@@ -70,6 +70,10 @@ const config: Config = {
             light: "#3396ff",
             dark: "#3396ff",
           },
+          violet: {
+            light: "#3F206B",
+            dark: "#3F206B",
+          },
         },
       },
       backgroundImage: {

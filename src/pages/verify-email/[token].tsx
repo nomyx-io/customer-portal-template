@@ -90,3 +90,7 @@ export const getServerSideProps = async (context: { params: { token: string } })
     notFound: true, // This will trigger a 404 page
   };
 };
+
+VerifyEmailPage.getLayout = (page: React.ReactElement) => {
+  return <>{page}</>;
+};

@@ -9,7 +9,7 @@ import Link from "next/link"; // Import Link from next/link
 import Parse from "parse";
 import { SubmitHandler } from "react-hook-form";
 import { toast } from "react-toastify";
-
+import { useRouter } from "next/navigation";
 import Header from "../components/global/auth_header";
 
 type ForgotPasswordFormInputs = {
@@ -17,6 +17,7 @@ type ForgotPasswordFormInputs = {
 };
 
 const ForgotPassword = () => {
+  const router = useRouter();
   const onSubmit: SubmitHandler<ForgotPasswordFormInputs> = async (data) => {
     try {
       // Call the Parse Cloud function
@@ -26,10 +27,9 @@ const ForgotPassword = () => {
 
       if (response.success) {
         toast.success(
-          "We have sent an email to " +
-            data.email +
-            " with a reset password link, open your email and click the link to assign a new password",
+          "We have sent an email to " + data.email + " with a reset password link, open your email and click the link to assign a new password"
         );
+        router.push("/login");
       } else {
         toast.error("Failed to send password reset email!");
       }
@@ -43,31 +43,23 @@ const ForgotPassword = () => {
 
   return (
     <Layout
+      className="relative w-full min-h-screen overflow-hidden flex flex-col"
       style={{
-        height: "100vh",
-        display: "flex",
-        flexDirection: "column",
-        overflow: "hidden",
+        backgroundImage: "url('/images/nomyx_banner.svg')",
+        backgroundSize: "cover",
+        backgroundPosition: "center",
       }}
     >
       <Header />
-      <div className="flex h-screen w-full">
-        {/* Left Section - Custom Gradient Background and Logo */}
-        <div className="w-1/2 flex justify-center items-center bg-black">
-          <Image
-            src="/images/Kronos-Carbon-Logo.png"
-            width={300}
-            height={25}
-            alt="Logo"
-            className="h-156"
-          />
+      <div className="flex flex-1 flex-col lg:flex-row auth-page">
+        {/* Left Side */}
+        <div className="w-full lg:w-1/2 flex flex-col items-center justify-center px-4 md:px-6 my-10">
+          <div className="w-full max-w-2xl">
+            <Image src="/images/nomyx_logo_black.svg" alt="Logo" width={630} height={240} priority />
+          </div>
         </div>
-        <div className="flex flex-col justify-center items-center w-1/2 bg-white auth-pages">
-          <div
-            className={
-              "flex flex-grow justify-center items-center align-middle"
-            }
-          >
+        <div className="w-full lg:w-1/2 flex flex-col px-4 md:px-6 my-10">
+          <div className={"flex flex-grow justify-center items-center align-middle"}>
             <div className="flex justify-center items-center">
               <Card
                 title={<span className="text-black">Forgot Password</span>}
@@ -75,11 +67,10 @@ const ForgotPassword = () => {
                   width: "550px",
                   border: "1px solid #BBBBBB", // Set Card border color inline
                 }}
-                className="signup-card bg-white wallet-setup-radio-group"
+                className="signup-card bg-transparent wallet-setup-radio-group"
               >
                 <p className="mb-10 text-left text-nomyx-dark1-dark font-normal text-sm">
-                  It&apos;s alright, type in your email, and we will send you a
-                  reset password link.
+                  It&apos;s alright, type in your email, and we will send you a reset password link.
                 </p>
                 <Form layout="vertical" onFinish={onSubmit}>
                   <Form.Item
@@ -103,8 +94,8 @@ const ForgotPassword = () => {
                       placeholder="Please enter your email"
                       style={{
                         color: "#1F1F1F", // Text color
-                        backgroundColor: "transparent", // Transparent background
-                        border: "1px solid #BBBBBB", // Border color
+                        backgroundColor: "white",
+                        border: "1px solid #BBBBBB",
                       }}
                       className="signup-input"
                     />
@@ -118,7 +109,7 @@ const ForgotPassword = () => {
                 </Form>
 
                 <div className="flex justify-center">
-                  <Link href="/login" className="text-blue-600">
+                  <Link href="/login" className="text-nomyx-violet-light font-semibold">
                     Back to Login
                   </Link>
                 </div>

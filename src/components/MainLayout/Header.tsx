@@ -8,8 +8,6 @@ import { useSession } from "next-auth/react";
 import { SignOut } from "@/components/SignOut";
 import ThemeToggle from "@/components/ThemeToggle";
 import TransferModal from "@/components/TransferModal";
-import logoDark from "@/images/kronos_carbon_logo_dark.png";
-import logoLight from "@/images/kronos_carbon_logo_light.png";
 import KronosCustomerService from "@/services/KronosCustomerService";
 import { WalletPreference } from "@/utils/Constants";
 import { formatPrice } from "@/utils/currencyFormater";
@@ -51,8 +49,8 @@ export const Header = () => {
   return (
     <AntdHeader className="flex items-center justify-between p-5 pl-[20px] !bg-nomyx-dark2-light dark:!bg-nomyx-dark2-dark">
       <Link href={"/dashboard"} className="w-[140px] h-[40px]">
-        <Image src={logoLight} alt="Logo" width={150} height={40} priority className="block dark:hidden" />
-        <Image src={logoDark} alt="Logo" width={150} height={40} priority className="hidden dark:block" />
+        <Image src="/images/nomyx_logo_black.svg" alt="Logo" width={150} height={40} priority className="block dark:hidden" />
+        <Image src="/images/nomyx_logo_white.svg" alt="Logo" width={150} height={40} priority className="hidden dark:block" />
       </Link>
       <div className="hidden sm:flex items-center justify-end gap-5">
         {walletPreference !== WalletPreference.MANAGED && <w3m-button />}

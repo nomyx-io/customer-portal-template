@@ -171,12 +171,12 @@ const WalletSetup: React.FC<WalletSetupProps> = ({ setActiveTab, setRegistration
 
       {/* Buttons container at the bottom */}
       <div className="flex justify-between p-4 mt-auto">
-        <button onClick={handleBack} className="text-blue-500">
+        <button onClick={handleBack} className="text-nomyx-violet-light font-semibold">
           Back
         </button>
         <button
           onClick={handleNext}
-          className="bg-blue-500 text-white px-4 py-2 rounded"
+          className="bg-nomyx-violet-light text-white px-4 py-2 rounded"
           disabled={isNextButtonDisabled()} // Disable condition based on preference
         >
           Next
