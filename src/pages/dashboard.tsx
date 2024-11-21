@@ -28,12 +28,12 @@ const Dashboard: React.FC = () => {
   }, [retiredTokens]);
 
   const { currentValue, totalCarbon } = useMemo(() => {
-    const totalValue = tokens.reduce((acc: number, token: any) => acc + token.price * token.existingCredits, 0);
+    const totalValue = tokens.reduce((acc: number, token: any) => acc + parseFloat(token.price), 0);
     const totalCarbon = tokens.reduce((acc: number, token: any) => acc + parseFloat(token.existingCredits), 0);
     return { currentValue: totalValue, totalCarbon };
   }, [tokens]);
 
-  const retirableCarbon = useMemo(() => parseFloat(totalCarbon) - parseFloat(carbonRetired), [totalCarbon, carbonRetired]);
+  //const retirableCarbon = useMemo(() => parseFloat(totalCarbon) - parseFloat(carbonRetired), [totalCarbon, carbonRetired]);
 
   // Statistics data
   const stats = useMemo(
@@ -51,26 +51,18 @@ const Dashboard: React.FC = () => {
         icon: <DollarCircle className="text-nomyx-text-light dark:text-nomyx-text-dark" />,
         color: "text-nomyx-text-light dark:text-nomyx-text-dark",
       },
-      {
-        title: "Carbon Retired",
-        value: carbonRetired ? Intl.NumberFormat("en-US").format(carbonRetired) : "0",
-        icon: <Setting className="text-nomyx-text-light dark:text-nomyx-text-dark" />,
-        color: "text-nomyx-text-light dark:text-nomyx-text-dark",
-      },
-      {
-        title: "Retirable Carbon",
-        value: retirableCarbon > 0 ? Intl.NumberFormat("en-US").format(retirableCarbon) : "0",
-        icon: <Setting className="text-nomyx-text-light dark:text-nomyx-text-dark" />,
-        color: retirableCarbon > 0 ? "text-nomyx-success-light dark:text-nomyx-success-dark" : "text-nomyx-text-light dark:text-nomyx-text-dark",
-      },
     ],
-    [tokens.length, currentValue, carbonRetired, retirableCarbon]
+    [tokens.length, currentValue]
   );
+
+  // Filtered events
+  const salesEvents = useMemo(() => events.filter((event: any) => event.event === "Sales"), [events]);
+  const redemptionEvents = useMemo(() => events.filter((event: any) => event.event === "CarbonCreditsRetired"), [events]);
 
   // Chart data preparation
   const prepareTokenChartData = useCallback(() => {
     return {
-      labels: ["Total Tokens Purchased", "Total Tokens Retired"],
+      labels: ["Total Tokens Purchased", "Sales"],
       datasets: [
         {
           label: "Total Tokens Purchased",
@@ -78,8 +70,8 @@ const Dashboard: React.FC = () => {
           backgroundColor: "rgba(33, 102, 248, 0.8)",
         },
         {
-          label: "Total Tokens Retired",
-          data: [0, retiredTokens?.length || 0],
+          label: "Sales",
+          data: [0, salesEvents?.length || 0],
           backgroundColor: "rgba(255, 130, 0, 0.8)",
         },
       ],
@@ -147,10 +139,6 @@ const Dashboard: React.FC = () => {
     ],
     [prepareTokenChartData, prepareCarbonChartData, chartOptions]
   );
-
-  // Filtered events
-  const salesEvents = useMemo(() => events.filter((event: any) => event.event === "Sales"), [events]);
-  const redemptionEvents = useMemo(() => events.filter((event: any) => event.event === "CarbonCreditsRetired"), [events]);
 
   const sidebarTabItems = useMemo(
     () => [
