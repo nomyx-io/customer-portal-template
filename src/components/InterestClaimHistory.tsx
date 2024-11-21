@@ -18,9 +18,6 @@ const InterestClaimHistory = ({ token }: any) => {
   const [withdrawals, setWithdrawals] = useState<any>(token.tokenWithdrawals);
 
   useEffect(() => {
-    //fetch deposit data
-    //check for deposits on token
-    //if no token deposits, fetch tokens for deposit
     if (!withdrawals && appState) {
       const subscription = PubSub.subscribe(NomyxEvent.GemforceStateChange, function (event: any, data: any) {
         if (data.tokenWithdrawals) {

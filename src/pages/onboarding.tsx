@@ -8,16 +8,13 @@ import { useRouter } from "next/router";
 import Parse from "parse";
 import { toast } from "react-toastify";
 
-// Import the individual tab content components
+import AboutUs from "@/components/onboarding/about-us";
+import AccountActivation from "@/components/onboarding/account-activation";
+import IDVerification from "@/components/onboarding/id-verification";
+import TermsConditions from "@/components/onboarding/terms-conditions";
+import WalletSetup from "@/components/onboarding/wallet-setup";
 import { Registration } from "@/utils/Constants";
 
-import AboutUs from "../components/onboarding/about-us";
-import AccountActivation from "../components/onboarding/account-activation";
-import IDVerification from "../components/onboarding/id-verification";
-import TermsConditions from "../components/onboarding/terms-conditions";
-import WalletSetup from "../components/onboarding/wallet-setup";
-
-// Define the tab type
 interface Tab {
   key: string;
   label: string;

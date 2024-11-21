@@ -3,7 +3,6 @@ import React, { createContext, useState, useContext, useEffect, Component } from
 import { AntdRegistry } from "@ant-design/nextjs-registry";
 import { createWeb3Modal, defaultWagmiConfig } from "@web3modal/wagmi/react";
 import { ConfigProvider, theme } from "antd/es";
-import { ethers } from "ethers";
 import { AppProps } from "next/app";
 import { useRouter } from "next/router";
 import { signIn, signOut, useSession } from "next-auth/react";
@@ -11,7 +10,6 @@ import PubSub from "pubsub-js";
 import { toast } from "react-toastify";
 import { Chain, sepolia, useAccount, useDisconnect, WagmiConfig } from "wagmi";
 
-import siweConfig from "@/auth/SiweConfig";
 import { MainLayout } from "@/components/MainLayout/MainLayout";
 import GemforceAppState from "@/context/GemforceAppState";
 import initializeParse from "@/InitializeParse";

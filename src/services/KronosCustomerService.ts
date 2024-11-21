@@ -2,10 +2,10 @@ import { WebAuthnSigner } from "@dfns/sdk-browser";
 import { formatUnits } from "ethers";
 import Parse from "parse";
 
+import ParseService from "./ParseService";
 import { base64url } from "@/utils/base64url";
 import { createRecoveryCredential, KeyClientData, signRecoveryCredentials, validateRecoveryKey } from "@/utils/dfnsRecoveryKey";
 
-import ParseService from "./ParseService";
 
 class KronosCustomerService {
   private static _instance: KronosCustomerService;

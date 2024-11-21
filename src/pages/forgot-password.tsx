@@ -5,12 +5,13 @@ import React from "react";
 import { Layout } from "antd";
 import { Form, Input, Card, Radio, Button } from "antd/es";
 import Image from "next/image";
-import Link from "next/link"; // Import Link from next/link
+import Link from "next/link";
+import { useRouter } from "next/navigation";
 import Parse from "parse";
 import { SubmitHandler } from "react-hook-form";
 import { toast } from "react-toastify";
-import { useRouter } from "next/navigation";
-import Header from "../components/global/auth_header";
+
+import Header from "@/components/global/auth_header";
 
 type ForgotPasswordFormInputs = {
   email: string;

@@ -10,10 +10,9 @@ import { signIn, getCsrfToken } from "next-auth/react";
 import { toast } from "react-toastify";
 import { useAccount, useDisconnect } from "wagmi";
 
+import Header from "../components/global/auth_header";
 import { StandardCredentials, EthereumCredentials } from "@/auth/Credentials";
 import { LoginPreference } from "@/utils/Constants";
-
-import Header from "../components/global/auth_header";
 
 const Credentials = [StandardCredentials, EthereumCredentials];
 
