@@ -76,25 +76,7 @@ const Dashboard: React.FC = () => {
         },
       ],
     };
-  }, [tokens.length, retiredTokens.length]);
-
-  const prepareCarbonChartData = useCallback(() => {
-    return {
-      labels: ["Total Carbon Purchased", "Total Carbon Retired"],
-      datasets: [
-        {
-          label: "Total Carbon Purchased",
-          data: [totalCarbon, 0],
-          backgroundColor: "rgba(33, 102, 248, 0.8)",
-        },
-        {
-          label: "Total Carbon Retired",
-          data: [0, carbonRetired],
-          backgroundColor: "rgba(255, 130, 0, 0.8)",
-        },
-      ],
-    };
-  }, [totalCarbon, carbonRetired]);
+  }, [tokens.length, salesEvents?.length]);
 
   // Chart options
   const chartOptions: any = useMemo(
@@ -130,14 +112,8 @@ const Dashboard: React.FC = () => {
         children: <Bar data={prepareTokenChartData()} options={chartOptions} />,
         className: "chart",
       },
-      {
-        key: "2",
-        label: "Carbon Insights",
-        children: <Bar data={prepareCarbonChartData()} options={chartOptions} />,
-        className: "chart",
-      },
     ],
-    [prepareTokenChartData, prepareCarbonChartData, chartOptions]
+    [prepareTokenChartData, chartOptions]
   );
 
   const sidebarTabItems = useMemo(
