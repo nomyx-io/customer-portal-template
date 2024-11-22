@@ -1,47 +1,34 @@
 import React, { useState } from "react";
 
-import {
-  EyeOutlined,
-  FilterOutlined,
-  SortAscendingOutlined,
-  SortDescendingOutlined,
-} from "@ant-design/icons";
+import { EyeOutlined, FilterOutlined, SortAscendingOutlined, SortDescendingOutlined } from "@ant-design/icons";
 import { Popover, Input, Button as AntButton } from "antd";
 import Image from "next/image";
 
 interface ProjectListViewProps {
-  projects: Project[];
+  projects: Parse.Object<Project>[];
   className?: string;
-  onProjectClick: (project: Project) => void; // Add onProjectClick prop
+  onProjectClick: (project: Parse.Object<Project>) => void;
 }
 
-export default function ProjectListView({
-  projects,
-  className,
-  onProjectClick,
-}: ProjectListViewProps) {
+export default function ProjectListView({ projects, className, onProjectClick }: ProjectListViewProps) {
   const [sortOrder, setSortOrder] = useState<"asc" | "desc" | null>(null);
   const [filterQuery, setFilterQuery] = useState<string>("");
 
   // Sort and Filter Logic
   const sortedAndFilteredProjects = projects
-    .filter((project) =>
-      project.title.toLowerCase().includes(filterQuery.toLowerCase()),
-    )
+    .filter((project) => project.attributes.title.toLowerCase().includes(filterQuery.toLowerCase()))
     .sort((a, b) => {
       if (!sortOrder) return 0;
       if (sortOrder === "asc") {
-        return a.title.localeCompare(b.title);
+        return a.attributes.title.localeCompare(b.attributes.title);
       } else {
-        return b.title.localeCompare(a.title);
+        return b.attributes.title.localeCompare(a.attributes.title);
       }
     });
 
   // Toggle Sort Order
   const toggleSortOrder = () => {
-    setSortOrder((prevOrder) =>
-      prevOrder === "asc" ? "desc" : prevOrder === "desc" ? null : "asc",
-    );
+    setSortOrder((prevOrder) => (prevOrder === "asc" ? "desc" : prevOrder === "desc" ? null : "asc"));
   };
 
   // Handle filter input change
@@ -52,12 +39,7 @@ export default function ProjectListView({
   // Popover Content for Filter
   const filterContent = (
     <div className="p-2">
-      <Input
-        placeholder="Filter by title"
-        value={filterQuery}
-        onChange={handleFilterChange}
-        className="mb-2"
-      />
+      <Input placeholder="Filter by title" value={filterQuery} onChange={handleFilterChange} className="mb-2" />
       <AntButton type="primary" onClick={() => setFilterQuery("")}>
         Clear Filter
       </AntButton>
@@ -65,9 +47,7 @@ export default function ProjectListView({
   );
 
   return (
-    <div
-      className={`pt-0 pb-4 bg-white dark:bg-nomyx-dark2-dark text-nomyx-text-light dark:text-nomyx-text-dark rounded-lg ${className}`}
-    >
+    <div className={`pt-0 pb-4 bg-white dark:bg-nomyx-dark2-dark text-nomyx-text-light dark:text-nomyx-text-dark rounded-lg ${className}`}>
       {/* Header */}
       <div className="flex items-center p-4 border-b bg-gray-100 dark:bg-nomyx-dark1-dark">
         <div className="w-5/12 font-semibold flex items-center justify-between">
@@ -87,11 +67,7 @@ export default function ProjectListView({
               onClick={toggleSortOrder}
             />
 
-            <Popover
-              content={filterContent}
-              title="Filter by Title"
-              trigger="click"
-            >
+            <Popover content={filterContent} title="Filter by Title" trigger="click">
               <AntButton type="text" icon={<FilterOutlined title="Filter" />} />
             </Popover>
           </div>
@@ -108,24 +84,14 @@ export default function ProjectListView({
           <div className="w-5/12 flex items-center">
             <div className="flex justify-center items-center pr-4 border-r">
               {/* Eye Icon triggers onProjectClick */}
-              <EyeOutlined
-                className="text-xl cursor-pointer hover:text-blue-500"
-                onClick={() => onProjectClick(project)}
-              />
+              <EyeOutlined className="text-xl cursor-pointer hover:text-blue-500" onClick={() => onProjectClick(project)} />
             </div>
             <div className="w-12 h-12 relative rounded overflow-hidden flex-shrink-0 ml-4">
-              <Image
-                src={project.logo.url() || "/default-image.png"}
-                alt={project.title}
-                fill
-                className="object-cover"
-              />
+              <Image src={project.attributes.logo.url() || "/default-image.png"} alt={project.attributes.title} fill className="object-cover" />
             </div>
-            <h2 className="ml-4 text-lg font-semibold">{project.title}</h2>
+            <h2 className="ml-4 text-lg font-semibold">{project.attributes.title}</h2>
           </div>
-          <div className="w-7/12 text-sm text-gray-600 dark:text-gray-400 pl-4 truncate">
-            {project.description}
-          </div>
+          <div className="w-7/12 text-sm text-gray-600 dark:text-gray-400 pl-4 truncate">{project.attributes.description}</div>
         </div>
       ))}
     </div>

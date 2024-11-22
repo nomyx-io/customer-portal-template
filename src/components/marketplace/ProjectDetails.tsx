@@ -18,7 +18,7 @@ import KronosCustomerService from "@/services/KronosCustomerService";
 import { NomyxEvent, WalletPreference } from "@/utils/Constants";
 
 interface ProjectDetailsProps {
-  project: Project;
+  project: Parse.Object<Project>;
   onBack: () => void;
 }
 
@@ -375,6 +375,7 @@ const ProjectDetails: React.FC<ProjectDetailsProps> = ({ project, onBack }) => {
           <TokenDetail
             tokens={tokens}
             currentIndex={tokens.findIndex((t) => t.tokenId === selectedToken.tokenId)}
+            project={project}
             onBack={handleBackToListings}
             onTokenAction={handleIndividualPurchase}
             tokenActionLabel="Purchase"
@@ -407,13 +408,19 @@ const ProjectDetails: React.FC<ProjectDetailsProps> = ({ project, onBack }) => {
               <div className="absolute bottom-4 left-0 flex items-center p-4 rounded-lg">
                 {/* Project Image */}
                 <div className="project-logo rounded-lg overflow-hidden" style={{ width: "100px", height: "100px" }}>
-                  <Image src={project.coverImage?.url()} width={100} height={25} alt="Project Logo" className="object-cover w-full h-full" />
+                  <Image
+                    src={project.attributes.coverImage?.url()}
+                    width={100}
+                    height={25}
+                    alt="Project Logo"
+                    className="object-cover w-full h-full"
+                  />
                 </div>
 
                 {/* Project Title and Description */}
                 <div className="text-white flex-1 mx-4">
-                  <h1 className="text-3xl font-bold">{project.title}</h1>
-                  <p className="text-sm mt-2 max-w-md break-words">{project.description}</p>
+                  <h1 className="text-3xl font-bold">{project.attributes.title}</h1>
+                  <p className="text-sm mt-2 max-w-md break-words">{project.attributes.description}</p>
                 </div>
               </div>
 

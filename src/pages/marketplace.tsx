@@ -9,35 +9,25 @@ import ProjectListView from "@/components/marketplace/ProjectListView";
 import KronosCustomerService from "@/services/KronosCustomerService";
 
 const Marketplace: React.FC = () => {
-  const [projectList, setProjectList] = useState<Project[]>([]);
+  const [projectList, setProjectList] = useState<Parse.Object<Project>[]>([]);
   const [searchQuery, setSearchQuery] = useState<string>("");
   const [viewMode, setViewMode] = useState<string>("card");
-  const [selectedProject, setSelectedProject] = useState<Project | null>(null);
+  const [selectedProject, setSelectedProject] = useState<Parse.Object<Project> | null>(null);
 
   // Memoize the filtered projects to prevent unnecessary recalculations
   const filteredProjects = useMemo(() => {
     return projectList.filter(
       (project) =>
-        project.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        project.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        project.registryURL.toLowerCase().includes(searchQuery.toLowerCase())
+        project.attributes.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        project.attributes.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        project.attributes.registryURL.toLowerCase().includes(searchQuery.toLowerCase())
     );
   }, [projectList, searchQuery]);
 
   const fetchProjects = useCallback(async () => {
     try {
       const projects = await KronosCustomerService.getProjects();
-      setProjectList(
-        projects?.map((project) => ({
-          id: project.id,
-          title: project.attributes.title,
-          description: project.attributes.description,
-          logo: project.attributes.logo,
-          coverImage: project.attributes.coverImage,
-          registryURL: project.attributes.registryURL,
-          metadata: project.attributes.metadata,
-        })) || []
-      );
+      setProjectList(projects);
     } catch (error) {
       console.error("Failed to fetch projects:", error);
     }
@@ -58,7 +48,7 @@ const Marketplace: React.FC = () => {
   };
 
   // Handle project card or list item click
-  const handleProjectClick = (project: Project) => {
+  const handleProjectClick = (project: Parse.Object<Project>) => {
     setSelectedProject(project);
   };
 
