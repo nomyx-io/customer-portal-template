@@ -398,13 +398,7 @@ const ProjectDetails: React.FC<ProjectDetailsProps> = ({ project, onBack }) => {
               <div className="absolute bottom-4 left-0 flex items-center p-4 rounded-lg">
                 {/* Project Image */}
                 <div className="project-logo rounded-lg overflow-hidden" style={{ width: "100px", height: "100px" }}>
-                  <Image
-                    src={project.attributes.coverImage?.url()}
-                    width={100}
-                    height={25}
-                    alt="Project Logo"
-                    className="object-cover w-full h-full"
-                  />
+                  <Image src={project.attributes.logo?.url()} width={100} height={25} alt="Project Logo" className="object-cover w-full h-full" />
                 </div>
 
                 {/* Project Title and Description */}
