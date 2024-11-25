@@ -7,7 +7,7 @@ import { toast } from "react-toastify";
 
 import ListingRetiredTokens from "@/components/ListingRetiredTokens";
 import TokenDetail from "@/components/TokenDetail";
-import { Industries } from "@/constants/constants";
+import { Industries } from "@/config/generalConfig";
 import { useGemforceApp } from "@/context/GemforceAppContext";
 import BlockchainService from "@/services/BlockchainService";
 import KronosCustomerService from "@/services/KronosCustomerService";

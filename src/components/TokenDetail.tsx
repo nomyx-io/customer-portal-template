@@ -1,13 +1,16 @@
 import React, { useState, useEffect, useRef, useCallback, useMemo } from "react";
 
-import { ArrowLeftOutlined, LeftOutlined, RightOutlined } from "@ant-design/icons";
 import { Button, Tabs, Carousel } from "antd";
 import dayjs from "dayjs";
 import isBetween from "dayjs/plugin/isBetween";
+import { ArrowLeft2, ArrowRight2, ArrowLeft } from "iconsax-react";
 
 import ItemActivity from "@/components/ItemActivitySection";
 import ProjectInfo from "@/components/marketplace/ProjectInfo";
-import { Industries, carbonCreditFields, tradeFinanceFields, tokenizedDebtFields } from "@/constants/constants";
+import { carbonCreditFields } from "@/config/carbonCreditConfig";
+import { Industries, projectInfoComponents } from "@/config/generalConfig";
+import { tokenizedDebtFields } from "@/config/tokenizedDebtConfig";
+import { tradeFinanceFields } from "@/config/tradeFinanceConfig";
 import BlockchainService from "@/services/BlockchainService";
 import { hashToColor } from "@/utils/colorUtils";
 import { formatPrice } from "@/utils/currencyFormater";
@@ -53,20 +56,7 @@ const TokenDetail: React.FC<TokenDetailProps> = ({ tokens, currentIndex, project
 
   const updateFields = useCallback(() => {
     const defaultFields: any = project?.attributes.fields || [];
-    let industryFields: any[] = [];
-    switch (project?.attributes.industryTemplate) {
-      case Industries.CARBON_CREDIT:
-        industryFields = carbonCreditFields;
-        break;
-      case Industries.TRADE_FINANCE:
-        industryFields = tradeFinanceFields;
-        break;
-      case Industries.TOKENIZED_DEBT:
-        industryFields = tokenizedDebtFields;
-        break;
-      default:
-        industryFields = [];
-    }
+    const industryFields = projectInfoComponents[project?.attributes.industryTemplate as keyof typeof projectInfoComponents]?.fields || [];
     setCombinedFields([...defaultFields, ...industryFields]);
   }, [project]);
 
@@ -177,43 +167,6 @@ const TokenDetail: React.FC<TokenDetailProps> = ({ tokens, currentIndex, project
     }
   };
 
-  // Prepare industry-specific component logic
-  const getIndustryComponent = (token: any) => {
-    switch (project?.attributes.industryTemplate) {
-      case Industries.CARBON_CREDIT:
-        return (
-          <ProjectInfo
-            token={token}
-            combinedFields={combinedFields}
-            includeFields={includeFields}
-            carbonCreditBalance={carbonCreditBalance}
-            formatValueByType={(type, value) => (value ? value.toString() : "N/A")}
-            onTokenAction={onTokenAction}
-            tokenActionLabel={tokenActionLabel}
-          />
-        );
-
-      case Industries.TRADE_FINANCE:
-        return (
-          <div>
-            {/* Render Trade Finance-specific content */}
-            {/* <h3 className="text-xl font-bold text-gray-900 dark:text-white">Trade Finance Details</h3> */}
-          </div>
-        );
-
-      case Industries.TOKENIZED_DEBT:
-        return (
-          <div>
-            {/* Render Tokenized Debt-specific content */}
-            {/* <h3 className="text-xl font-bold text-gray-900 dark:text-white">Tokenized Debt Details</h3> */}
-          </div>
-        );
-
-      default:
-        return <div>{/* <h3 className="text-xl font-bold text-gray-900 dark:text-white">Default Industry Details</h3> */}</div>;
-    }
-  };
-
   return (
     <div className="p-4 dark:bg-nomyx-dark1-dark dark:text-white bg-white text-gray-900">
       {/* Header Section with Token Title, Navigation Buttons */}
@@ -233,7 +186,7 @@ const TokenDetail: React.FC<TokenDetailProps> = ({ tokens, currentIndex, project
                       dark:border-gray-700
                       !hover:bg-white !dark:hover:bg-gray-800 !hover:text-gray-900 !dark:hover:text-white"
           >
-            <ArrowLeftOutlined className="mr-2" />
+            <ArrowLeft className="mr-2" />
             Back
           </button>
         )}
@@ -241,10 +194,10 @@ const TokenDetail: React.FC<TokenDetailProps> = ({ tokens, currentIndex, project
         {/* Navigation Buttons */}
         <div className="flex items-center gap-2">
           <Button type="text" className="px-2 py-0" onClick={handlePrev}>
-            <LeftOutlined style={{ fontSize: "20px", color: "black" }} />
+            <ArrowLeft2 style={{ fontSize: "20px" }} />
           </Button>
           <Button type="text" className="px-2 py-0" onClick={handleNext}>
-            <RightOutlined style={{ fontSize: "20px", color: "black" }} />
+            <ArrowRight2 style={{ fontSize: "20px" }} />
           </Button>
         </div>
       </div>
@@ -269,7 +222,14 @@ const TokenDetail: React.FC<TokenDetailProps> = ({ tokens, currentIndex, project
                 </div>
 
                 {/* Render Industry-Specific Component */}
-                {getIndustryComponent(token)}
+                {projectInfoComponents[project?.attributes.industryTemplate as keyof typeof projectInfoComponents]?.component({
+                  token,
+                  combinedFields,
+                  includeFields,
+                  carbonCreditBalance,
+                  onTokenAction,
+                  tokenActionLabel,
+                })}
               </div>
 
               {/* Project Info Section */}
