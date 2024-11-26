@@ -1,36 +1,39 @@
-import React, { useState, useEffect, useRef, useCallback } from "react";
+import React, { useState, useEffect, useRef, useCallback, useMemo } from "react";
 
-import { ArrowLeftOutlined, LeftOutlined, RightOutlined } from "@ant-design/icons";
-import { Button, Card, Tabs, Carousel } from "antd";
+import { Button, Tabs, Carousel } from "antd";
 import dayjs from "dayjs";
 import isBetween from "dayjs/plugin/isBetween";
+import { ArrowLeft2, ArrowRight2, ArrowLeft } from "iconsax-react";
 
 import ItemActivity from "@/components/ItemActivitySection";
+import ProjectInfo from "@/components/marketplace/ProjectInfo";
+import { carbonCreditFields } from "@/config/carbonCreditConfig";
+import { Industries, projectInfoComponents } from "@/config/generalConfig";
+import { tokenizedDebtFields } from "@/config/tokenizedDebtConfig";
+import { tradeFinanceFields } from "@/config/tradeFinanceConfig";
 import BlockchainService from "@/services/BlockchainService";
-import KronosCustomerService from "@/services/KronosCustomerService";
 import { hashToColor } from "@/utils/colorUtils";
 import { formatPrice } from "@/utils/currencyFormater";
+
 dayjs.extend(isBetween);
 
 interface TokenDetailProps {
   tokens: any[];
   currentIndex: number;
+  project: Parse.Object<Project>;
   onBack?: () => void;
   onTokenAction: (token: any) => void;
   tokenActionLabel: string;
+  onSlideChange?: (token: any) => void;
 }
 
-const TokenDetail: React.FC<TokenDetailProps> = ({ tokens, currentIndex, onBack, onTokenAction, tokenActionLabel }) => {
+const TokenDetail: React.FC<TokenDetailProps> = ({ tokens, currentIndex, project, onBack, onTokenAction, tokenActionLabel, onSlideChange }) => {
   const carouselRef: any = useRef(null);
 
   const [carbonCreditBalance, setCarbonCreditBalance] = useState<number | null>(null);
   const [activeSlide, setActiveSlide] = useState<number>(currentIndex);
+  const [combinedFields, setCombinedFields] = useState<any[]>([]);
 
-  // State variables for project data
-  const [project, setProject] = useState<any>(null);
-  const projectCacheRef = useRef<{ [key: string]: any }>({});
-
-  console.log("tokens", tokens);
   const fetchCarbonCreditBalance = useCallback(async (tokenId: number) => {
     try {
       const balance = await BlockchainService.getCarbonCreditBalance(tokenId);
@@ -50,6 +53,16 @@ const TokenDetail: React.FC<TokenDetailProps> = ({ tokens, currentIndex, onBack,
 
     fetchInitialCarbonCredits();
   }, [tokens, currentIndex, fetchCarbonCreditBalance]);
+
+  const updateFields = useCallback(() => {
+    const defaultFields: any = project?.attributes.fields || [];
+    const industryFields = projectInfoComponents[project?.attributes.industryTemplate as keyof typeof projectInfoComponents]?.fields || [];
+    setCombinedFields([...defaultFields, ...industryFields]);
+  }, [project]);
+
+  useEffect(() => {
+    updateFields();
+  }, [updateFields, project, activeSlide]);
 
   const generateSvgIcon = (color: string) => {
     return (
@@ -78,10 +91,12 @@ const TokenDetail: React.FC<TokenDetailProps> = ({ tokens, currentIndex, onBack,
   };
 
   const handleNext = () => {
+    setCarbonCreditBalance(null);
     carouselRef?.current?.next();
   };
 
   const handlePrev = () => {
+    setCarbonCreditBalance(null);
     carouselRef?.current?.prev();
   };
 
@@ -90,36 +105,38 @@ const TokenDetail: React.FC<TokenDetailProps> = ({ tokens, currentIndex, onBack,
       setActiveSlide(current);
       if (tokens[current]) {
         fetchCarbonCreditBalance(tokens[current].tokenId);
+
+        if (onSlideChange) {
+          onSlideChange(tokens[current]);
+        }
       }
     },
-    [fetchCarbonCreditBalance, tokens]
+    [fetchCarbonCreditBalance, tokens, onSlideChange]
   );
 
-  // Define an includeFields array for Token Info
-  const includeFields: {
-    key: any;
-    label: string;
-    formatter?: (value: any) => React.ReactNode;
-  }[] = [
-    {
-      key: "title",
-      label: "Title",
-    },
-    {
-      key: "description",
-      label: "Description",
-    },
-    {
-      key: "issuanceDate",
-      label: "Issuance Date",
-      formatter: (value: string) => dayjs(value).format("MM-DD-YYYY"),
-    },
-    {
-      key: "price",
-      label: "Price",
-      formatter: (value: string) => `${formatPrice(Number(value), "USD")}`,
-    },
-  ];
+  const includeFields = useMemo(
+    () => [
+      {
+        key: "title",
+        label: "Title",
+      },
+      {
+        key: "description",
+        label: "Description",
+      },
+      {
+        key: "issuanceDate",
+        label: "Issuance Date",
+        formatter: (value: string) => dayjs(value).format("MM-DD-YYYY"),
+      },
+      {
+        key: "price",
+        label: "Price",
+        formatter: (value: string) => `${formatPrice(Number(value), "USD")}`,
+      },
+    ],
+    []
+  );
 
   const formatValueByType = (type: string, value: any): React.ReactNode => {
     // chek if value is undefined or null or empty
@@ -150,61 +167,6 @@ const TokenDetail: React.FC<TokenDetailProps> = ({ tokens, currentIndex, onBack,
     }
   };
 
-  // Function to fetch project data based on projectId with caching
-  const fetchProjectData = useCallback(async (projectId: string) => {
-    // Check if project is already cached
-    if (projectCacheRef.current[projectId]) {
-      setProject(projectCacheRef.current[projectId]);
-      return;
-    }
-
-    try {
-      // Fetch projects by IDs (assuming KronosCustomerService returns an array)
-      const response = await KronosCustomerService.getProjectsByIds([projectId]);
-
-      const fetchedProject = response[0];
-
-      // Parse fields if they are a JSON string
-      let parsedFields = [];
-      if (typeof fetchedProject.attributes.fields === "string") {
-        try {
-          parsedFields = JSON.parse(fetchedProject.attributes.fields);
-        } catch (error) {
-          console.error("Failed to parse project attributes.fields:", error);
-          parsedFields = [];
-        }
-      } else if (Array.isArray(fetchedProject.attributes.fields)) {
-        parsedFields = fetchedProject.attributes.fields;
-      } else {
-        parsedFields = [];
-      }
-
-      // Update the project object with parsed fields
-      const updatedProject = {
-        ...fetchedProject,
-        attributes: {
-          ...fetchedProject.attributes,
-          fields: parsedFields,
-        },
-      };
-
-      // Cache the fetched project
-      projectCacheRef.current[projectId] = updatedProject;
-
-      setProject(updatedProject);
-    } catch (error) {
-      console.error("Failed to fetch project data:", error);
-    }
-  }, []);
-
-  // Fetch project data whenever the active slide changes
-  useEffect(() => {
-    const currentTokenObj = tokens[activeSlide];
-    if (currentTokenObj) {
-      fetchProjectData(currentTokenObj.projectId);
-    }
-  }, [activeSlide, tokens, fetchProjectData]);
-
   return (
     <div className="p-4 dark:bg-nomyx-dark1-dark dark:text-white bg-white text-gray-900">
       {/* Header Section with Token Title, Navigation Buttons */}
@@ -224,7 +186,7 @@ const TokenDetail: React.FC<TokenDetailProps> = ({ tokens, currentIndex, onBack,
                       dark:border-gray-700
                       !hover:bg-white !dark:hover:bg-gray-800 !hover:text-gray-900 !dark:hover:text-white"
           >
-            <ArrowLeftOutlined className="mr-2" />
+            <ArrowLeft className="mr-2" />
             Back
           </button>
         )}
@@ -232,10 +194,10 @@ const TokenDetail: React.FC<TokenDetailProps> = ({ tokens, currentIndex, onBack,
         {/* Navigation Buttons */}
         <div className="flex items-center gap-2">
           <Button type="text" className="px-2 py-0" onClick={handlePrev}>
-            <LeftOutlined style={{ fontSize: "20px", color: "black" }} />
+            <ArrowLeft2 style={{ fontSize: "20px" }} />
           </Button>
           <Button type="text" className="px-2 py-0" onClick={handleNext}>
-            <RightOutlined style={{ fontSize: "20px", color: "black" }} />
+            <ArrowRight2 style={{ fontSize: "20px" }} />
           </Button>
         </div>
       </div>
@@ -244,7 +206,6 @@ const TokenDetail: React.FC<TokenDetailProps> = ({ tokens, currentIndex, onBack,
       <Carousel ref={carouselRef} dots={false} initialSlide={currentIndex} afterChange={handleAfterChange}>
         {tokens.map((token: any, index: number) => {
           const color = hashToColor(token?.tokenId || "default"); // Generate SVG based on tokenId
-          const totalCost = parseInt(token.price) * parseInt(token.existingCredits);
 
           return (
             <div key={index}>
@@ -260,49 +221,15 @@ const TokenDetail: React.FC<TokenDetailProps> = ({ tokens, currentIndex, onBack,
                   <p className="text-sm text-gray-600 dark:text-gray-400 mt-2">{token?.description || "Description text..."}</p>
                 </div>
 
-                {/* Pricing Info Section */}
-                <div className="flex flex-col justify-start mt-10 md:mt-0">
-                  <Card className="border dark:border-gray-700 border-gray-300 bg-gray-100 dark:bg-nomyx-dark2-dark p-6 rounded-lg shadow-md">
-                    <div className="border border-gray-300 dark:border-gray-600 p-4 rounded-md">
-                      <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Pricing Info</h3>
-                      <div className="text-gray-800 dark:text-gray-200 space-y-4">
-                        {[
-                          {
-                            label: "Price Per Credit:",
-                            value: `${formatPrice(token.price, "USD")}`,
-                          },
-                          {
-                            label: "Existing Credits:",
-                            value: `${formatPrice(token.existingCredits, "USD")}`,
-                          },
-                          {
-                            label: "Total Cost:",
-                            value: `${formatPrice(totalCost, "USD")}` || "Calculating...",
-                          },
-                        ].map((item, index) => (
-                          <div key={index} className="flex flex-wrap items-center">
-                            <span className="font-semibold w-full md:w-1/2">{item.label}</span>
-                            <span className="bg-white dark:bg-nomyx-dark2-dark text-gray-900 dark:text-white border border-gray-300 dark:border-gray-600 shadow-md px-4 py-2 rounded-md w-full md:w-1/2 mt-1 md:mt-0 overflow-hidden text-ellipsis whitespace-nowrap">
-                              {item.value}
-                            </span>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                    <div className="mt-6">
-                      <div className="text-gray-900 dark:text-white font-bold text-lg mb-2">Carbon Credits:</div>
-                      <div className="text-3xl font-bold text-gray-900 dark:text-white">
-                        {carbonCreditBalance !== null ? Intl.NumberFormat("en-US").format(carbonCreditBalance) : "Loading..."}
-                      </div>
-                      <button
-                        className="w-full mt-4 bg-blue-500 text-white font-bold py-3 px-6 rounded-md transition hover:bg-blue-700 hover:brightness-110 flex items-center justify-center border-none"
-                        onClick={() => onTokenAction && onTokenAction(token)}
-                      >
-                        {tokenActionLabel}
-                      </button>
-                    </div>
-                  </Card>
-                </div>
+                {/* Render Industry-Specific Component */}
+                {projectInfoComponents[project?.attributes.industryTemplate as keyof typeof projectInfoComponents]?.component({
+                  token,
+                  combinedFields,
+                  includeFields,
+                  carbonCreditBalance,
+                  onTokenAction,
+                  tokenActionLabel,
+                })}
               </div>
 
               {/* Project Info Section */}
@@ -327,12 +254,12 @@ const TokenDetail: React.FC<TokenDetailProps> = ({ tokens, currentIndex, onBack,
                   </div>
                 </div>
 
-                {/* Credit Info Section */}
+                {/* Metadata Section */}
                 <div className="border border-gray-300 dark:border-gray-700 rounded-lg p-6 bg-white dark:bg-nomyx-dark2-dark">
                   <h3 className="text-xl font-bold mb-6 text-gray-900 dark:text-white">Metadata Info</h3>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-6">
-                    {project && Array.isArray(project.attributes.fields) && project.attributes.fields.length > 0 ? (
-                      project.attributes.fields.map((field: any) => {
+                    {combinedFields.length > 0 ? (
+                      combinedFields.map((field: any) => {
                         const value = token[field.key];
                         return (
                           <div key={field.key} className="flex items-center gap-4">

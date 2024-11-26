@@ -4,6 +4,7 @@ import Parse from "parse";
 
 import { base64url } from "@/utils/base64url";
 import { createRecoveryCredential, KeyClientData, signRecoveryCredentials, validateRecoveryKey } from "@/utils/dfnsRecoveryKey";
+import { sanitizeProjects } from "@/utils/objectFormatter";
 
 import ParseService from "./ParseService";
 
@@ -22,14 +23,21 @@ class KronosCustomerService {
     // return customer;
   }
 
+  private async fetchProjects(queryField: string | null, queryValues: any[] | null): Promise<Parse.Object<Project>[]> {
+    const filters = queryField && queryValues ? [queryField] : [];
+    const values = queryValues || [];
+    const records = (await ParseService.getRecords("TokenProject", filters, values, ["*"])) as Parse.Object<Project>[];
+
+    const sanitizedRecords = sanitizeProjects(records);
+    return sanitizedRecords || [];
+  }
+
   public async getProjects() {
-    let records = await ParseService.getRecords("TokenProject", [], [], ["*"]);
-    return records;
+    return this.fetchProjects(null, null);
   }
 
   public async getProjectsByIds(projectIds: string[]) {
-    let records = await ParseService.getRecords("TokenProject", ["objectId"], [projectIds], ["*"]);
-    return records || [];
+    return this.fetchProjects("objectId", projectIds);
   }
 
   public async getTokensForUser(address: string) {

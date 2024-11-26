@@ -1,9 +1,23 @@
-interface Project {
-  id: string;
-  title: string;
-  description: string;
-  registryURL: string;
-  logo: Parse.File;
+interface Project extends Parse.Attributes {
   coverImage: Parse.File;
-  metadata: Record<string, any>;
+  createdAt: Date;
+  description: string;
+  fields?: DefaultField[] | string;
+  industryTemplate: string;
+  logo: Parse.File;
+  title: string;
+  updatedAt: Date;
+}
+
+interface DefaultField {
+  name: string;
+  type: "text" | "number" | "date" | "boolean";
+  key: string;
+}
+
+// Then extand that for each industry fields
+interface CarbonCredit extends DefaultField {
+  label: string;
+  placeHolder: string;
+  rules: any[];
 }

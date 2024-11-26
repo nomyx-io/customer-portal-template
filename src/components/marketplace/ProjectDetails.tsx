@@ -4,21 +4,21 @@ import { Button, Card, Modal, Tabs, Table } from "antd";
 import { ethers } from "ethers";
 import { SearchNormal1, Category, RowVertical, ArrowLeft } from "iconsax-react";
 import Image from "next/image";
-import { useRouter } from "next/router";
 import PubSub from "pubsub-js";
 import { toast } from "react-toastify";
 
 import TokenCardView from "@/components/marketplace/TokenCardView";
 import TokenListView from "@/components/marketplace/TokenListView";
 import TokenDetail from "@/components/TokenDetail";
+import { actions } from "@/config/carbonCreditConfig";
 import { useGemforceApp } from "@/context/GemforceAppContext";
-import projectBackground from "@/images/projects_background.png"; // Import the background image
+import projectBackground from "@/images/projects_background.png";
 import BlockchainService from "@/services/BlockchainService";
 import KronosCustomerService from "@/services/KronosCustomerService";
 import { NomyxEvent, WalletPreference } from "@/utils/Constants";
 
 interface ProjectDetailsProps {
-  project: Project;
+  project: Parse.Object<Project>;
   onBack: () => void;
 }
 
@@ -264,38 +264,23 @@ const ProjectDetails: React.FC<ProjectDetailsProps> = ({ project, onBack }) => {
   };
 
   // Function to handle individual token purchase
+
   const handleIndividualPurchase = async (token: any) => {
     toast.promise(
       async () => {
         try {
-          const processPurchase = async () => {
-            await new Promise((resolve) => setTimeout(resolve, 5000));
+          const onComplete = async () => {
             setListings((prevListings) => prevListings.filter((item) => item.tokenId !== token.tokenId));
-            await fetchSales(); // Refresh sales list if needed
+            await fetchSales();
             await appState.refreshTokens();
           };
 
-          if (walletPreference == WalletPreference.PRIVATE) {
-            var response = await BlockchainService.purchaseTokens([token]);
-            if (response == "rejected") {
-              throw "The purchase was rejected.";
-            }
-            await processPurchase();
-          } else if (walletPreference === WalletPreference.MANAGED) {
-            // Call dfns if user is using managed wallet
-            console.log("Inside individual purchase with managed wallet");
-            try {
-              await handleApprovalAndPurchase(token.tokenId, token.price);
-              await processPurchase();
-            } catch (e) {
-              throw e;
-            }
-          } else {
-            throw "Invalid wallet preference";
-          }
-        } catch (e) {
-          console.log(e);
-          throw e;
+          const processPurchase = await actions.handleIndividualPurchase(token, walletPreference, handleApprovalAndPurchase);
+
+          await processPurchase(onComplete);
+        } catch (error) {
+          console.error("Error during purchase:", error);
+          throw error;
         }
       },
       {
@@ -303,7 +288,12 @@ const ProjectDetails: React.FC<ProjectDetailsProps> = ({ project, onBack }) => {
         success: `Successfully purchased token ${token.tokenId}`,
         error: {
           render({ data }: { data: any }) {
-            return <div>{data?.reason || data?.message || data || `An error occurred while purchasing token ${token.tokenId}`}</div>;
+            if (data instanceof Error) {
+              return <div>{data.message}</div>;
+            } else {
+              const reason = (data as { reason?: string })?.reason;
+              return <div>{reason || `An unknown error occurred while purchasing token ${token.tokenId}`}</div>;
+            }
           },
         },
       }
@@ -375,6 +365,7 @@ const ProjectDetails: React.FC<ProjectDetailsProps> = ({ project, onBack }) => {
           <TokenDetail
             tokens={tokens}
             currentIndex={tokens.findIndex((t) => t.tokenId === selectedToken.tokenId)}
+            project={project}
             onBack={handleBackToListings}
             onTokenAction={handleIndividualPurchase}
             tokenActionLabel="Purchase"
@@ -407,13 +398,13 @@ const ProjectDetails: React.FC<ProjectDetailsProps> = ({ project, onBack }) => {
               <div className="absolute bottom-4 left-0 flex items-center p-4 rounded-lg">
                 {/* Project Image */}
                 <div className="project-logo rounded-lg overflow-hidden" style={{ width: "100px", height: "100px" }}>
-                  <Image src={project.logo?.url()} width={100} height={25} alt="Project Logo" className="object-cover w-full h-full" />
+                  <Image src={project.attributes.logo?.url()} width={100} height={25} alt="Project Logo" className="object-cover w-full h-full" />
                 </div>
 
                 {/* Project Title and Description */}
                 <div className="text-white flex-1 mx-4">
-                  <h1 className="text-3xl font-bold">{project.title}</h1>
-                  <p className="text-sm mt-2 max-w-md break-words">{project.description}</p>
+                  <h1 className="text-3xl font-bold">{project.attributes.title}</h1>
+                  <p className="text-sm mt-2 max-w-md break-words">{project.attributes.description}</p>
                 </div>
               </div>
 
