@@ -3,7 +3,7 @@ import PubSub from "pubsub-js";
 import KronosCustomerService from "@/services/KronosCustomerService";
 import { NomyxEvent } from "@/utils/Constants";
 
-type Token = {
+export type Token = {
   tokenId: number;
   objectId: string;
   deposits: any;
@@ -13,7 +13,7 @@ type Token = {
 
 class GemforceAppState {
   _session: any;
-  _tokens: Token[] | null = null;
+  _tokens: Token[] | undefined = undefined;
   _retiredTokens: Token[] | null = null;
   _deposits: any = null;
   _withdrawals: any = null;
@@ -48,7 +48,7 @@ class GemforceAppState {
     const user = this.session?.user;
     if (user) {
       // Force reload tokens by setting _tokens to null
-      this._tokens = null;
+      this._tokens = undefined;
       // Trigger loading of tokens
       const ts = await KronosCustomerService.getTokensForUser(user?.walletAddress);
       PubSub.publish(NomyxEvent.GemforceStateChange, { tokens: ts });

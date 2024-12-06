@@ -2,9 +2,9 @@ import React, { useState } from "react";
 
 import { Card, Button, Checkbox } from "antd";
 
+import { ColumnConfig, EXCLUDED_COLUMNS, ColumnData } from "@/types/dynamicTableColumn";
 import { hashToColor } from "@/utils/colorUtils";
 import { formatPrice } from "@/utils/currencyFormater";
-import { ColumnConfig, EXCLUDED_COLUMNS, ColumnData } from "@/types/dynamicTableColumn";
 
 interface TokenCardViewProps {
   projects: any[];
@@ -65,14 +65,16 @@ const TokenCardView: React.FC<TokenCardViewProps> = ({ projects, onProjectClick,
   const getDynamicColumns = (maxColumns = 5): ColumnConfig[] => {
     const nonNullColumns: Record<string, ColumnConfig> = {};
     projects.forEach((token) => {
-      Object.entries(token.token).forEach(([key, value]) => {
-        if (value != null && !(key in nonNullColumns) && !EXCLUDED_COLUMNS.has(key)) {
-          nonNullColumns[key] = {
-            title: key.replace(/([A-Z])/g, " $1").replace(/^./, (str) => str.toUpperCase()),
-            key,
-          };
-        }
-      });
+      if (token.token) {
+        Object.entries(token.token).forEach(([key, value]) => {
+          if (value != null && !(key in nonNullColumns) && !EXCLUDED_COLUMNS.has(key)) {
+            nonNullColumns[key] = {
+              title: key.replace(/([A-Z])/g, " $1").replace(/^./, (str) => str.toUpperCase()),
+              key,
+            };
+          }
+        });
+      }
     });
     return Object.values(nonNullColumns).slice(0, maxColumns);
   };

@@ -10,6 +10,7 @@ interface ProjectInfoProps {
   formatValueByType: (type: string, value: any) => React.ReactNode;
   onTokenAction: (token: any) => void;
   tokenActionLabel: string;
+  tokenBalance: number | null;
 }
 
 const ProjectInfo: React.FC<ProjectInfoProps> = ({
@@ -20,6 +21,7 @@ const ProjectInfo: React.FC<ProjectInfoProps> = ({
   formatValueByType,
   onTokenAction,
   tokenActionLabel,
+  tokenBalance,
 }) => {
   const totalCost = parseInt(token.price) * parseInt(token.existingCredits);
   return (
@@ -30,32 +32,50 @@ const ProjectInfo: React.FC<ProjectInfoProps> = ({
           <div className="text-gray-800 dark:text-gray-200 space-y-4">
             {[
               {
-                label: "Price Per Credit:",
+                label: "Price:",
                 value: `${formatPrice(token.price, "USD")}`,
               },
-              {
-                label: "Existing Credits:",
-                value: `${formatPrice(token.existingCredits, "USD")}`,
-              },
-              {
-                label: "Total Cost:",
-                value: `${formatPrice(totalCost, "USD")}` || "Calculating...",
-              },
-            ].map((item, index) => (
-              <div key={index} className="flex flex-wrap items-center">
-                <span className="font-semibold w-full md:w-1/2">{item.label}</span>
-                <span className="bg-white dark:bg-nomyx-dark2-dark text-gray-900 dark:text-white border border-gray-300 dark:border-gray-600 shadow-md px-4 py-2 rounded-md w-full md:w-1/2 mt-1 md:mt-0 overflow-hidden text-ellipsis whitespace-nowrap">
-                  {item.value}
-                </span>
-              </div>
-            ))}
+              token.existingCredits && token.existingCredits > 0
+                ? {
+                    label: "Existing Credits:",
+                    value: `${formatPrice(token.existingCredits, "USD")}`,
+                  }
+                : null,
+              totalCost && totalCost > 0
+                ? {
+                    label: "Total Cost:",
+                    value: `${formatPrice(totalCost, "USD")}`,
+                  }
+                : null,
+            ]
+              .filter(Boolean) // Filter out null values
+              .map((item, index) => (
+                <div key={index} className="flex flex-wrap items-center">
+                  <span className="font-semibold w-full md:w-1/2">{item?.label}</span>
+                  <span className="bg-white dark:bg-nomyx-dark2-dark text-gray-900 dark:text-white border border-gray-300 dark:border-gray-600 shadow-md px-4 py-2 rounded-md w-full md:w-1/2 mt-1 md:mt-0 overflow-hidden text-ellipsis whitespace-nowrap">
+                    {item?.value}
+                  </span>
+                </div>
+              ))}
           </div>
         </div>
         <div className="mt-6">
-          <div className="text-gray-900 dark:text-white font-bold text-lg mb-2">Carbon Credits:</div>
-          <div className="text-3xl font-bold text-gray-900 dark:text-white">
-            {carbonCreditBalance !== null ? Intl.NumberFormat("en-US").format(carbonCreditBalance) : "Loading..."}
-          </div>
+          {carbonCreditBalance && (
+            <>
+              <div className="text-gray-900 dark:text-white font-bold text-lg mb-2">Carbon Credits:</div>
+              <div className="text-3xl font-bold text-gray-900 dark:text-white">
+                {carbonCreditBalance !== null ? Intl.NumberFormat("en-US").format(carbonCreditBalance) : "Loading..."}
+              </div>
+            </>
+          )}
+          {tokenBalance && (
+            <>
+              <div className="text-gray-900 dark:text-white font-bold text-lg mb-2">Token Balance:</div>
+              <div className="text-3xl font-bold text-gray-900 dark:text-white">
+                {tokenBalance !== null ? formatPrice(tokenBalance / 1_000_000, "USD") : "Loading..."}
+              </div>
+            </>
+          )}
           <button
             className="w-full mt-4 bg-blue-500 text-white font-bold py-3 px-6 rounded-md transition hover:bg-blue-700 hover:brightness-110 flex items-center justify-center border-none"
             onClick={() => onTokenAction && onTokenAction(token)}

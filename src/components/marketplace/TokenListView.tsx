@@ -99,17 +99,19 @@ const TokenListView: React.FC<TokenListViewProps> = ({ projects, onProjectClick,
   const getDynamicColumns = (maxColumns = 7): ColumnConfig[] => {
     const nonNullColumns: Record<string, ColumnConfig> = {};
     projects.forEach((token) => {
-      Object.entries(token.token).forEach(([key, value]) => {
-        // Check if the column is non-null, non-undefined, not already in nonNullColumns, and not excluded
-        if (value != null && !(key in nonNullColumns) && !EXCLUDED_COLUMNS.has(key)) {
-          nonNullColumns[key] = {
-            title: key
-              .replace(/([A-Z])/g, " $1") // Add a space before uppercase letters
-              .replace(/^./, (str) => str.toUpperCase()), // Capitalize the first letter
-            key,
-          };
-        }
-      });
+      if (token.token) {
+        Object.entries(token.token).forEach(([key, value]) => {
+          // Check if the column is non-null, non-undefined, not already in nonNullColumns, and not excluded
+          if (value != null && !(key in nonNullColumns) && !EXCLUDED_COLUMNS.has(key)) {
+            nonNullColumns[key] = {
+              title: key
+                .replace(/([A-Z])/g, " $1") // Add a space before uppercase letters
+                .replace(/^./, (str) => str.toUpperCase()), // Capitalize the first letter
+              key,
+            };
+          }
+        });
+      }
     });
     return Object.values(nonNullColumns).slice(0, maxColumns);
   };

@@ -206,6 +206,74 @@ const ClaimInterest: React.FC = () => {
     [appState, walletPreference, onSuccess]
   );
 
+  const handleTokenWithdraw = useCallback(
+    async (token: any) => {
+      if (!token?.tokenId) {
+        console.error("Token ID is missing");
+        return;
+      }
+
+      try {
+        const user = appState?.session?.user;
+        const walletId = user?.walletId;
+        const dfnsToken = user?.dfns_token;
+        const tokenId = parseInt(token.tokenId);
+
+        toast.promise(
+          async () => {
+            if (walletPreference === WalletPreference.PRIVATE) {
+              // Handle PRIVATE wallet withdrawal
+              if (tokenId < 0) throw new Error("Invalid token ID for withdrawal.");
+              await BlockchainService.withdraw([tokenId]);
+            } else if (walletPreference === WalletPreference.MANAGED) {
+              // Handle MANAGED wallet withdrawal
+              if (!walletId || !dfnsToken) {
+                throw "No wallet or DFNS token available for withdrawal.";
+              }
+
+              // Step 1: Initiate the withdrawal process
+              const { initiateResponse: withdrawResponse, error: withdrawInitiateError } = await KronosCustomerService.initiateWithdraw(
+                walletId,
+                [tokenId],
+                dfnsToken
+              );
+
+              if (withdrawInitiateError) {
+                throw "WithdrawInitiateError: " + withdrawInitiateError;
+              }
+
+              // Step 2: Complete the withdrawal process
+              const { completeResponse: withdrawCompleteResponse, error: completeWithdrawError } = await KronosCustomerService.completeWithdraw(
+                walletId,
+                dfnsToken,
+                withdrawResponse.challenge,
+                withdrawResponse.requestBody
+              );
+
+              if (completeWithdrawError) {
+                throw "CompleteWithdrawError: " + completeWithdrawError;
+              }
+            } else {
+              throw "Invalid wallet preference.";
+            }
+          },
+          {
+            pending: "Processing withdrawal...",
+            success: "Token withdrawal successful.",
+            error: {
+              render({ data }: { data: any }) {
+                return <div>{data?.reason || data || "An error occurred during withdrawal."}</div>;
+              },
+            },
+          }
+        );
+      } catch (error: any) {
+        console.error("Failed to withdraw token:", error);
+      }
+    },
+    [appState, walletPreference]
+  );
+
   const getTokenActionDetails = useCallback(
     (industry: Industries) => {
       switch (industry) {
@@ -223,8 +291,8 @@ const ClaimInterest: React.FC = () => {
           break;
         case Industries.TOKENIZED_DEBT:
           return {
-            action: () => {},
-            label: "",
+            action: handleTokenWithdraw,
+            label: "Claim Now",
           };
           break;
         default:
@@ -235,7 +303,7 @@ const ClaimInterest: React.FC = () => {
           break;
       }
     },
-    [handleRetireAllCredits]
+    [handleRetireAllCredits, handleTokenWithdraw]
   );
 
   // Get action and label for the current token

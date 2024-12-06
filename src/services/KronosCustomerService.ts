@@ -729,6 +729,55 @@ class KronosCustomerService {
       return { isOnboarded: null, error: error.message };
     }
   }
+
+  public async initiateWithdraw(walletId: string, tokenIds: number[], dfnsToken: string) {
+    if (!walletId || !tokenIds || !dfnsToken) {
+      throw new Error("Missing required parameters for withdraw.");
+    }
+
+    try {
+      const initiateResponse = await Parse.Cloud.run("dfnsInitWithdraw", {
+        walletId,
+        tokenIds,
+        dfns_token: dfnsToken,
+      });
+
+      console.log("Withdraw initiation response:", initiateResponse);
+
+      return { initiateResponse, error: null };
+    } catch (error: any) {
+      console.error("Error initiating withdraw:", error);
+      return { initiateResponse: null, error: error.message };
+    }
+  }
+
+  public async completeWithdraw(walletId: string, dfnsToken: string, challenge: any, requestBody: any) {
+    if (!walletId || !dfnsToken || !challenge || !requestBody) {
+      throw new Error("Missing required parameters for completing withdraw.");
+    }
+
+    try {
+      const webauthn = new WebAuthnSigner();
+      const assertion = await webauthn.sign(challenge);
+
+      const completeResponse = await Parse.Cloud.run("dfnsCompleteWithdraw", {
+        walletId,
+        dfns_token: dfnsToken,
+        signedChallenge: {
+          challengeIdentifier: challenge.challengeIdentifier,
+          firstFactor: assertion,
+        },
+        requestBody,
+      });
+
+      console.log("Withdraw completed:", completeResponse);
+
+      return { completeResponse, error: null };
+    } catch (error: any) {
+      console.error("Error completing withdraw:", error);
+      return { completeResponse: null, error: error.message };
+    }
+  }
 }
 
 export default KronosCustomerService.instance;
