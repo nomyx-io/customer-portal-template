@@ -70,11 +70,11 @@ class BlockchainService {
 
   async getTokenBalances(tokenIds: number[]) {
     try {
-      if (this.signer) {
-        const contractWithSigner: any = this.treasuryService?.connect(this.signer);
-        return await contractWithSigner.getTokenPaymentBalance(tokenIds);
+      if (this.dedicatedProvider) {
+        const treasuryContract = new ethers.Contract(this.treasuryAddress, this.treasuryAbi, this.dedicatedProvider);
+        const balance = await treasuryContract.getTokenPaymentBalance(tokenIds);
+        return balance;
       }
-
       return null;
     } catch (e) {
       console.log(e);
@@ -84,10 +84,11 @@ class BlockchainService {
 
   async withdraw(tokenIds: number[]) {
     try {
-      if (this.signer) {
-        const contractWithSigner: any = this.treasuryService?.connect(this.signer);
-        return await contractWithSigner.withdraw(tokenIds);
-      }
+      const ethObject = (window as any).ethereum;
+      this.provider = new ethers.BrowserProvider(ethObject);
+      this.signer = await this.provider.getSigner();
+      const contractWithSigner: any = this.treasuryService?.connect(this.signer);
+      return await contractWithSigner.withdraw(tokenIds);
     } catch (e) {
       console.log(e);
       throw e;

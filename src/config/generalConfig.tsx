@@ -42,10 +42,7 @@ export const projectInfoComponents = {
   [Industries.TOKENIZED_DEBT]: {
     fields: tokenizedDebtFields,
     component: (props: any) => (
-      <div>
-        {/* Tokenized Debt-specific details */}
-        <h3 className="text-xl font-bold text-gray-900 dark:text-white">Tokenized Debt Details</h3>
-      </div>
+      <ProjectInfo {...props} tokenBalance={props.tokenBalance} onTokenAction={props.onTokenAction} tokenActionLabel={props.tokenActionLabel} />
     ),
   },
 } as const;

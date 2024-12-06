@@ -33,6 +33,7 @@ const TokenDetail: React.FC<TokenDetailProps> = ({ tokens, currentIndex, project
   const [carbonCreditBalance, setCarbonCreditBalance] = useState<number | null>(null);
   const [activeSlide, setActiveSlide] = useState<number>(currentIndex);
   const [combinedFields, setCombinedFields] = useState<any[]>([]);
+  const [tokenBalance, setTokenBalance] = useState<number | null>(null);
 
   const fetchCarbonCreditBalance = useCallback(async (tokenId: number) => {
     try {
@@ -40,6 +41,15 @@ const TokenDetail: React.FC<TokenDetailProps> = ({ tokens, currentIndex, project
       setCarbonCreditBalance(balance);
     } catch (error) {
       console.error("Failed to fetch carbon credit balance:", error);
+    }
+  }, []);
+
+  const fetchTokenBalance = useCallback(async (tokenId: number) => {
+    try {
+      const balance = await BlockchainService.getTokenBalances([tokenId]);
+      setTokenBalance(balance);
+    } catch (error) {
+      console.error("Failed to fetch token balance:", error);
     }
   }, []);
 
@@ -51,8 +61,16 @@ const TokenDetail: React.FC<TokenDetailProps> = ({ tokens, currentIndex, project
       }
     };
 
+    const fetchTokenBalanceValue = async () => {
+      // Check if token exists
+      if (tokens[currentIndex]) {
+        await fetchTokenBalance(tokens[currentIndex].tokenId);
+      }
+    };
+
     fetchInitialCarbonCredits();
-  }, [tokens, currentIndex, fetchCarbonCreditBalance]);
+    fetchTokenBalanceValue();
+  }, [tokens, currentIndex, fetchCarbonCreditBalance, fetchTokenBalance]);
 
   const updateFields = useCallback(() => {
     const defaultFields: any = project?.attributes.fields || [];
@@ -92,11 +110,13 @@ const TokenDetail: React.FC<TokenDetailProps> = ({ tokens, currentIndex, project
 
   const handleNext = () => {
     setCarbonCreditBalance(null);
+    setTokenBalance(null);
     carouselRef?.current?.next();
   };
 
   const handlePrev = () => {
     setCarbonCreditBalance(null);
+    setTokenBalance(null);
     carouselRef?.current?.prev();
   };
 
@@ -109,9 +129,10 @@ const TokenDetail: React.FC<TokenDetailProps> = ({ tokens, currentIndex, project
         if (onSlideChange) {
           onSlideChange(tokens[current]);
         }
+        fetchTokenBalance(tokens[current].tokenId);
       }
     },
-    [fetchCarbonCreditBalance, tokens, onSlideChange]
+    [fetchCarbonCreditBalance, tokens, onSlideChange, fetchTokenBalance]
   );
 
   const includeFields = useMemo(
@@ -229,6 +250,7 @@ const TokenDetail: React.FC<TokenDetailProps> = ({ tokens, currentIndex, project
                   carbonCreditBalance,
                   onTokenAction,
                   tokenActionLabel,
+                  tokenBalance,
                 })}
               </div>
 
