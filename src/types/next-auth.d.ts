@@ -14,18 +14,31 @@ declare module "next-auth" {
 }
 
 interface CustomUser {
-  roles: string[];
-  username: string;
   accessToken: string;
-  walletAddress: string;
-  accType: string;
-  createdAt: string;
-  updatedAt: string;
-  company: string;
-  walletPreference: number;
   ACL: any;
-  objectId: string;
-  iat: number;
+  bridgeCustomerId: string;
+  company: string;
+  createdAt: string;
+  dfns_token: string;
+  email: string;
+  emailVerified: boolean;
   exp: number;
+  firstName: string;
+  iat: number;
   jti: string;
+  kycId: string;
+  lastName: string;
+  objectId: string;
+  pendingApproval: boolean;
+  personalReferenceId: string;
+  roles: string[];
+  signedAgreementId: string;
+  tempToken: string;
+  termsAccepted: any;
+  tokenExpiration: string;
+  updatedAt: string;
+  username: string;
+  walletAddress: string;
+  walletId: string;
+  walletPreference: number;
 }

@@ -7,11 +7,18 @@ import KronosSpin from "@/components/KronosSpin";
 import { NomyxEvent } from "@/utils/Constants";
 
 interface PersonaProps {
-  templateId: string; // Expecting templateId as a prop
+  templateId: string;
+  environmentId?: string;
+  developerId?: string;
+  iqtToken?: string;
+  referenceId?: string;
+  onComplete?: (result: any) => void;
 }
 
-export default function Persona({ templateId }: PersonaProps) {
+export default function Persona({ templateId, environmentId, developerId, iqtToken, referenceId, onComplete }: PersonaProps) {
   const [loading, setLoading] = useState(true);
+
+  const effectiveEnvironmentId = environmentId || process.env.NEXT_PUBLIC_PERSONA_ENVIRONMENT_ID;
 
   return (
     <div className="persona-container">
@@ -31,14 +38,21 @@ export default function Persona({ templateId }: PersonaProps) {
       >
         <persona.Inquiry
           templateId={templateId}
-          environmentId={process.env.NEXT_PUBLIC_PERSONA_ENVIRONMENT_ID}
+          environmentId={effectiveEnvironmentId}
+          fields={{
+            ...(developerId && { developer_id: developerId }),
+            ...(iqtToken && { iqt_token: iqtToken }),
+          }}
+          referenceId={referenceId}
           onLoad={() => {
             setLoading(false);
           }}
           onComplete={function (personaResult) {
-            // Inquiry completed. Optionally tell your server about it.
-            // console.log(`Sending finished inquiry ${inquiryId} to backend`);
-            PubSub.publish(NomyxEvent.PersonaVerified, personaResult);
+            if (onComplete) {
+              onComplete(personaResult);
+            } else {
+              PubSub.publish(NomyxEvent.PersonaVerified, personaResult);
+            }
           }}
         />
       </div>
