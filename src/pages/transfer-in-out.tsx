@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback } from "react";
 
-import { Input, Button, Modal, Select, Table, Popover } from "antd";
+import { Input, Button, Modal, Select, Table, Popover, Tooltip } from "antd";
 import { LinkSquare, MoneyChange, SearchNormal1, ArrowRight, Copy, InfoCircle } from "iconsax-react";
 import dynamic from "next/dynamic";
 import { useSession } from "next-auth/react";
@@ -12,6 +12,7 @@ import CustomIframe from "@/components/CustomIframe";
 import TransferInModal from "@/components/TransferInModal";
 import TransferOutModal from "@/components/TransferOutModal";
 import ParseService from "@/services/ParseService";
+import { formatPrice } from "@/utils/currencyFormater";
 
 const { Option } = Select;
 
@@ -37,45 +38,118 @@ const TransferInOut: React.FC = () => {
   const [showTransferScreen, setShowTransferScreen] = useState(false);
   const [isTransferInVisible, setIsTransferInVisible] = useState(false);
   const [isTransferOutVisible, setIsTransferOutVisible] = useState(false);
-  const [transfers, setTransfers] = useState<any[]>([]);
   const [searchTerm, setSearchTerm] = useState<string>("");
   const [filterStatus, setFilterStatus] = useState<string>("all");
   const [bridgeCustomerId, setBridgeCustomerId] = useState<string>("");
 
-  const fetchTransferData = useCallback(async () => {
-    if (!bridgeCustomerId) {
-      console.warn("bridgeCustomerId is not available.");
-      return;
-    }
+  const [transfers, setTransfers] = useState<any[]>([]);
+  const [hasMore, setHasMore] = useState(true);
+  const [lastTransactionId, setLastTransactionId] = useState<string | null>(null);
+  const [isInitialLoad, setIsInitialLoad] = useState(true);
 
-    try {
-      const response = await Parse.Cloud.run("getCustomerTransfers", {
-        customer_id: bridgeCustomerId,
-      });
+  const limit = 10;
 
-      setTransfers(response.data || []);
-    } catch (error: any) {
-      console.error("Error fetching transfer data:", error);
-      toast.error("Failed to fetch transfer data.");
-    }
-  }, [bridgeCustomerId]);
+  const fetchTransferData = useCallback(
+    async (isRefresh = false) => {
+      if (isRefresh) {
+        setTransfers([]);
+        setHasMore(true);
+        setLastTransactionId(null);
+      } else if (!hasMore) {
+        return;
+      }
+
+      console.log("Inside fetchTransferData");
+      if (loading) return;
+
+      if (!bridgeCustomerId) return;
+
+      setLoading(true);
+      try {
+        const params: Record<string, any> = { customer_id: bridgeCustomerId, limit };
+
+        console.log("Last transaction ID:", lastTransactionId);
+        if (!isRefresh && lastTransactionId) {
+          // Only include `starting_after` when not in a refresh state
+          params.starting_after = lastTransactionId;
+        }
+
+        console.log("Fetching transfer data with params:", params);
+
+        const response = await Parse.Cloud.run("getCustomerTransfers", params);
+
+        console.log("Response:", response);
+
+        const newTransfers = response.data || [];
+        if (newTransfers.length < limit) setHasMore(false);
+
+        setTransfers((prev) => [...prev, ...newTransfers]);
+        if (newTransfers.length > 0) {
+          setLastTransactionId(newTransfers[newTransfers.length - 1].id);
+        }
+      } catch (error: any) {
+        console.error("Error fetching transfer data:", error);
+        toast.error("Failed to fetch transfer data.");
+      } finally {
+        setLoading(false);
+        setIsInitialLoad(false);
+      }
+    },
+    [bridgeCustomerId, hasMore, lastTransactionId, loading]
+  );
 
   useEffect(() => {
-    fetchTransferData();
-  }, [fetchTransferData]);
+    if (isInitialLoad) {
+      fetchTransferData();
+    }
+  }, [fetchTransferData, isInitialLoad]);
+
+  const handleScroll = useCallback(
+    (event: any) => {
+      console.log("scrolling");
+      const { scrollTop, scrollHeight, clientHeight } = event.target;
+
+      // Load more data when user scrolls to the bottom
+      if (scrollTop + clientHeight >= scrollHeight - 10 && hasMore && !loading) {
+        console.log("loading more data");
+        fetchTransferData();
+      }
+    },
+    [fetchTransferData, hasMore, loading]
+  );
 
   const handleUpdateTransfers = async () => {
-    await fetchTransferData();
+    console.log("Updating transfers from create new...");
+    await fetchTransferData(true); // Fetch fresh data
   };
 
   const filteredTransfers = transfers.filter((transfer) => {
+    const isTransferIn = ["ach_push", "sepa", "wire"].includes(transfer.source.payment_rail.toLowerCase());
+    const type = isTransferIn ? "Transfer In" : "Transfer Out";
+
     const matchesSearch =
       searchTerm === "" ||
-      transfer.id.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      transfer.state.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      transfer.source.currency.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      transfer.destination.currency.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      transfer.destination.to_address.toLowerCase().includes(searchTerm.toLowerCase());
+      new Date(transfer?.updated_at).toLocaleDateString().includes(searchTerm.toLowerCase()) ||
+      user?.firstName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      user?.lastName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      user?.email?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      user?.walletAddress?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      formatPrice(transfer?.amount, transfer?.currency).toLowerCase().includes(searchTerm.toLowerCase()) ||
+      type.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      transfer?.destination?.to_address?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      transfer?.source?.currrency?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      transfer?.source?.payment_rail?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      transfer?.destination?.currency?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      transfer?.destination?.payment_rail?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      transfer?.destination?.to_address?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      transfer?.source_deposit_instructions?.account_holder_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      transfer?.source_deposit_instructions?.bic?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      transfer?.source_deposit_instructions?.iban?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      transfer?.source_deposit_instructions?.deposit_message?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      transfer?.source_deposit_instructions?.bank_beneficiary_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      transfer?.source_deposit_instructions?.bank_routing_number?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      transfer?.source_deposit_instructions?.bank_account_number?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      transfer?.source_deposit_instructions?.bank_beneficiary_address?.toLowerCase().includes(searchTerm.toLowerCase());
 
     const matchesStatus = filterStatus === "all" || transfer.state.toLowerCase() === filterStatus.toLowerCase();
 
@@ -134,13 +208,8 @@ const TransferInOut: React.FC = () => {
       title: "Amount",
       dataIndex: "amount",
       key: "amount",
-      render: (amount: number) => {
-        const formatter = new Intl.NumberFormat("en-US", {
-          style: "currency",
-          currency: "USD",
-        });
-
-        return formatter.format(amount);
+      render: (_: any, record: any) => {
+        return formatPrice(record.amount, record.currency);
       },
     },
     {
@@ -211,27 +280,109 @@ const TransferInOut: React.FC = () => {
         const isTransferOut = !["ach_push", "sepa", "wire"].includes(record.source.payment_rail.toLowerCase());
 
         const content = isTransferOut ? (
-          <div className="flex flex-col text-black">
-            <h2 className="text-lg font-semibold">Transfer Instructions</h2>
-            <div className="flex items-center">
-              <span className="min-w-[150px]">
-                <strong>To Address:</strong>
-              </span>
-              <span>{truncateAddress(record.source_deposit_instructions.to_address)}</span>
-              <span className="flex-grow"></span>
-              <span
-                onClick={() => {
-                  navigator.clipboard.writeText(record.source_deposit_instructions.to_address);
-                  toast.success("To Address copied to clipboard!");
-                }}
-                className="ml-2 text-blue-500 cursor-pointer"
-              >
-                <Copy size="16" />
-              </span>
+          record.source.payment_rail === "sepa" ? (
+            <></>
+          ) : (
+            <div className="flex flex-col text-nomyx-gray1-light dark:text-nomyx-gray1-dark">
+              <h2 className="text-lg font-semibold">Transfer Instructions</h2>
+              <div className="flex items-center">
+                <span className="min-w-[150px]">
+                  <strong>To Address:</strong>
+                </span>
+                <span>{truncateAddress(record.source_deposit_instructions.to_address)}</span>
+                <span className="flex-grow"></span>
+                <span
+                  onClick={() => {
+                    navigator.clipboard.writeText(record.source_deposit_instructions.to_address);
+                    toast.success("To Address copied to clipboard!");
+                  }}
+                  className="ml-2 text-blue-500 cursor-pointer"
+                >
+                  <Copy size="16" />
+                </span>
+              </div>
             </div>
-          </div>
+          )
+        ) : record.source.payment_rail === "sepa" ? (
+          <>
+            <div className="flex flex-col  text-nomyx-gray1-light dark:text-nomyx-gray1-dark">
+              <h2 className="text-lg font-semibold">Transfer Instructions</h2>
+              <div className="flex items-center">
+                <span className="min-w-[150px]">
+                  <strong>Account Holder Name:</strong>
+                </span>
+                <span>{record.source_deposit_instructions.account_holder_name}</span>
+                <span className="flex-grow"></span>
+                <span
+                  onClick={() => {
+                    navigator.clipboard.writeText(record.id);
+                    toast.success("Transaction ID copied to clipboard!");
+                  }}
+                  className="ml-2 text-blue-500 cursor-pointer"
+                >
+                  <Copy size="16" />
+                </span>
+              </div>
+
+              <div className="flex items-center">
+                <span className="min-w-[150px]">
+                  <strong>BIC:</strong>
+                </span>
+                <span>{record.source_deposit_instructions.bic}</span>
+                <span className="flex-grow"></span>
+                <span
+                  onClick={() => {
+                    navigator.clipboard.writeText(record.id);
+                    toast.success("Transaction ID copied to clipboard!");
+                  }}
+                  className="ml-2 text-blue-500 cursor-pointer"
+                >
+                  <Copy size="16" />
+                </span>
+              </div>
+
+              <div className="flex items-center">
+                <span className="min-w-[150px]">
+                  <strong>IBAN:</strong>
+                </span>
+                <span> {record.source_deposit_instructions.iban}</span>
+                <span className="flex-grow"></span>
+                <span
+                  onClick={() => {
+                    navigator.clipboard.writeText(record.id);
+                    toast.success("Transaction ID copied to clipboard!");
+                  }}
+                  className="ml-2 text-blue-500 cursor-pointer"
+                >
+                  <Copy size="16" />
+                </span>
+              </div>
+
+              <div className="flex items-center">
+                <span className="min-w-[150px]">
+                  <span className="min-w-[150px] flex items-center">
+                    <strong>Deposit Message:</strong>
+                    <Tooltip title="Warning: Transfer sent without the following message may be delayed or returned.">
+                      <InfoCircle size="16" color="red" className="ml-1 cursor-pointer flex-shrink-0" />
+                    </Tooltip>
+                  </span>
+                </span>
+                <span> {record.source_deposit_instructions.deposit_message}</span>
+                <span className="flex-grow"></span>
+                <span
+                  onClick={() => {
+                    navigator.clipboard.writeText(record.id);
+                    toast.success("Transaction ID copied to clipboard!");
+                  }}
+                  className="ml-2 text-blue-500 cursor-pointer"
+                >
+                  <Copy size="16" />
+                </span>
+              </div>
+            </div>
+          </>
         ) : (
-          <div className="flex flex-col text-black">
+          <div className="flex flex-col  text-nomyx-gray1-light dark:text-nomyx-gray1-dark">
             <h2 className="text-lg font-semibold">Transfer Instructions</h2>
             <div className="flex items-center">
               <span className="min-w-[150px]">
@@ -300,25 +451,38 @@ const TransferInOut: React.FC = () => {
                 <Copy size="16" />
               </span>
             </div>
+
+            <div className="flex items-center">
+              <span className="min-w-[150px] flex items-center">
+                <strong>{record.source.payment_rail === "ach_push" ? "ACH Message:" : "Wire Message:"}</strong>
+                <Tooltip
+                  title={
+                    record.source.payment_rail === "ach_push"
+                      ? "Warning: ACH sent without the following ACH message may be delayed or returned."
+                      : "Warning: Wire sent without the following Wire message may be delayed or returned."
+                  }
+                >
+                  <InfoCircle size="16" color="red" className="ml-1 cursor-pointer flex-shrink-0" />
+                </Tooltip>
+              </span>
+              <span>{record.source_deposit_instructions.deposit_message}</span>
+              <span className="flex-grow"></span>
+              <span
+                onClick={() => {
+                  navigator.clipboard.writeText(record.id);
+                  toast.success("Transaction ID copied to clipboard!");
+                }}
+                className="ml-2 text-blue-500 cursor-pointer"
+              >
+                <Copy size="16" />
+              </span>
+            </div>
           </div>
         );
 
         return (
-          <Popover
-            content={content}
-            trigger="click"
-            placement="bottom"
-            overlayInnerStyle={{
-              backgroundColor: "#ffffff",
-              color: "#000000",
-              padding: "16px",
-              borderRadius: "8px",
-              boxShadow: "0 4px 6px rgba(0, 0, 0, 0.1)",
-            }}
-          >
-            <Button className="p-0" type="link">
-              View Details
-            </Button>
+          <Popover content={content} trigger="click" placement="bottom" overlayClassName="custom-popover">
+            <span className="text-blue-500 cursor-pointer">View Details</span>
           </Popover>
         );
       },
@@ -635,7 +799,10 @@ const TransferInOut: React.FC = () => {
               </button>
             </div>
           </div>
-          <div className="mt-5 pt-0 bg-white dark:bg-nomyx-dark2-dark text-nomyx-text-light dark:text-nomyx-text-dark rounded-lg w-full overflow-x-auto">
+          <div
+            onScroll={handleScroll}
+            className="mt-5 pt-0 bg-white dark:bg-nomyx-dark2-dark text-nomyx-text-light dark:text-nomyx-text-dark rounded-lg w-full overflow-x-auto h-[750px] overflow-y-auto"
+          >
             <Table dataSource={filteredTransfers} columns={columns} rowKey="id" loading={loading} pagination={false} className="custom-table" />
           </div>
           <TransferInModal

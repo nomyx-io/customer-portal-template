@@ -28,7 +28,7 @@ const TransferOutModal: React.FC<TransferOutModalProps> = ({ bridgeCustomerId, v
   const [form] = Form.useForm();
   const [isConfirmModalVisible, setIsConfirmModalVisible] = useState(false);
   const [isNewAccountModalVisible, setIsNewAccountModalVisible] = useState(false);
-  const [newAccountPaymentRail, setNewAccountPaymentRail] = useState<string>("ACH");
+  const [newAccountPaymentRail, setNewAccountPaymentRail] = useState<string>("ach");
   const [sourceBlockchain, setSourceBlockchain] = useState<string>("Unknown");
   const [externalAccounts, setExternalAccounts] = useState<any[]>([]);
   const [destinationCurrency, setDestinationCurrency] = useState<string>("USD");
@@ -78,7 +78,7 @@ const TransferOutModal: React.FC<TransferOutModalProps> = ({ bridgeCustomerId, v
   }, []);
 
   const handleDestinationPaymentRailChange = (value: string) => {
-    const updatedCurrency = value === "sepa" ? "eur" : "usd";
+    const updatedCurrency = value === "sepa" ? "EUR" : "USD";
     setDestinationCurrency(updatedCurrency);
     form.setFieldsValue({ destinationCurrency: updatedCurrency });
   };
@@ -134,7 +134,7 @@ const TransferOutModal: React.FC<TransferOutModalProps> = ({ bridgeCustomerId, v
   const handleConfirmSubmit = async () => {
     try {
       const formValues = await form.validateFields();
-      const transferObject = {
+      const transferObject: any = {
         amount: formValues.amount,
         on_behalf_of: bridgeCustomerId,
         developer_fee: "0",
@@ -150,6 +150,13 @@ const TransferOutModal: React.FC<TransferOutModalProps> = ({ bridgeCustomerId, v
           external_account_id: formValues.accountDetails,
         },
       };
+
+      // Add wireMessages if destinationPaymentRail is 'wire'
+      if (formValues.destinationPaymentRail.toLowerCase() === "wire" && formValues.wireMessage) {
+        transferObject.destination.wire_message = formValues.wireMessage;
+      }
+
+      console.log("transferObject", transferObject);
 
       await Parse.Cloud.run("createTransfer", transferObject);
       toast.success("Transfer successfully created!");
@@ -186,7 +193,7 @@ const TransferOutModal: React.FC<TransferOutModalProps> = ({ bridgeCustomerId, v
       </>
     );
 
-    if (paymentRail === "ach_push" || paymentRail === "wire") {
+    if (paymentRail === "ach" || paymentRail === "wire") {
       return (
         <>
           {sharedFields}
@@ -245,7 +252,8 @@ const TransferOutModal: React.FC<TransferOutModalProps> = ({ bridgeCustomerId, v
                 value: country.code,
                 label: country.name,
               }))}
-              defaultValue={countryOptions.find((country) => country.code === "US")?.name}
+              defaultValue={countryOptions.find((country) => country.code === "USA")?.name}
+              className="border border-black rounded-md"
             >
               {filteredCountries.map((country) => (
                 <Option key={country.code} value={countries.alpha2ToAlpha3(country.code)}>
@@ -307,7 +315,7 @@ const TransferOutModal: React.FC<TransferOutModalProps> = ({ bridgeCustomerId, v
             bridgeCustomerId,
             sourceBlockchain,
             sourceCurrency: "USDC",
-            destinationPaymentRail: "ACH",
+            destinationPaymentRail: "ach",
             destinationCurrency,
           }}
         >
@@ -350,7 +358,7 @@ const TransferOutModal: React.FC<TransferOutModalProps> = ({ bridgeCustomerId, v
               >
                 <Option value="ach">ACH</Option>
                 <Option value="wire">Wire Transfer</Option>
-                <Option value="sepa">Sepa</Option>
+                {/* <Option value="sepa">Sepa</Option> */}
               </Select>
             </Form.Item>
             <Form.Item
@@ -405,27 +413,32 @@ const TransferOutModal: React.FC<TransferOutModalProps> = ({ bridgeCustomerId, v
           {/* Conditionally render wire-specific fields */}
           {form.getFieldValue("destinationPaymentRail") === "wire" && (
             <>
-              <Form.Item label="Wire Message Line 1" name="wireMessageLine1">
-                <Input className="!bg-nomyx-dark2-light dark:!bg-nomyx-dark2-dark" placeholder="Add Wire Message Line 1" />
-              </Form.Item>
-
-              <Form.Item label="Wire Message Line 2" name="wireMessageLine2">
-                <Input className="!bg-nomyx-dark2-light dark:!bg-nomyx-dark2-dark" placeholder="Add Wire Message Line 2" />
-              </Form.Item>
-
-              <Form.Item label="Wire Message Line 3" name="wireMessageLine3">
-                <Input className="!bg-nomyx-dark2-light dark:!bg-nomyx-dark2-dark" placeholder="Add Wire Message Line 3" />
+              <Form.Item
+                label="Wire Message"
+                name="wireMessage"
+                rules={[
+                  { required: true, message: "Wire Message is required" },
+                  { max: 35, message: "Wire Message cannot exceed 35 characters" },
+                ]}
+              >
+                <Input className="!bg-nomyx-dark2-light dark:!bg-nomyx-dark2-dark" placeholder="Add Wire Message" />
               </Form.Item>
             </>
           )}
 
           <div className="flex gap-4 mt-4">
-            <Button onClick={onClose} className="text-blue-500 w-1/2">
+            <button
+              onClick={onClose}
+              className="w-1/2 text-blue-500 border border-blue-500 hover:bg-transparent hover:text-blue-500 focus:ring-0 bg-transparent text-xs px-4 py-2 rounded-md"
+            >
               Cancel
-            </Button>
-            <Button htmlType="submit" type="primary" className="bg-blue-500 hover:bg-blue-600 w-1/2">
+            </button>
+            <button
+              type="submit"
+              className="w-1/2 bg-blue-500 text-white  hover:bg-blue-600 focus:ring focus:ring-blue-300 text-xs px-4 py-2 rounded-md"
+            >
               Submit
-            </Button>
+            </button>
           </div>
         </Form>
       </Modal>
@@ -450,21 +463,24 @@ const TransferOutModal: React.FC<TransferOutModalProps> = ({ bridgeCustomerId, v
         maskClosable={false}
         closable={false}
       >
-        <Form layout="vertical" onFinish={handleNewAccountSubmit}>
+        <Form layout="vertical" form={form} onFinish={handleNewAccountSubmit}>
           {renderFields(newAccountPaymentRail)}
           <div className="flex gap-4 mt-4">
-            <Button
+            <button
               onClick={() => {
                 setIsNewAccountModalVisible(false);
                 form.setFieldsValue({ accountDetails: "" });
               }}
-              className="text-blue-500 w-1/2"
+              className="w-1/2 text-blue-500 border border-blue-500 hover:bg-transparent hover:text-blue-500 focus:ring-0 bg-transparent text-xs px-4 py-2 rounded-md"
             >
               Cancel
-            </Button>
-            <Button htmlType="submit" type="primary" className="bg-blue-500 hover:bg-blue-600 w-1/2">
+            </button>
+            <button
+              type="submit"
+              className="w-1/2 bg-blue-500 text-white  hover:bg-blue-600 focus:ring focus:ring-blue-300 text-xs px-4 py-2 rounded-md"
+            >
               Create
-            </Button>
+            </button>
           </div>
         </Form>
       </Modal>

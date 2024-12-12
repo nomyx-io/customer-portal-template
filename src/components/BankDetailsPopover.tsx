@@ -34,7 +34,7 @@ const BankDetailsPopover: React.FC<BankDetailsPopoverProps> = ({ externalAccount
   };
 
   const content = bankDetails ? (
-    <div className="flex flex-col text-black">
+    <div className="flex flex-col text-nomyx-gray1-light dark:text-nomyx-gray1-dark">
       <h2 className="text-lg font-semibold">Bank Details</h2>
 
       <div className="flex items-center">
@@ -66,7 +66,7 @@ const BankDetailsPopover: React.FC<BankDetailsPopoverProps> = ({ externalAccount
       </div>
     </div>
   ) : (
-    <div>{loading ? "Loading..." : "No bank details available."}</div>
+    <div className="text-nomyx-gray1-light dark:text-nomyx-gray1-dark">{loading ? "Loading..." : "No bank details available."}</div>
   );
 
   return (
@@ -75,13 +75,7 @@ const BankDetailsPopover: React.FC<BankDetailsPopoverProps> = ({ externalAccount
       trigger="click"
       placement="bottom"
       onOpenChange={(visible) => visible && fetchBankDetails()}
-      overlayInnerStyle={{
-        backgroundColor: "#ffffff",
-        color: "#000000",
-        padding: "16px",
-        borderRadius: "8px",
-        boxShadow: "0 4px 6px rgba(0, 0, 0, 0.1)",
-      }}
+      overlayClassName="custom-popover"
     >
       <span className="text-blue-500 cursor-pointer">Bank</span>
     </Popover>

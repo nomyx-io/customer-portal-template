@@ -23,12 +23,19 @@ const ConfirmationModal: React.FC<ConfirmationModalProps> = ({ title, bodyText, 
       <div className="flex flex-col items-center justify-center">
         <p className="text-gray-600 text-center mb-6">{bodyText}</p>
         <div className="flex gap-4 w-full">
-          <Button onClick={onCancel} className="text-blue-500 w-1/2">
+          <button
+            onClick={onCancel}
+            className="w-1/2 text-blue-500 border border-blue-500 hover:bg-transparent hover:text-blue-500 focus:ring-0 bg-transparent text-xs px-4 py-2 rounded-md"
+          >
             Cancel
-          </Button>
-          <Button type="primary" className="bg-blue-500 hover:bg-blue-600 w-1/2" onClick={onConfirm}>
+          </button>
+          <button
+            type="submit"
+            className="w-1/2 bg-blue-500 text-white  hover:bg-blue-600 focus:ring focus:ring-blue-300 text-xs px-4 py-2 rounded-md"
+            onClick={onConfirm}
+          >
             Confirm
-          </Button>
+          </button>
         </div>
       </div>
     </Modal>
