@@ -24,6 +24,7 @@ const ConfirmationModal: React.FC<ConfirmationModalProps> = ({ title, bodyText, 
         <p className="text-gray-600 text-center mb-6">{bodyText}</p>
         <div className="flex gap-4 w-full">
           <button
+            type="button"
             onClick={onCancel}
             className="w-1/2 text-blue-500 border border-blue-500 hover:bg-transparent hover:text-blue-500 focus:ring-0 bg-transparent text-xs px-4 py-2 rounded-md"
           >

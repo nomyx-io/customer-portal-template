@@ -8,7 +8,7 @@ import { NomyxEvent } from "@/utils/Constants";
 
 interface PersonaProps {
   templateId: string;
-  environmentId?: string;
+  environmentId: string;
   developerId?: string;
   iqtToken?: string;
   referenceId?: string;
@@ -17,8 +17,6 @@ interface PersonaProps {
 
 export default function Persona({ templateId, environmentId, developerId, iqtToken, referenceId, onComplete }: PersonaProps) {
   const [loading, setLoading] = useState(true);
-
-  const effectiveEnvironmentId = environmentId || process.env.NEXT_PUBLIC_PERSONA_ENVIRONMENT_ID;
 
   return (
     <div className="persona-container">
@@ -38,7 +36,7 @@ export default function Persona({ templateId, environmentId, developerId, iqtTok
       >
         <persona.Inquiry
           templateId={templateId}
-          environmentId={effectiveEnvironmentId}
+          environmentId={environmentId}
           fields={{
             ...(developerId && { developer_id: developerId }),
             ...(iqtToken && { iqt_token: iqtToken }),

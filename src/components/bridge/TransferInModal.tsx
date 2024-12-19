@@ -5,7 +5,7 @@ import { useSession } from "next-auth/react";
 import Parse from "parse";
 import { toast } from "react-toastify";
 
-import ConfirmationModal from "@/components/ConfirmationModal";
+import ConfirmationModal from "@/components/bridge/ConfirmationModal";
 
 const { Option } = Select;
 
@@ -178,6 +178,7 @@ const TransferInModal: React.FC<TransferInModalProps> = ({ bridgeCustomerId, vis
 
           <div className="flex gap-4 mt-4">
             <button
+              type="button"
               onClick={onClose}
               className="w-1/2 text-blue-500 border border-blue-500 hover:bg-transparent hover:text-blue-500 focus:ring-0 bg-transparent text-xs px-4 py-2 rounded-md"
             >

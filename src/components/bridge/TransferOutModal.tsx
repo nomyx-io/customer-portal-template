@@ -1,13 +1,14 @@
 import React, { useState, useEffect } from "react";
 
-import { Modal, Input, Select, Button, Form } from "antd";
+import { Modal, Input, Select, Form } from "antd";
 import countries from "i18n-iso-countries";
 import enLocale from "i18n-iso-countries/langs/en.json";
+import { Trash } from "iconsax-react";
 import { useSession } from "next-auth/react";
 import Parse from "parse";
 import { toast } from "react-toastify";
 
-import ConfirmationModal from "@/components/ConfirmationModal";
+import ConfirmationModal from "@/components/bridge/ConfirmationModal";
 
 countries.registerLocale(enLocale);
 const countryOptions = Object.entries(countries.getNames("en", { select: "official" })).map(([code, name]) => ({
@@ -67,15 +68,17 @@ const TransferOutModal: React.FC<TransferOutModalProps> = ({ bridgeCustomerId, v
         const accounts = await Parse.Cloud.run("getExternalAccounts", {
           customerId: bridgeCustomerId,
         });
+
+        console.log("External accounts:", accounts.data);
+
         setExternalAccounts(accounts.data || []);
       } catch (error) {
         console.error("Failed to fetch external accounts:", error);
-        toast.error("Failed to fetch external accounts.");
       }
     };
 
     if (bridgeCustomerId) fetchExternalAccounts();
-  }, []);
+  }, [bridgeCustomerId]);
 
   const handleDestinationPaymentRailChange = (value: string) => {
     const updatedCurrency = value === "sepa" ? "EUR" : "USD";
@@ -84,6 +87,7 @@ const TransferOutModal: React.FC<TransferOutModalProps> = ({ bridgeCustomerId, v
   };
 
   const handleNewAccountSubmit = async (values: any) => {
+    console.log("New account form values:", values);
     const account_type = newAccountPaymentRail === "sepa" ? "iban" : "us";
     // Prepare the payload for creating the new external account
     const newAccountPayload = {
@@ -131,6 +135,20 @@ const TransferOutModal: React.FC<TransferOutModalProps> = ({ bridgeCustomerId, v
     }
   };
 
+  const handleDeleteExternalAccount = async (accountId: string) => {
+    try {
+      await Parse.Cloud.run("deleteExternalAccount", { customerId: bridgeCustomerId, externalAccountId: accountId });
+      toast.success("External account deleted successfully!");
+
+      // Refetch external accounts
+      const accounts = await Parse.Cloud.run("getExternalAccounts", { customerId: bridgeCustomerId });
+      setExternalAccounts(accounts.data || []);
+    } catch (error) {
+      console.error("Failed to delete external account:", error);
+      toast.error("Failed to delete external account.");
+    }
+  };
+
   const handleConfirmSubmit = async () => {
     try {
       const formValues = await form.validateFields();
@@ -163,9 +181,9 @@ const TransferOutModal: React.FC<TransferOutModalProps> = ({ bridgeCustomerId, v
       form.resetFields();
 
       onUpdateTransfers();
-    } catch (error) {
+    } catch (error: any) {
       console.error("Failed to create transfer:", error);
-      toast.error("Failed to create transfer.");
+      toast.error(`Failed to create transfer: ${error.message}`);
     } finally {
       setIsConfirmModalVisible(false);
       onClose();
@@ -184,6 +202,8 @@ const TransferOutModal: React.FC<TransferOutModalProps> = ({ bridgeCustomerId, v
 
     const sharedFields = (
       <>
+        <h2 className="font-semibold mb-2 text-gray-800 dark:text-gray-200 mt-10">Bank Details</h2>
+        <div className="border-t border-2 border-gray-800 dark:border-gray-200 mb-6" />
         <Form.Item label="Bank Name" name="bank_name" rules={[{ required: true, message: "Bank Name is required" }]}>
           <Input className="!bg-nomyx-dark2-light dark:!bg-nomyx-dark2-dark" placeholder="Name of the Banking Institution" />
         </Form.Item>
@@ -197,6 +217,9 @@ const TransferOutModal: React.FC<TransferOutModalProps> = ({ bridgeCustomerId, v
       return (
         <>
           {sharedFields}
+          <Form.Item label="Account Number" name="accountNumber" rules={[{ required: true, message: "Account Number is required" }]}>
+            <Input className="!bg-nomyx-dark2-light dark:!bg-nomyx-dark2-dark" placeholder="Add Account number" />
+          </Form.Item>
           <Form.Item
             label="Routing Number"
             name="routingNumber"
@@ -207,31 +230,24 @@ const TransferOutModal: React.FC<TransferOutModalProps> = ({ bridgeCustomerId, v
           >
             <Input className="!bg-nomyx-dark2-light dark:!bg-nomyx-dark2-dark" placeholder="Add routing number" />
           </Form.Item>
-
-          <Form.Item label="Account Number" name="accountNumber" rules={[{ required: true, message: "Account Number is required" }]}>
-            <Input className="!bg-nomyx-dark2-light dark:!bg-nomyx-dark2-dark" placeholder="Add Account number" />
-          </Form.Item>
+          <h2 className="font-semibold  mb-2 text-gray-800 dark:text-gray-200 mt-10">Benificiary Info</h2>
+          <div className="border-t border-2 border-gray-800 dark:border-gray-200 mb-6" />
 
           <Form.Item label="Street Line 1" name="streetLine1" rules={[{ required: true, message: "Street Line 1 is required" }]}>
             <Input className="!bg-nomyx-dark2-light dark:!bg-nomyx-dark2-dark" placeholder="Add Street" />
           </Form.Item>
-
           <Form.Item label="Street Line 2" name="streetLine2">
             <Input className="!bg-nomyx-dark2-light dark:!bg-nomyx-dark2-dark" placeholder="Add Street" />
           </Form.Item>
-
           <Form.Item label="City" name="city" rules={[{ required: true, message: "City is required" }]}>
             <Input className="!bg-nomyx-dark2-light dark:!bg-nomyx-dark2-dark" placeholder="Add City" />
           </Form.Item>
-
           <Form.Item label="State" name="state" rules={[{ required: true, message: "State is required" }]}>
             <Input className="!bg-nomyx-dark2-light dark:!bg-nomyx-dark2-dark" placeholder="Add State" />
           </Form.Item>
-
           <Form.Item label="Postal Code" name="postalCode" rules={[{ required: true, message: "Postal Code is required" }]}>
             <Input className="!bg-nomyx-dark2-light dark:!bg-nomyx-dark2-dark" placeholder="Add Postal Code" />
           </Form.Item>
-
           <Form.Item
             label="Country"
             name="country"
@@ -247,7 +263,7 @@ const TransferOutModal: React.FC<TransferOutModalProps> = ({ bridgeCustomerId, v
               showSearch
               placeholder="Select a country"
               onSearch={handleCountrySearch}
-              filterOption={false} // Custom filtering
+              filterOption={false}
               options={filteredCountries.map((country) => ({
                 value: country.code,
                 label: country.name,
@@ -387,7 +403,6 @@ const TransferOutModal: React.FC<TransferOutModalProps> = ({ bridgeCustomerId, v
                 const value = e.target.value;
                 const numericValue = parseFloat(value);
                 if (!isNaN(numericValue)) {
-                  // Ensure two decimal places
                   form.setFieldsValue({ amount: numericValue.toFixed(2) });
                 }
               }}
@@ -396,14 +411,26 @@ const TransferOutModal: React.FC<TransferOutModalProps> = ({ bridgeCustomerId, v
 
           <Form.Item label="External Account" name="accountDetails" rules={[{ required: true, message: "Account is required" }]}>
             <Select
+              optionLabelProp="label"
               onChange={(value) => {
                 if (value === "new") setIsNewAccountModalVisible(true);
               }}
               className="border border-black rounded-md"
             >
               {externalAccounts.map((account) => (
-                <Option key={account.id} value={account.id}>
-                  {account.bank_name} - ({account.account_owner_name})
+                <Option key={account.id} value={account.id} label={account.bank_name + " - " + account.account_owner_name + " - " + account.currency}>
+                  <span>
+                    {account.bank_name} - {account.account_owner_name} - {account.currency}
+                  </span>
+                  <span style={{ float: "right" }}>
+                    <Trash
+                      className="text-red-500 cursor-pointer"
+                      onClick={(event) => {
+                        event.stopPropagation();
+                        handleDeleteExternalAccount(account.id);
+                      }}
+                    />
+                  </span>
                 </Option>
               ))}
               <Option value="new">Create New External Account</Option>
@@ -467,6 +494,7 @@ const TransferOutModal: React.FC<TransferOutModalProps> = ({ bridgeCustomerId, v
           {renderFields(newAccountPaymentRail)}
           <div className="flex gap-4 mt-4">
             <button
+              type="button"
               onClick={() => {
                 setIsNewAccountModalVisible(false);
                 form.setFieldsValue({ accountDetails: "" });
