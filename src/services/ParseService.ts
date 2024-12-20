@@ -174,41 +174,6 @@ export default class ParseService {
   }
 
   /**
-   * create or update a record in the parse database
-   * @param collectionName
-   * @param collectionIdFields
-   * @param collectionIds
-   * @param data
-   * @returns {Promise<Parse.Object>}
-   */
-  static async createOrUpdateRecord(
-    collectionName: any,
-    collectionIdFields: any = [],
-    collectionIds: any = [],
-    data: any = {}
-  ): Promise<Parse.Object | undefined> {
-    const Collection = Parse.Object.extend(collectionName);
-    const query = new Parse.Query(Collection);
-    collectionIdFields.forEach((cif: any, i: number) => query.equalTo(cif, collectionIds[i]));
-    let record: any;
-    try {
-      record = await query.first().catch(globalErrorHandler);
-      if (record) {
-        Object.keys(data).forEach((key: any, i: number) => (record as any).set(key, data[key]));
-        return record.save();
-      }
-    } catch (e) {
-      console.log("cannot create record", (e as any).message);
-    }
-
-    if (!record) {
-      collectionIdFields.forEach((cif: any, i: number) => ((data as any)[cif] = collectionIds[i]));
-      record = new Collection(data);
-      return record.save();
-    }
-  }
-
-  /**
    * update a record in the parse database
    * @param collectionName
    * @param collectionIdFields
@@ -218,8 +183,13 @@ export default class ParseService {
    */
   static async updateExistingRecord(collectionName: any, collectionIdFields: any, collectionIds: any, data: any) {
     try {
+      console.log(
+        `updateExistingRecord: Updating existing record with collectionName ${collectionName} and collectionIdFields ${collectionIdFields} and collectionIds ${collectionIds} and data ${data}`
+      );
       const Collection = Parse.Object.extend(collectionName);
       const query = new Parse.Query(Collection);
+      console.log("collectionIdFields", collectionIdFields);
+      console.log("query", query);
       collectionIdFields.forEach((cif: any, i: number) => query.equalTo(cif, collectionIds[i]));
       return query.first().then((record: any) => {
         if (record) {
@@ -534,6 +504,7 @@ export default class ParseService {
     for (const key in fields) {
       collection.set(key, fields[key]);
     }
+    console.log("collection", collection);
     await collection.save().catch(globalErrorHandler);
   }
 

@@ -109,7 +109,7 @@ const IDVerification: React.FC<IDVerificationProps> = ({ setActiveTab, setRegist
       >
         <div className="p-4">
           {/* Render the Persona component inside the modal */}
-          {templateId && <Persona templateId={templateId} />}
+          {templateId && <Persona templateId={templateId} environmentId={process.env.NEXT_PUBLIC_PERSONA_ENVIRONMENT_ID || ""} />}
         </div>
       </Modal>
 

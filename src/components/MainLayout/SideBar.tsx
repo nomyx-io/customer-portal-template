@@ -3,7 +3,7 @@ import React, { useState } from "react";
 
 import type { MenuProps } from "antd";
 import { Layout, Menu, Button } from "antd/es";
-import { ChartSquare, LanguageSquare, Shop, Key } from "iconsax-react";
+import { ChartSquare, LanguageSquare, Shop, Key, MoneyChange } from "iconsax-react";
 import Link from "next/link";
 
 import RecoverDfnsKeyModal from "@/components/RecoverDfnsKeyModal";
@@ -44,6 +44,7 @@ const SideNavBar = () => {
     getItem("Dashboard", "menu-item-1", "/dashboard", <ChartSquare className="!text-nomyx-text-light dark:!text-nomyx-text-dark" />),
     getItem("My Portfolio", "menu-item-2", "/my-portfolio", <LanguageSquare className="!text-nomyx-text-light dark:!text-nomyx-text-dark" />),
     getItem("Marketplace", "menu-item-3", "/marketplace", <Shop className="!text-nomyx-text-light dark:!text-nomyx-text-dark" />),
+    getItem("Transfer In/Out", "menu-item-4", "/transfer-in-out", <MoneyChange className="!text-nomyx-text-light dark:!text-nomyx-text-dark" />),
   ];
 
   return (
