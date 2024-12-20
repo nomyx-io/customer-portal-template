@@ -36,6 +36,7 @@
     "react-chartjs-2": "^5.2.0",
     "react-dom": "^18.2.0",
     "react-hook-form": "^7.53.0",
+    "react-plaid-link": "^3.6.1",
     "react-toastify": "^10.0.4",
     "sass": "^1.70.0",
     "siwe": "^2.1.4",

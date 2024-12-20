@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback, useRef } from "react";
 
 import { Modal, Input, Select, Form } from "antd";
 import countries from "i18n-iso-countries";
@@ -6,6 +6,7 @@ import enLocale from "i18n-iso-countries/langs/en.json";
 import { Trash } from "iconsax-react";
 import { useSession } from "next-auth/react";
 import Parse from "parse";
+import { usePlaidLink } from "react-plaid-link";
 import { toast } from "react-toastify";
 
 import ConfirmationModal from "@/components/bridge/ConfirmationModal";
@@ -36,6 +37,9 @@ const TransferOutModal: React.FC<TransferOutModalProps> = ({ bridgeCustomerId, v
   const [externalAccounts, setExternalAccounts] = useState<any[]>([]);
   const [destinationCurrency, setDestinationCurrency] = useState<string>("USD");
   const [filteredCountries, setFilteredCountries] = useState<any[]>(countryOptions);
+
+  const [plaidConfig, setPlaidConfig] = useState<any>(null);
+  const linkTokenRef = useRef<string | null>(null);
 
   const { data: session } = useSession();
   const user = session?.user;
@@ -71,8 +75,6 @@ const TransferOutModal: React.FC<TransferOutModalProps> = ({ bridgeCustomerId, v
           customerId: bridgeCustomerId,
         });
 
-        console.log("External accounts:", accounts.data);
-
         setExternalAccounts(accounts.data || []);
       } catch (error) {
         console.error("Failed to fetch external accounts:", error);
@@ -89,7 +91,6 @@ const TransferOutModal: React.FC<TransferOutModalProps> = ({ bridgeCustomerId, v
   };
 
   const handleNewAccountSubmit = async (values: any) => {
-    console.log("New account form values:", values);
     const account_type = newAccountPaymentRail === "sepa" ? "iban" : "us";
     // Prepare the payload for creating the new external account
     const newAccountPayload = {
@@ -129,8 +130,6 @@ const TransferOutModal: React.FC<TransferOutModalProps> = ({ bridgeCustomerId, v
       }),
     };
 
-    console.log("New account payload:", newAccountPayload);
-
     try {
       const newAccount = await Parse.Cloud.run("createExternalAccount", newAccountPayload);
       toast.success("New external account created successfully!");
@@ -163,7 +162,6 @@ const TransferOutModal: React.FC<TransferOutModalProps> = ({ bridgeCustomerId, v
   };
 
   const handleConfirmSubmit = async () => {
-    console.log("Confirming transfer out...");
     try {
       const formValues = await transferForm.validateFields();
       const transferObject: any = {
@@ -193,8 +191,6 @@ const TransferOutModal: React.FC<TransferOutModalProps> = ({ bridgeCustomerId, v
         transferObject.destination.sepa_reference = formValues.sepaReference;
       }
 
-      console.log("transferObject", transferObject);
-
       await Parse.Cloud.run("createTransfer", transferObject);
       toast.success("Transfer successfully created!");
       transferForm.resetFields();
@@ -215,7 +211,6 @@ const TransferOutModal: React.FC<TransferOutModalProps> = ({ bridgeCustomerId, v
   };
 
   const handleSubmit = () => {
-    console.log("Opening confirm modal...");
     setIsConfirmModalVisible(true);
   };
 
@@ -250,7 +245,7 @@ const TransferOutModal: React.FC<TransferOutModalProps> = ({ bridgeCustomerId, v
           >
             <Input type="password" className="!bg-nomyx-dark2-light dark:!bg-nomyx-dark2-dark" placeholder="Add routing number" />
           </Form.Item>
-          <h2 className="font-semibold  mb-2 text-gray-800 dark:text-gray-200 mt-10">Benificiary Info</h2>
+          <h2 className="font-semibold  mb-2 text-gray-800 dark:text-gray-200 mt-10">Beneficiary Info</h2>
           <div className="border-t border-2 border-gray-800 dark:border-gray-200 mb-6" />
 
           <Form.Item label="Street Line 1" name="streetLine1" rules={[{ required: true, message: "Street Line 1 is required" }]}>
@@ -359,6 +354,64 @@ const TransferOutModal: React.FC<TransferOutModalProps> = ({ bridgeCustomerId, v
     return <></>;
   };
 
+  // Set up the usePlaidLink hook
+  const config = {
+    token: plaidConfig?.link_token || "", // Set dynamically when needed
+    onSuccess: useCallback(
+      async (publicToken: string, metadata: any) => {
+        try {
+          await Parse.Cloud.run("exchangePlaidPublicToken", {
+            customerId: bridgeCustomerId,
+            linkToken: linkTokenRef.current,
+            publicToken,
+          });
+          toast.success("External account connected via Plaid successfully!");
+          // Refetch external accounts
+          const accounts = await Parse.Cloud.run("getExternalAccounts", { customerId: bridgeCustomerId });
+          transferForm.setFieldsValue({ accountDetails: "" });
+          setExternalAccounts(accounts.data || []);
+        } catch (error: any) {
+          console.error("Failed to exchange Plaid token:", error);
+          toast.error("Failed to connect external account via Plaid.");
+        }
+      },
+      [bridgeCustomerId, transferForm]
+    ),
+    onExit: useCallback((error: any, metadata: any) => {
+      if (error) {
+        console.error("Plaid Link error:", error);
+        toast.error("Failed to connect external account via Plaid.");
+      }
+    }, []),
+  };
+
+  const { open, ready, error: plaidError } = usePlaidLink(config);
+
+  // Function to handle Plaid modal opening
+  const handlePlaid = useCallback(() => {
+    // Fetch the link_token before opening
+    const fetchLinkToken = async () => {
+      try {
+        const response = await Parse.Cloud.run("getPlaidLinkToken", {
+          customerId: bridgeCustomerId,
+        });
+        setPlaidConfig(response);
+        linkTokenRef.current = response.link_token;
+      } catch (error: any) {
+        console.error("Error fetching Plaid link token:", error);
+        toast.error("Failed to initiate Plaid connection.");
+      }
+    };
+
+    fetchLinkToken();
+  }, [bridgeCustomerId]);
+
+  // Trigger Plaid modal when plaidConfig is set
+  useEffect(() => {
+    if (plaidConfig && ready) {
+      open();
+    }
+  }, [plaidConfig, ready, open]);
   return (
     <>
       <Modal title="Transfer Out" open={visible} onCancel={onClose} footer={null} centered className="custom-modal">
@@ -455,6 +508,8 @@ const TransferOutModal: React.FC<TransferOutModalProps> = ({ bridgeCustomerId, v
                 if (value === "new") {
                   setIsNewAccountModalVisible(true);
                 } else if (value === "plaid") {
+                  transferForm.setFieldsValue({ accountDetails: "" });
+                  handlePlaid();
                 }
               }}
               className="border border-black rounded-md"
@@ -480,7 +535,7 @@ const TransferOutModal: React.FC<TransferOutModalProps> = ({ bridgeCustomerId, v
                 </Option>
               ))}
               <Option value="new">Create new external account</Option>
-              <Option value="plaid">Connect exteral account using plaid</Option>
+              <Option value="plaid">Connect via Plaid **Will take a few minutes to populate here**</Option>
             </Select>
           </Form.Item>
 
