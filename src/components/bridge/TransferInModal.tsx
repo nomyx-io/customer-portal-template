@@ -45,7 +45,7 @@ const TransferInModal: React.FC<TransferInModalProps> = ({ bridgeCustomerId, vis
     };
 
     if (user?.walletId) fetchWalletInfo();
-  }, []);
+  }, [user]);
 
   const handleConfirmSubmit = async () => {
     try {
@@ -117,7 +117,7 @@ const TransferInModal: React.FC<TransferInModalProps> = ({ bridgeCustomerId, vis
               <Select onChange={handleSourcePaymentRailChange} className="border border-black rounded-md">
                 <Option value="ach_push">ACH Push</Option>
                 <Option value="wire">Wire Transfer</Option>
-                {/* <Option value="sepa">Sepa</Option> */}
+                <Option value="sepa">Sepa</Option>
               </Select>
             </Form.Item>
             <Form.Item

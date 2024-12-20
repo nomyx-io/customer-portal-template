@@ -363,8 +363,8 @@ const TransferInOut: React.FC = () => {
         full_name: customerName.trim(),
         email: emailAddress.trim(),
         type: "individual",
+        endorsements: ["sepa"],
       });
-      toast.success("KYC link generated successfully!");
 
       const { id: kycId, customer_id: fetchedBridgeCustomerId } = response;
       const currentUser = Parse.User.current();

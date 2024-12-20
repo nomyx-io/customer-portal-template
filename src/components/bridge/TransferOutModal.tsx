@@ -26,7 +26,9 @@ interface TransferOutModalProps {
 }
 
 const TransferOutModal: React.FC<TransferOutModalProps> = ({ bridgeCustomerId, visible, onClose, onUpdateTransfers }) => {
-  const [form] = Form.useForm();
+  const [transferForm] = Form.useForm();
+  const [newAccountForm] = Form.useForm();
+
   const [isConfirmModalVisible, setIsConfirmModalVisible] = useState(false);
   const [isNewAccountModalVisible, setIsNewAccountModalVisible] = useState(false);
   const [newAccountPaymentRail, setNewAccountPaymentRail] = useState<string>("ach");
@@ -60,7 +62,7 @@ const TransferOutModal: React.FC<TransferOutModalProps> = ({ bridgeCustomerId, v
     if (user?.walletId) {
       fetchWalletInfo();
     }
-  }, []);
+  }, [user]);
 
   useEffect(() => {
     const fetchExternalAccounts = async () => {
@@ -83,7 +85,7 @@ const TransferOutModal: React.FC<TransferOutModalProps> = ({ bridgeCustomerId, v
   const handleDestinationPaymentRailChange = (value: string) => {
     const updatedCurrency = value === "sepa" ? "EUR" : "USD";
     setDestinationCurrency(updatedCurrency);
-    form.setFieldsValue({ destinationCurrency: updatedCurrency });
+    transferForm.setFieldsValue({ destinationCurrency: updatedCurrency });
   };
 
   const handleNewAccountSubmit = async (values: any) => {
@@ -92,18 +94,20 @@ const TransferOutModal: React.FC<TransferOutModalProps> = ({ bridgeCustomerId, v
     // Prepare the payload for creating the new external account
     const newAccountPayload = {
       customer_id: bridgeCustomerId,
-      currency: form.getFieldValue("destinationCurrency").toLowerCase(),
+      currency: transferForm.getFieldValue("destinationCurrency").toLowerCase(),
       bank_name: values.bank_name,
       account_owner_name: values.account_owner_name,
       account_type: account_type,
-      address: {
-        street_line_1: values.streetLine1,
-        street_line_2: values.streetLine2 || undefined,
-        city: values.city,
-        state: values.state || "",
-        postal_code: values.postalCode || "",
-        country: countries.alpha2ToAlpha3(values.country),
-      },
+      ...(account_type === "us" && {
+        address: {
+          street_line_1: values.streetLine1,
+          street_line_2: values.streetLine2 || undefined,
+          city: values.city,
+          state: values.state || "",
+          postal_code: values.postalCode || "",
+          country: countries.alpha2ToAlpha3(values.country),
+        },
+      }),
       ...(account_type === "us" && {
         account: {
           account_number: values.accountNumber,
@@ -112,17 +116,26 @@ const TransferOutModal: React.FC<TransferOutModalProps> = ({ bridgeCustomerId, v
         },
       }),
       ...(account_type === "iban" && {
-        iban: values.iban,
-        bic: values.bic,
-        bank_country: values.bankCountry,
+        iban: {
+          account_number: values.iban,
+          bic: values.bic,
+          country: countries.alpha2ToAlpha3(values.bankCountry),
+        },
+      }),
+      ...(account_type === "iban" && {
+        account_owner_type: "individual", // TODO: nate - Hardcoded to individual for now
+        first_name: values.firstName,
+        last_name: values.lastName,
       }),
     };
+
+    console.log("New account payload:", newAccountPayload);
 
     try {
       const newAccount = await Parse.Cloud.run("createExternalAccount", newAccountPayload);
       toast.success("New external account created successfully!");
 
-      form.setFieldsValue({ accountDetails: newAccount.id });
+      transferForm.setFieldsValue({ accountDetails: newAccount.id });
 
       setIsNewAccountModalVisible(false);
 
@@ -150,8 +163,9 @@ const TransferOutModal: React.FC<TransferOutModalProps> = ({ bridgeCustomerId, v
   };
 
   const handleConfirmSubmit = async () => {
+    console.log("Confirming transfer out...");
     try {
-      const formValues = await form.validateFields();
+      const formValues = await transferForm.validateFields();
       const transferObject: any = {
         amount: formValues.amount,
         on_behalf_of: bridgeCustomerId,
@@ -174,11 +188,16 @@ const TransferOutModal: React.FC<TransferOutModalProps> = ({ bridgeCustomerId, v
         transferObject.destination.wire_message = formValues.wireMessage;
       }
 
+      // Add sepaReference if destinationPaymentRail is 'sepa'
+      if (formValues.destinationPaymentRail.toLowerCase() === "sepa" && formValues.sepaReference) {
+        transferObject.destination.sepa_reference = formValues.sepaReference;
+      }
+
       console.log("transferObject", transferObject);
 
       await Parse.Cloud.run("createTransfer", transferObject);
       toast.success("Transfer successfully created!");
-      form.resetFields();
+      transferForm.resetFields();
 
       onUpdateTransfers();
     } catch (error: any) {
@@ -195,11 +214,12 @@ const TransferOutModal: React.FC<TransferOutModalProps> = ({ bridgeCustomerId, v
     setFilteredCountries(filtered);
   };
 
-  const handleSubmit = () => setIsConfirmModalVisible(true);
+  const handleSubmit = () => {
+    console.log("Opening confirm modal...");
+    setIsConfirmModalVisible(true);
+  };
 
   const renderFields = (paymentRail: string) => {
-    const destinationPaymentRail = form.getFieldValue("destinationPaymentRail");
-
     const sharedFields = (
       <>
         <h2 className="font-semibold mb-2 text-gray-800 dark:text-gray-200 mt-10">Bank Details</h2>
@@ -218,7 +238,7 @@ const TransferOutModal: React.FC<TransferOutModalProps> = ({ bridgeCustomerId, v
         <>
           {sharedFields}
           <Form.Item label="Account Number" name="accountNumber" rules={[{ required: true, message: "Account Number is required" }]}>
-            <Input className="!bg-nomyx-dark2-light dark:!bg-nomyx-dark2-dark" placeholder="Add Account number" />
+            <Input type="password" className="!bg-nomyx-dark2-light dark:!bg-nomyx-dark2-dark" placeholder="Add Account number" />
           </Form.Item>
           <Form.Item
             label="Routing Number"
@@ -228,7 +248,7 @@ const TransferOutModal: React.FC<TransferOutModalProps> = ({ bridgeCustomerId, v
               { len: 9, message: "Routing Number must be exactly 9 characters long" },
             ]}
           >
-            <Input className="!bg-nomyx-dark2-light dark:!bg-nomyx-dark2-dark" placeholder="Add routing number" />
+            <Input type="password" className="!bg-nomyx-dark2-light dark:!bg-nomyx-dark2-dark" placeholder="Add routing number" />
           </Form.Item>
           <h2 className="font-semibold  mb-2 text-gray-800 dark:text-gray-200 mt-10">Benificiary Info</h2>
           <div className="border-t border-2 border-gray-800 dark:border-gray-200 mb-6" />
@@ -286,9 +306,6 @@ const TransferOutModal: React.FC<TransferOutModalProps> = ({ bridgeCustomerId, v
       return (
         <>
           {sharedFields}
-          <Form.Item label="Account Owner Type" name="accountOwnerType" rules={[{ required: true, message: "Account Owner Type is required" }]}>
-            <Input disabled value="Individual" />
-          </Form.Item>
 
           <div className="flex gap-4">
             <Form.Item label="First Name" name="firstName" rules={[{ required: true, message: "First Name is required" }]} className="w-1/2">
@@ -300,19 +317,41 @@ const TransferOutModal: React.FC<TransferOutModalProps> = ({ bridgeCustomerId, v
           </div>
 
           <Form.Item label="IBAN" name="iban" rules={[{ required: true, message: "IBAN is required" }]}>
-            <Input className="!bg-nomyx-dark2-light dark:!bg-nomyx-dark2-dark" placeholder="Add IBAN" />
+            <Input type="password" className="!bg-nomyx-dark2-light dark:!bg-nomyx-dark2-dark" placeholder="Add IBAN" />
           </Form.Item>
 
           <Form.Item label="BIC" name="bic" rules={[{ required: true, message: "BIC is required" }]}>
-            <Input className="!bg-nomyx-dark2-light dark:!bg-nomyx-dark2-dark" placeholder="Add BIC" />
+            <Input type="password" className="!bg-nomyx-dark2-light dark:!bg-nomyx-dark2-dark" placeholder="Add BIC" />
           </Form.Item>
 
-          <Form.Item label="Bank Country" name="bankCountry" rules={[{ required: true, message: "Bank Country is required" }]}>
-            <Input className="!bg-nomyx-dark2-light dark:!bg-nomyx-dark2-dark" placeholder="Add Bank Country" />
-          </Form.Item>
-
-          <Form.Item label="Sepa Reference" name="sepaReference">
-            <Input className="!bg-nomyx-dark2-light dark:!bg-nomyx-dark2-dark" placeholder="Add Sepa Reference" />
+          <Form.Item
+            label="Bank Country"
+            name="bankCountry"
+            rules={[
+              { required: true, message: "Bank Country is required" },
+              {
+                validator: (_, value) =>
+                  value && countries.alpha2ToAlpha3(value) ? Promise.resolve() : Promise.reject(new Error("Please select a valid country.")),
+              },
+            ]}
+          >
+            <Select
+              showSearch
+              placeholder="Select a bank country"
+              onSearch={handleCountrySearch}
+              filterOption={false}
+              options={filteredCountries.map((country) => ({
+                value: country.code,
+                label: country.name,
+              }))}
+              className="border border-black rounded-md"
+            >
+              {filteredCountries.map((country) => (
+                <Option key={country.code} value={countries.alpha2ToAlpha3(country.code)}>
+                  {country.name}
+                </Option>
+              ))}
+            </Select>
           </Form.Item>
         </>
       );
@@ -325,7 +364,7 @@ const TransferOutModal: React.FC<TransferOutModalProps> = ({ bridgeCustomerId, v
       <Modal title="Transfer Out" open={visible} onCancel={onClose} footer={null} centered className="custom-modal">
         <Form
           layout="vertical"
-          form={form}
+          form={transferForm}
           onFinish={handleSubmit}
           initialValues={{
             bridgeCustomerId,
@@ -374,7 +413,7 @@ const TransferOutModal: React.FC<TransferOutModalProps> = ({ bridgeCustomerId, v
               >
                 <Option value="ach">ACH</Option>
                 <Option value="wire">Wire Transfer</Option>
-                {/* <Option value="sepa">Sepa</Option> */}
+                <Option value="sepa">Sepa</Option>
               </Select>
             </Form.Item>
             <Form.Item
@@ -403,7 +442,7 @@ const TransferOutModal: React.FC<TransferOutModalProps> = ({ bridgeCustomerId, v
                 const value = e.target.value;
                 const numericValue = parseFloat(value);
                 if (!isNaN(numericValue)) {
-                  form.setFieldsValue({ amount: numericValue.toFixed(2) });
+                  transferForm.setFieldsValue({ amount: numericValue.toFixed(2) });
                 }
               }}
             />
@@ -413,14 +452,21 @@ const TransferOutModal: React.FC<TransferOutModalProps> = ({ bridgeCustomerId, v
             <Select
               optionLabelProp="label"
               onChange={(value) => {
-                if (value === "new") setIsNewAccountModalVisible(true);
+                if (value === "new") {
+                  setIsNewAccountModalVisible(true);
+                } else if (value === "plaid") {
+                }
               }}
               className="border border-black rounded-md"
             >
               {externalAccounts.map((account) => (
-                <Option key={account.id} value={account.id} label={account.bank_name + " - " + account.account_owner_name + " - " + account.currency}>
+                <Option
+                  key={account.id}
+                  value={account.id}
+                  label={account.bank_name + " - " + account.account_owner_name + " - " + account.currency.toUpperCase()}
+                >
                   <span>
-                    {account.bank_name} - {account.account_owner_name} - {account.currency}
+                    {account.bank_name} - {account.account_owner_name} - {account.currency.toUpperCase()}
                   </span>
                   <span style={{ float: "right" }}>
                     <Trash
@@ -433,12 +479,13 @@ const TransferOutModal: React.FC<TransferOutModalProps> = ({ bridgeCustomerId, v
                   </span>
                 </Option>
               ))}
-              <Option value="new">Create New External Account</Option>
+              <Option value="new">Create new external account</Option>
+              <Option value="plaid">Connect exteral account using plaid</Option>
             </Select>
           </Form.Item>
 
           {/* Conditionally render wire-specific fields */}
-          {form.getFieldValue("destinationPaymentRail") === "wire" && (
+          {transferForm.getFieldValue("destinationPaymentRail") === "wire" && (
             <>
               <Form.Item
                 label="Wire Message"
@@ -453,8 +500,26 @@ const TransferOutModal: React.FC<TransferOutModalProps> = ({ bridgeCustomerId, v
             </>
           )}
 
+          {/* Conditionally render sepa-specific fields */}
+          {transferForm.getFieldValue("destinationPaymentRail") === "sepa" && (
+            <>
+              <Form.Item
+                label="Sepa Reference"
+                name="sepaReference"
+                rules={[
+                  { required: true, message: "Wire Message is required" },
+                  { min: 6, message: "Sepa Reference must be at least 6 characters long" },
+                  { max: 140, message: "Wire Message cannot exceed 140 characters" },
+                ]}
+              >
+                <Input className="!bg-nomyx-dark2-light dark:!bg-nomyx-dark2-dark" placeholder="Add Wire Message" />
+              </Form.Item>
+            </>
+          )}
+
           <div className="flex gap-4 mt-4">
             <button
+              type="button"
               onClick={onClose}
               className="w-1/2 text-blue-500 border border-blue-500 hover:bg-transparent hover:text-blue-500 focus:ring-0 bg-transparent text-xs px-4 py-2 rounded-md"
             >
@@ -490,14 +555,14 @@ const TransferOutModal: React.FC<TransferOutModalProps> = ({ bridgeCustomerId, v
         maskClosable={false}
         closable={false}
       >
-        <Form layout="vertical" form={form} onFinish={handleNewAccountSubmit}>
+        <Form layout="vertical" form={newAccountForm} onFinish={handleNewAccountSubmit}>
           {renderFields(newAccountPaymentRail)}
           <div className="flex gap-4 mt-4">
             <button
               type="button"
               onClick={() => {
                 setIsNewAccountModalVisible(false);
-                form.setFieldsValue({ accountDetails: "" });
+                transferForm.setFieldsValue({ accountDetails: "" });
               }}
               className="w-1/2 text-blue-500 border border-blue-500 hover:bg-transparent hover:text-blue-500 focus:ring-0 bg-transparent text-xs px-4 py-2 rounded-md"
             >
