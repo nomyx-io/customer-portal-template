@@ -1,6 +1,7 @@
 import { Card } from "antd";
 
 import { formatPrice } from "@/utils/currencyFormater";
+import { formatNumber } from "@/utils/numberFormatter";
 
 interface ProjectInfoProps {
   token: any;
@@ -38,7 +39,7 @@ const ProjectInfo: React.FC<ProjectInfoProps> = ({
               token.existingCredits && token.existingCredits > 0
                 ? {
                     label: "Existing Credits:",
-                    value: `${formatPrice(token.existingCredits, "USD")}`,
+                    value: `${formatNumber(token.existingCredits)}`,
                   }
                 : null,
               totalCost && totalCost > 0
@@ -64,7 +65,7 @@ const ProjectInfo: React.FC<ProjectInfoProps> = ({
             <>
               <div className="text-gray-900 dark:text-white font-bold text-lg mb-2">Carbon Credits:</div>
               <div className="text-3xl font-bold text-gray-900 dark:text-white">
-                {carbonCreditBalance !== null ? Intl.NumberFormat("en-US").format(carbonCreditBalance) : "Loading..."}
+                {carbonCreditBalance !== null ? formatNumber(carbonCreditBalance) : "Loading..."}
               </div>
             </>
           )}
