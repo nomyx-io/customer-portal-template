@@ -12,6 +12,7 @@
     "prepare": "husky"
   },
   "dependencies": {
+    "@ant-design/icons": "^5.5.2",
     "@ant-design/nextjs-registry": "^1.0.0",
     "@dfns/sdk": "^0.5.7",
     "@dfns/sdk-browser": "^0.5.7",

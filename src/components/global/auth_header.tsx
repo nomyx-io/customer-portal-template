@@ -49,13 +49,7 @@ const AppHeader: React.FC = () => {
       {/* Logo */}
       <div className="logo">
         <Link href="/">
-          <Image
-            src="/images/nomyx_logo_black.svg"
-            alt="Logo"
-            width={100}
-            height={25}
-            style={{ cursor: "pointer" }}
-          />
+          <Image src="/images/nomyx_logo_black.svg" alt="Logo" width={100} height={25} style={{ cursor: "pointer" }} />
         </Link>
       </div>
 
