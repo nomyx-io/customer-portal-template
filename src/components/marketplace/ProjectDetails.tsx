@@ -16,6 +16,7 @@ import projectBackground from "@/images/projects_background.png";
 import BlockchainService from "@/services/BlockchainService";
 import KronosCustomerService from "@/services/KronosCustomerService";
 import { NomyxEvent, WalletPreference } from "@/utils/Constants";
+import { formatNumber } from "@/utils/numberFormatter";
 
 interface ProjectDetailsProps {
   project: Parse.Object<Project>;
@@ -409,27 +410,22 @@ const ProjectDetails: React.FC<ProjectDetailsProps> = ({ project, onBack }) => {
               </div>
 
               {/* Project Stats (Hide when screen width is small enough to cause overlap) */}
-              <div
-                className={`absolute bottom-4 right-4 flex flex-nowrap space-x-4 bg-nomyx-dark2-light dark:bg-nomyx-dark2-dark p-4 rounded-lg shadow-md transition-opacity duration-500 ${
-                  showStats ? "opacity-100" : "opacity-0 pointer-events-none"
-                }`}
-                style={{ overflow: "hidden" }}
-              >
-                <div className="stat-item bg-nomyx-dark1-light dark:bg-nomyx-dark1-dark p-3 rounded-lg text-center">
+              <div className="stats-container flex flex-col md:flex-row flex-wrap space-y-4 md:space-y-0 md:space-x-4 bg-nomyx-dark2-light dark:bg-nomyx-dark2-dark p-4 rounded-lg shadow-md">
+                <div className="stat-item bg-nomyx-dark1-light dark:bg-nomyx-dark1-dark p-3 rounded-lg text-center !mb-3">
                   <span className="text-sm">Credit Type</span>
                   <h2 className="text-lg font-bold">Carbon Credit</h2>
                 </div>
-                <div className="stat-item bg-nomyx-dark1-light dark:bg-nomyx-dark1-dark p-3 rounded-lg text-center">
+                <div className="stat-item bg-nomyx-dark1-light dark:bg-nomyx-dark1-dark p-3 rounded-lg text-center !mb-3">
                   <span className="text-sm">Carbon Offset (Tons)</span>
                   <h2 className="text-lg font-bold">787,988,450</h2>
                 </div>
-                <div className="stat-item bg-nomyx-dark1-light dark:bg-nomyx-dark1-dark p-3 rounded-lg text-center">
+                <div className="stat-item bg-nomyx-dark1-light dark:bg-nomyx-dark1-dark p-3 rounded-lg text-center !mb-3">
                   <span className="text-sm">Tokenization Date</span>
                   <h2 className="text-lg font-bold">8.21.21</h2>
                 </div>
-                <div className="stat-item bg-nomyx-dark1-light dark:bg-nomyx-dark1-dark p-3 rounded-lg text-center">
+                <div className="stat-item bg-nomyx-dark1-light dark:bg-nomyx-dark1-dark p-3 rounded-lg text-center !mb-3">
                   <span className="text-sm">Total Tokens</span>
-                  <h2 className="text-lg font-bold">{totalTokens}</h2>
+                  <h2 className="text-lg font-bold">{formatNumber(totalTokens)}</h2>
                 </div>
               </div>
             </div>
