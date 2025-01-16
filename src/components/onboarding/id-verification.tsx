@@ -78,10 +78,10 @@ const IDVerification: React.FC<IDVerificationProps> = ({ setActiveTab, setRegist
             </p>
             <div className="flex space-x-4 mt-8">
               <Button type="primary" onClick={handleKYC}>
-                KYC
+                Register as a User
               </Button>
               <Button type="primary" onClick={handleKYB}>
-                KYB
+                Register as a Business
               </Button>
             </div>
           </>
