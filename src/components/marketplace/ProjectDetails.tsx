@@ -408,7 +408,7 @@ const ProjectDetails: React.FC<ProjectDetailsProps> = ({ project, onBack }) => {
               </button>
 
               {/* Project Image, Title, and Description */}
-              <div className="absolute bottom-4 left-0 md:flex md:flex-row flex-col items-start md:items-center p-4 rounded-lg w-full">
+              <div className="absolute sm:-bottom-2 bottom-4 left-0 md:flex md:flex-row flex-col items-start md:items-center p-4 rounded-lg w-full">
                 {/* Project Image */}
                 <div className="project-logo rounded-lg overflow-hidden flex-shrink-0" style={{ width: "100px", height: "100px" }}>
                   <Image src={project.attributes.logo?.url()} width={100} height={25} alt="Project Logo" className="object-cover w-full h-full" />
