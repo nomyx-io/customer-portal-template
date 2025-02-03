@@ -358,6 +358,18 @@ const ProjectDetails: React.FC<ProjectDetailsProps> = ({ project, onBack }) => {
   };
 
   const totalTokens = listings.length + sales.length;
+  //const totalValue = listings?.reduce((acc, token) => acc + Number(token?.price), 0) || 0;
+
+  const totalListingValue = listings?.reduce((sum, item) => {
+    const tokenPrice = parseFloat(item.token?.price || 0); // Safely get the token price and handle undefined
+    return sum + tokenPrice;
+  }, 0);
+
+  const totalSalesValue = sales?.reduce((sum, item) => {
+    const tokenPrice = parseFloat(item.token?.price || 0); // Safely get the token price and handle undefined
+    return sum + tokenPrice;
+  }, 0);
+
   return (
     <div className="project-details">
       {selectedToken ? (
@@ -388,44 +400,42 @@ const ProjectDetails: React.FC<ProjectDetailsProps> = ({ project, onBack }) => {
             >
               {/* Back Button */}
               <button
-                onClick={onBack} // Use the onBack function to reset the view
-                className="absolute top-4 left-4 bg-nomyx-dark2-light dark:bg-nomyx-dark2-dark text-nomyx-text-light dark:text-nomyx-text-dark rounded-md flex items-center px-4 py-2 shadow-md"
+                onClick={onBack}
+                className="absolute top-4 left-4 sm:left-auto sm:right-4 lg:left-4 bg-nomyx-dark2-light dark:bg-nomyx-dark2-dark text-nomyx-text-light dark:text-nomyx-text-dark rounded-md flex items-center px-4 py-2 shadow-md w-[100px]"
               >
                 <ArrowLeft size="24" className="mr-2" />
                 Back
               </button>
 
               {/* Project Image, Title, and Description */}
-              <div className="absolute bottom-4 left-0 flex items-center p-4 rounded-lg">
+              <div className="absolute sm:-bottom-2 bottom-4 left-0 md:flex md:flex-row flex-col items-start md:items-center p-4 rounded-lg w-full">
                 {/* Project Image */}
-                <div className="project-logo rounded-lg overflow-hidden" style={{ width: "100px", height: "100px" }}>
+                <div className="project-logo rounded-lg overflow-hidden flex-shrink-0" style={{ width: "100px", height: "100px" }}>
                   <Image src={project.attributes.logo?.url()} width={100} height={25} alt="Project Logo" className="object-cover w-full h-full" />
                 </div>
-
                 {/* Project Title and Description */}
-                <div className="text-white flex-1 mx-4">
+                <div className="text-white flex-1 mx-4 mt-4 md:mt-0">
                   <h1 className="text-3xl font-bold">{project.attributes.title}</h1>
                   <p className="text-sm mt-2 max-w-md break-words">{project.attributes.description}</p>
                 </div>
-              </div>
 
-              {/* Project Stats (Hide when screen width is small enough to cause overlap) */}
-              <div className="stats-container flex flex-col md:flex-row flex-wrap space-y-4 md:space-y-0 md:space-x-4 bg-nomyx-dark2-light dark:bg-nomyx-dark2-dark p-4 rounded-lg shadow-md">
-                <div className="stat-item bg-nomyx-dark1-light dark:bg-nomyx-dark1-dark p-3 rounded-lg text-center !mb-3">
-                  <span className="text-sm">Credit Type</span>
-                  <h2 className="text-lg font-bold">Carbon Credit</h2>
-                </div>
-                <div className="stat-item bg-nomyx-dark1-light dark:bg-nomyx-dark1-dark p-3 rounded-lg text-center !mb-3">
-                  <span className="text-sm">Carbon Offset (Tons)</span>
-                  <h2 className="text-lg font-bold">787,988,450</h2>
-                </div>
-                <div className="stat-item bg-nomyx-dark1-light dark:bg-nomyx-dark1-dark p-3 rounded-lg text-center !mb-3">
-                  <span className="text-sm">Tokenization Date</span>
-                  <h2 className="text-lg font-bold">8.21.21</h2>
-                </div>
-                <div className="stat-item bg-nomyx-dark1-light dark:bg-nomyx-dark1-dark p-3 rounded-lg text-center !mb-3">
-                  <span className="text-sm">Total Tokens</span>
-                  <h2 className="text-lg font-bold">{formatNumber(totalTokens)}</h2>
+                {/* Project Stats (Moves below on small screens) */}
+                <div
+                  className={`mt-6 md:mt-0 flex flex-col md:flex-row md:flex-nowrap space-y-4 md:space-y-0 md:space-x-4 bg-nomyx-dark2-light dark:bg-nomyx-dark2-dark p-4 rounded-lg shadow-md transition-opacity duration-500 opacity-100`}
+                  style={{ maxWidth: "100%", overflow: "hidden" }}
+                >
+                  <div className="stat-item bg-nomyx-dark1-light dark:bg-nomyx-dark1-dark p-3 rounded-lg text-center">
+                    <span className="text-sm">Total Value</span>
+                    <h2 className="text-lg font-bold">{formatNumber(totalListingValue + totalSalesValue)}</h2>
+                  </div>
+                  <div className="stat-item bg-nomyx-dark1-light dark:bg-nomyx-dark1-dark p-3 rounded-lg text-center">
+                    <span className="text-sm">Project Creation Date</span>
+                    <h2 className="text-lg font-bold">{project.attributes.createdAt?.toLocaleDateString()}</h2>
+                  </div>
+                  <div className="stat-item bg-nomyx-dark1-light dark:bg-nomyx-dark1-dark p-3 rounded-lg text-center">
+                    <span className="text-sm">Total Tokens</span>
+                    <h2 className="text-lg font-bold">{formatNumber(totalTokens)}</h2>
+                  </div>
                 </div>
               </div>
             </div>
