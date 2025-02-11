@@ -42,7 +42,7 @@ class KronosCustomerService {
 
   public async getTokensForUser(address: string) {
     const lowerCaseAddress = address.toLocaleLowerCase();
-    let records = await ParseService.getRecords("Token", ["owner"], [lowerCaseAddress], ["*"]);
+    let records = (await ParseService.getRecords("Token", ["owner"], [lowerCaseAddress], ["*"])) || [];
     let sanitizedRecords: any[] = [];
 
     if (records && records.length > 0) {
@@ -75,6 +75,47 @@ class KronosCustomerService {
       t.projectName = projectMap[t.projectId] || "Project 1";
       return t;
     });
+
+    // retrieve token deposit
+    const tokenObjectIds = records?.map((token) => token.id);
+    const depositQuery = new Parse.Query("TokenDeposit");
+    depositQuery.containedIn(
+      "token",
+      tokenObjectIds.map((id) => new Parse.Object("Token", { id }))
+    ); // Use pointers
+    const depositRecords = await depositQuery.find();
+    // Create a map of deposit amounts
+    const depositMap: Record<string, number> = {};
+
+    depositRecords.forEach((deposit) => {
+      const tokenId = deposit.get("token").get("tokenId");
+      const amount = Number(deposit.get("amount")) || 0;
+      depositMap[tokenId] = (depositMap[tokenId] || 0) + amount;
+    });
+    // retrieve token and withdrawal
+
+    const withdrawalQuery = new Parse.Query("TokenWithdrawal");
+    withdrawalQuery.containedIn(
+      "token",
+      tokenObjectIds.map((id) => new Parse.Object("Token", { id }))
+    ); // Use pointers
+    const withdrawalRecords = await withdrawalQuery.find();
+
+    // Create a map of deposit amounts
+    const withdrawalMap: Record<string, number> = {};
+
+    withdrawalRecords.forEach((deposit) => {
+      const tokenId = deposit.get("token").get("tokenId");
+      const amount = Number(deposit.get("amount")) || 0;
+      withdrawalMap[tokenId] = (withdrawalMap[tokenId] || 0) + amount;
+    });
+    if (depositMap || withdrawalMap) {
+      sanitizedRecords = sanitizedRecords.map((record: any) => ({
+        ...record,
+        depositAmount: depositMap?.[record.tokenId] ?? 0,
+        withdrawalAmount: withdrawalMap?.[record.tokenId] ?? 0,
+      }));
+    }
     return sanitizedRecords;
   }
 
@@ -115,6 +156,23 @@ class KronosCustomerService {
       sanitizedRecords.forEach((r: any) => {
         r.amount = formatUnits(String(r.amount), 6);
       });
+    }
+    return sanitizedRecords;
+  }
+
+  public async getWithdrawalsForUser(address: string) {
+    const lowerCaseAddress = address.toLocaleLowerCase();
+    let records = (await ParseService.getRecords("Token", ["owner"], [lowerCaseAddress], ["*"])) || [];
+    const tokenObjectIds = records?.map((token) => token.id);
+    const withdrawalQuery = new Parse.Query("TokenWithdrawal");
+    withdrawalQuery.containedIn(
+      "token",
+      tokenObjectIds.map((id) => new Parse.Object("Token", { id }))
+    ); // Use pointers
+    const withdrawalRecords = await withdrawalQuery.find();
+    let sanitizedRecords = [];
+    if (withdrawalRecords && withdrawalRecords.length > 0) {
+      sanitizedRecords = JSON.parse(JSON.stringify(withdrawalRecords));
     }
     return sanitizedRecords;
   }
