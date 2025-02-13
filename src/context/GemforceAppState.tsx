@@ -114,7 +114,6 @@ class GemforceAppState {
   }
 
   get userWithdrawals() {
-    debugger;
     if (!this._userWithdrawals) {
       const user = this.session?.user;
       KronosCustomerService.getWithdrawalsForUser(user?.walletAddress).then((ws: any) => {

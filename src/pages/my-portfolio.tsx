@@ -275,6 +275,16 @@ const ClaimInterest: React.FC = () => {
               if (completeWithdrawError) {
                 throw "CompleteWithdrawError: " + completeWithdrawError;
               }
+              const updatedTokens = await KronosCustomerService.getTokensForUser(user.walletAddress);
+              const updatedWithdrawals = await KronosCustomerService.getWithdrawalsForUser(user.walletAddress);
+
+              setTokens(updatedTokens);
+              setWithdrawals(updatedWithdrawals);
+              if (filteredTokens.filter((t) => t.tokenId == token.tokenId)) {
+                setSelectedToken(token);
+              } else {
+                setSelectedToken(filteredTokens[0]);
+              }
             } else {
               throw "Invalid wallet preference.";
             }
