@@ -22,25 +22,29 @@ const Login = function ({ csrfToken, callbackUrl }: InferGetServerSidePropsType<
   const ethereumAccount = useAccount();
   const { disconnect } = useDisconnect();
   const [loginPreference, setLoginPreference] = useState(LoginPreference.USERNAME_PASSWORD);
+  const { address, isConnected } = useAccount();
+
+  // Prevents automatic wallet disconnection on page load
+  useEffect(() => {
+    if (isConnected) {
+      console.log("Wallet is already connected:", address);
+    }
+  }, [isConnected, address]);
 
   const walletLogin = loginPreference == LoginPreference.WALLET;
 
   const standardLogin = async (values: any) => {
     const { email, password } = values;
-    const result: any = await signIn("standard", {
+    const result = await signIn("standard", {
       email: email.toLowerCase(),
       password,
       redirect: false,
     });
 
-    if (!result.ok) {
-      if (result.status == 401) {
-        toast.error("Login failed. This user is not authorized.");
-      } else {
-        toast.error("An authorization error occurred. Please try again later or contact your administrator.");
-      }
+    if (!result?.ok) {
+      toast.error(result?.status === 401 ? "Login failed. This user is not authorized." : "An error occurred. Try again later.");
     } else {
-      toast.error(null);
+      toast.dismiss();
       const urlParams = new URLSearchParams(window.location.search);
       const redirectUrl = urlParams.get("redirect") || "/";
       router.push(redirectUrl);
@@ -159,9 +163,9 @@ const Login = function ({ csrfToken, callbackUrl }: InferGetServerSidePropsType<
                                           type={c.type}
                                           placeholder={c.placeholder || `Enter ${c.label}`}
                                           style={{
-                                            color: "#1F1F1F", // Text color
-                                            backgroundColor: "white", // Transparent background
-                                            border: "1px solid #BBBBBB", // Border color
+                                            color: "#1F1F1F",
+                                            backgroundColor: "white",
+                                            border: "1px solid #BBBBBB",
                                           }}
                                           className="signup-input"
                                         />
