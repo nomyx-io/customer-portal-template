@@ -65,18 +65,13 @@ const Login = function ({ csrfToken, callbackUrl }: InferGetServerSidePropsType<
       return;
     }
 
-    // ✅ Handle redirect
-    let redirectUrl: string | string[] = callbackUrl || "/";
-
-    // Ensure redirectUrl is a string (pick the first item if it's an array)
-    if (Array.isArray(redirectUrl)) {
-      redirectUrl = redirectUrl[0]; // Take the first element
-    }
+    // ✅ Ensure redirectUrl is always a string
+    const redirectUrl = Array.isArray(callbackUrl) ? callbackUrl[0] : callbackUrl || "/";
 
     console.log("🔹 Redirecting to:", redirectUrl);
     // 🔄 **Force state update before redirecting**
     setTimeout(() => {
-      router.push(redirectUrl);
+      router.push(String(redirectUrl)); // Ensure it's a string
     }, 500);
   };
 
