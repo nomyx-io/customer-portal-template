@@ -40,7 +40,7 @@ const Login = function ({ csrfToken, callbackUrl }: InferGetServerSidePropsType<
     const result = await signIn("standard", {
       email: email.toLowerCase(),
       password,
-      redirect: false,
+      redirect: false, // Prevents automatic NextAuth redirects
     });
 
     if (!result?.ok) {
@@ -48,22 +48,26 @@ const Login = function ({ csrfToken, callbackUrl }: InferGetServerSidePropsType<
       return;
     }
 
-    // ✅ Ensure session is available before redirecting
+    // ✅ Ensure session (auth token) is available before redirecting
     let newSession = await getSession();
     let attempts = 0;
+    const maxAttempts = 5; // Extend retry limit for slow networks
 
-    while (!newSession && attempts < 3) {
-      console.warn(`🔄 Session not found, retrying... Attempt ${attempts + 1}/3`);
-      await new Promise((resolve) => setTimeout(resolve, 1000));
+    while ((!newSession || !newSession.user?.accessToken) && attempts < maxAttempts) {
+      console.warn(`🔄 Session not found or token missing, retrying... Attempt ${attempts + 1}/${maxAttempts}`);
+      await new Promise((resolve) => setTimeout(resolve, 1000)); // Small delay before retry
       newSession = await getSession();
       attempts++;
     }
 
-    if (!newSession) {
+    if (!newSession || !newSession.user?.accessToken) {
       console.error("❌ Session still not available, forcing hard reload...");
+      toast.error("Login successful, but session not detected. Refreshing page...");
       window.location.reload();
       return;
     }
+
+    console.log("✅ Session detected! Proceeding with redirect...");
 
     // ✅ Ensure redirectUrl is always valid
     let redirectUrl = callbackUrl || "/dashboard"; // Default to dashboard
@@ -71,8 +75,15 @@ const Login = function ({ csrfToken, callbackUrl }: InferGetServerSidePropsType<
 
     console.log("🔹 Redirecting to:", redirectUrl);
 
-    // ✅ Force a full page reload for reliability
-    window.location.href = redirectUrl;
+    // ✅ More reliable approach for navigation
+    setTimeout(() => {
+      try {
+        window.location.href = redirectUrl; // Try client-side routing first
+        console.log("✅ Redirect successful!");
+      } catch (err) {
+        console.error("🔴 Router push failed, performing hard reload:", err);
+      }
+    }, 500);
   };
 
   useEffect(() => {
