@@ -74,7 +74,10 @@ const Login = function ({ csrfToken, callbackUrl }: InferGetServerSidePropsType<
     }
 
     console.log("🔹 Redirecting to:", redirectUrl);
-    router.push(redirectUrl);
+    // 🔄 **Force state update before redirecting**
+    setTimeout(() => {
+      router.push(redirectUrl);
+    }, 500);
   };
 
   useEffect(() => {
@@ -235,6 +238,7 @@ const Login = function ({ csrfToken, callbackUrl }: InferGetServerSidePropsType<
 export default Login;
 
 export async function getServerSideProps(context: GetServerSidePropsContext) {
+  context.res.setHeader("Cache-Control", "no-store, no-cache, must-revalidate, proxy-revalidate");
   return {
     props: {
       csrfToken: await getCsrfToken(context),
