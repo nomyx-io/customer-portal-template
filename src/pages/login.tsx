@@ -48,30 +48,38 @@ const Login = function ({ csrfToken, callbackUrl }: InferGetServerSidePropsType<
       return;
     }
 
-    // ✅ Force session refresh immediately after login
+    // ✅ Force session update by manually fetching it
     let newSession = await getSession();
     console.log("🔹 Session after login:", newSession);
 
-    // 🔄 **Retry fetching session if it's not immediately available**
-    if (!newSession) {
-      console.warn("🔴 Session not found, retrying...");
-      await new Promise((resolve) => setTimeout(resolve, 1000)); // Small delay
+    // 🔄 **If session isn't ready, retry up to 3 times**
+    let attempts = 0;
+    while (!newSession && attempts < 3) {
+      console.warn(`🔴 Session not found, retrying... Attempt ${attempts + 1}/3`);
+      await new Promise((resolve) => setTimeout(resolve, 1000));
       newSession = await getSession();
+      attempts++;
     }
 
     if (!newSession) {
-      console.error("❌ Session still not available, forcing hard reload...");
-      window.location.reload(); // Last resort hard refresh
+      console.error("❌ Session still not available, showing manual refresh prompt.");
+      toast.error("Login successful, but session is not detected. Try refreshing the page.");
       return;
     }
 
     // ✅ Ensure redirectUrl is always a string
     const redirectUrl = Array.isArray(callbackUrl) ? callbackUrl[0] : callbackUrl || "/";
 
-    console.log("🔹 Redirecting to:", redirectUrl);
-    // 🔄 **Force state update before redirecting**
+    // ✅ Force React state update before redirecting
     setTimeout(() => {
-      router.push(String(redirectUrl)); // Ensure it's a string
+      try {
+        console.log("🔹 Redirecting to:", redirectUrl);
+        router.replace(redirectUrl);
+        console.log("✅ Redirect successful!");
+      } catch (err) {
+        console.error("🔴 Router push failed, performing hard reload:", err);
+        window.location.href = redirectUrl; // Fallback only if navigation fails
+      }
     }, 500);
   };
 
