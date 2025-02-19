@@ -48,53 +48,31 @@ const Login = function ({ csrfToken, callbackUrl }: InferGetServerSidePropsType<
       return;
     }
 
-    // ✅ Force session refresh immediately after login
+    // ✅ Ensure session is available before redirecting
     let newSession = await getSession();
-    console.log("🔹 Session after login:", newSession);
-
-    // 🔄 **Retry fetching session if it's not immediately available**
     let attempts = 0;
+
     while (!newSession && attempts < 3) {
-      console.warn(`🔴 Session not found, retrying... Attempt ${attempts + 1}/3`);
-      await new Promise((resolve) => setTimeout(resolve, 1000)); // Small delay
+      console.warn(`🔄 Session not found, retrying... Attempt ${attempts + 1}/3`);
+      await new Promise((resolve) => setTimeout(resolve, 1000));
       newSession = await getSession();
       attempts++;
     }
 
     if (!newSession) {
       console.error("❌ Session still not available, forcing hard reload...");
-      window.location.reload(); // Last resort hard refresh
+      window.location.reload();
       return;
     }
 
-    // ✅ Ensure redirectUrl is always a string
-    const redirectUrl = Array.isArray(callbackUrl) ? callbackUrl[0] : callbackUrl || "/";
+    // ✅ Ensure redirectUrl is always valid
+    let redirectUrl = callbackUrl || "/dashboard"; // Default to dashboard
+    if (Array.isArray(redirectUrl)) redirectUrl = redirectUrl[0];
 
     console.log("🔹 Redirecting to:", redirectUrl);
 
-    // 🔄 **Polling-based Redirect (Retry for up to 5s)**
-    let redirectAttempts = 0;
-    const maxRedirectAttempts = 5;
-    const redirectInterval = 1000; // 1 second per attempt
-
-    const tryRedirect = () => {
-      if (redirectAttempts >= maxRedirectAttempts) {
-        console.error("🔴 Redirect attempts failed, performing hard reload.");
-        window.location.href = redirectUrl; // Hard fallback
-        return;
-      }
-
-      try {
-        router.push(String(redirectUrl));
-        console.log(`✅ Redirect successful! Attempt ${redirectAttempts + 1}`);
-      } catch (err) {
-        console.warn(`🔄 Redirect failed, retrying... Attempt ${redirectAttempts + 1}/5`);
-        redirectAttempts++;
-        setTimeout(tryRedirect, redirectInterval);
-      }
-    };
-
-    tryRedirect();
+    // ✅ Force a full page reload for reliability
+    window.location.href = redirectUrl;
   };
 
   useEffect(() => {
