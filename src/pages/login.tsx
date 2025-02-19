@@ -79,7 +79,8 @@ const Login = function ({ csrfToken, callbackUrl }: InferGetServerSidePropsType<
 
       // Try programmatic navigation first
       try {
-        router.push(redirectUrl);
+        //router.push(redirectUrl);
+        window.location.href = redirectUrl;
       } catch (error) {
         console.error("Router navigation failed:", error);
         // Fallback to window.location
