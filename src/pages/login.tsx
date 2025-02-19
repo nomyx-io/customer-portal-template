@@ -25,25 +25,55 @@ const Login = function ({ csrfToken, callbackUrl }: InferGetServerSidePropsType<
 
   const walletLogin = loginPreference == LoginPreference.WALLET;
 
+  const { address, isConnected } = useAccount();
+  // Prevents automatic wallet disconnection on page load
+  useEffect(() => {
+    if (isConnected) {
+      console.log("Wallet is already connected:", address);
+    }
+  }, [isConnected, address]);
+
   const standardLogin = async (values: any) => {
     const { email, password } = values;
-    const result: any = await signIn("standard", {
+    console.log("🔹 Login initiated with email:", email);
+
+    const result = await signIn("standard", {
       email: email.toLowerCase(),
       password,
-      redirect: false,
+      redirect: false, // Prevent automatic redirection
     });
 
-    if (!result.ok) {
-      if (result.status == 401) {
-        toast.error("Login failed. This user is not authorized.");
-      } else {
-        toast.error("An authorization error occurred. Please try again later or contact your administrator.");
-      }
-    } else {
-      toast.error(null);
-      const urlParams = new URLSearchParams(window.location.search);
-      const redirectUrl = urlParams.get("redirect") || "/";
+    if (!result?.ok) {
+      toast.error(result?.status === 401 ? "Login failed. This user is not authorized." : "An error occurred. Try again later.");
+      return;
+    }
+
+    toast.dismiss();
+
+    // ✅ Extract callback URL from Next.js context (ensure it's a string)
+    let redirectUrl = Array.isArray(callbackUrl) ? callbackUrl[0] : callbackUrl || "/"; // Fallback to "/"
+
+    // ✅ Also check for a redirect query param in the browser URL
+    const urlParams = new URLSearchParams(window.location.search);
+    const queryRedirect = urlParams.get("redirect");
+
+    if (queryRedirect) {
+      redirectUrl = queryRedirect;
+    }
+
+    console.log("🔹 Redirecting to:", redirectUrl);
+
+    // ✅ Ensure we use a valid URL, otherwise default to "/"
+    if (typeof redirectUrl === "string" && !redirectUrl.startsWith("http")) {
+      redirectUrl = `${window.location.origin}${redirectUrl}`;
+    }
+
+    // ✅ Try soft redirect first
+    try {
       router.push(redirectUrl);
+    } catch (err) {
+      console.error("🔴 router.push failed, falling back to hard redirect:", err);
+      window.location.href = redirectUrl; // Hard redirect as fallback
     }
   };
 
