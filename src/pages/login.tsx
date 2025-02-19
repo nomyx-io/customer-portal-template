@@ -35,56 +35,75 @@ const Login = function ({ csrfToken, callbackUrl }: InferGetServerSidePropsType<
 
   const standardLogin = async (values: any) => {
     const { email, password } = values;
-    console.log("🔹 Login initiated with email:", email);
 
-    const result = await signIn("standard", {
-      email: email.toLowerCase(),
-      password,
-      redirect: false, // Prevents automatic NextAuth redirects
-    });
+    try {
+      // Show loading state
+      toast.info("Logging in...", { autoClose: false, toastId: "login" });
 
-    if (!result?.ok) {
-      toast.error(result?.status === 401 ? "Login failed. Unauthorized." : "An error occurred.");
-      return;
-    }
+      const result = await signIn("standard", {
+        email: email.toLowerCase(),
+        password,
+        redirect: false,
+      });
 
-    // ✅ Ensure session (auth token) is available before redirecting
-    let newSession = await getSession();
-    let attempts = 0;
-    const maxAttempts = 5; // Extend retry limit for slow networks
-
-    while ((!newSession || !newSession.user?.accessToken) && attempts < maxAttempts) {
-      console.warn(`🔄 Session not found or token missing, retrying... Attempt ${attempts + 1}/${maxAttempts}`);
-      await new Promise((resolve) => setTimeout(resolve, 1000)); // Small delay before retry
-      newSession = await getSession();
-      attempts++;
-    }
-
-    if (!newSession || !newSession.user?.accessToken) {
-      console.error("❌ Session still not available, forcing hard reload...");
-      toast.error("Login successful, but session not detected. Refreshing page...");
-      window.location.reload();
-      return;
-    }
-
-    console.log("✅ Session detected! Proceeding with redirect...");
-
-    // ✅ Ensure redirectUrl is always valid
-    let redirectUrl = callbackUrl || "/dashboard"; // Default to dashboard
-    if (Array.isArray(redirectUrl)) redirectUrl = redirectUrl[0];
-
-    console.log("🔹 Redirecting to:", redirectUrl);
-
-    // ✅ More reliable approach for navigation
-    setTimeout(() => {
-      try {
-        window.location.href = redirectUrl; // Try client-side routing first
-        console.log("✅ Redirect successful!");
-      } catch (err) {
-        console.error("🔴 Router push failed, performing hard reload:", err);
+      if (!result?.ok) {
+        toast.dismiss("login");
+        toast.error(result?.status === 401 ? "Login failed. Unauthorized." : "An error occurred.");
+        return;
       }
-    }, 500);
+
+      // Check session with retries
+      const maxRetries = 5;
+      let session = null;
+
+      for (let i = 0; i < maxRetries; i++) {
+        session = await getSession();
+        if (session?.user?.accessToken) {
+          break;
+        }
+        await new Promise((resolve) => setTimeout(resolve, 1000));
+      }
+
+      if (!session?.user?.accessToken) {
+        toast.dismiss("login");
+        toast.error("Session initialization failed");
+        window.location.href = "/login"; // Force reload login page
+        return;
+      }
+
+      // Determine redirect URL
+      let redirectUrl = typeof callbackUrl === "string" ? callbackUrl : Array.isArray(callbackUrl) ? callbackUrl[0] : "/dashboard";
+
+      toast.dismiss("login");
+      toast.success("Login successful!");
+
+      // Try programmatic navigation first
+      try {
+        router.push(redirectUrl);
+      } catch (error) {
+        console.error("Router navigation failed:", error);
+        // Fallback to window.location
+        window.location.href = redirectUrl;
+      }
+    } catch (error) {
+      console.error("Login error:", error);
+      toast.dismiss("login");
+      toast.error("An unexpected error occurred");
+    }
   };
+
+  // In your Login component, add this effect
+  useEffect(() => {
+    const checkAndRedirect = async () => {
+      const session = await getSession();
+      if (session?.user?.accessToken) {
+        const redirectUrl = typeof callbackUrl === "string" ? callbackUrl : Array.isArray(callbackUrl) ? callbackUrl[0] : "/dashboard";
+        window.location.href = redirectUrl;
+      }
+    };
+
+    checkAndRedirect();
+  }, [callbackUrl]);
 
   useEffect(() => {
     const handleWalletDisconnect = async () => {
