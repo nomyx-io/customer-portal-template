@@ -6,7 +6,7 @@ import type { GetServerSidePropsContext, InferGetServerSidePropsType } from "nex
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { signIn, getCsrfToken } from "next-auth/react";
+import { signIn, getCsrfToken, getSession } from "next-auth/react";
 import { toast } from "react-toastify";
 import { useAccount, useDisconnect } from "wagmi";
 
@@ -40,41 +40,41 @@ const Login = function ({ csrfToken, callbackUrl }: InferGetServerSidePropsType<
     const result = await signIn("standard", {
       email: email.toLowerCase(),
       password,
-      redirect: false, // Prevent automatic redirection
+      redirect: false,
     });
 
     if (!result?.ok) {
-      toast.error(result?.status === 401 ? "Login failed. This user is not authorized." : "An error occurred. Try again later.");
+      toast.error(result?.status === 401 ? "Login failed. Unauthorized." : "An error occurred.");
       return;
     }
 
-    toast.dismiss();
+    // ✅ Force session refresh immediately after login
+    let newSession = await getSession();
+    console.log("🔹 Session after login:", newSession);
 
-    // ✅ Extract callback URL from Next.js context (ensure it's a string)
-    let redirectUrl = Array.isArray(callbackUrl) ? callbackUrl[0] : callbackUrl || "/"; // Fallback to "/"
+    // 🔄 **Retry fetching session if it's not immediately available**
+    if (!newSession) {
+      console.warn("🔴 Session not found, retrying...");
+      await new Promise((resolve) => setTimeout(resolve, 1000)); // Small delay
+      newSession = await getSession();
+    }
 
-    // ✅ Also check for a redirect query param in the browser URL
-    const urlParams = new URLSearchParams(window.location.search);
-    const queryRedirect = urlParams.get("redirect");
+    if (!newSession) {
+      console.error("❌ Session still not available, forcing hard reload...");
+      window.location.reload(); // Last resort hard refresh
+      return;
+    }
 
-    if (queryRedirect) {
-      redirectUrl = queryRedirect;
+    // ✅ Handle redirect
+    let redirectUrl: string | string[] = callbackUrl || "/";
+
+    // Ensure redirectUrl is a string (pick the first item if it's an array)
+    if (Array.isArray(redirectUrl)) {
+      redirectUrl = redirectUrl[0]; // Take the first element
     }
 
     console.log("🔹 Redirecting to:", redirectUrl);
-
-    // ✅ Ensure we use a valid URL, otherwise default to "/"
-    if (typeof redirectUrl === "string" && !redirectUrl.startsWith("http")) {
-      redirectUrl = `${window.location.origin}${redirectUrl}`;
-    }
-
-    // ✅ Try soft redirect first
-    try {
-      router.push(redirectUrl);
-    } catch (err) {
-      console.error("🔴 router.push failed, falling back to hard redirect:", err);
-      window.location.href = redirectUrl; // Hard redirect as fallback
-    }
+    router.push(redirectUrl);
   };
 
   useEffect(() => {
