@@ -28,9 +28,11 @@ export async function middleware(request: NextRequest): Promise<NextResponse> {
         // Create response with redirect
         const response = NextResponse.redirect(loginUrl);
 
-        // Clear any existing auth cookies
-        response.cookies.delete("next-auth.session-token");
-        response.cookies.delete("__Secure-next-auth.session-token");
+        // Only clear cookies if there's no token at all,
+        if (!token) {
+          response.cookies.delete("next-auth.session-token");
+          response.cookies.delete("__Secure-next-auth.session-token");
+        }
 
         return response;
       }
