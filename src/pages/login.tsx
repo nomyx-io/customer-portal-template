@@ -6,7 +6,7 @@ import type { GetServerSidePropsContext, InferGetServerSidePropsType } from "nex
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { signIn, getCsrfToken } from "next-auth/react";
+import { signIn, getCsrfToken, getSession } from "next-auth/react";
 import { toast } from "react-toastify";
 import { useAccount, useDisconnect } from "wagmi";
 
@@ -25,27 +25,86 @@ const Login = function ({ csrfToken, callbackUrl }: InferGetServerSidePropsType<
 
   const walletLogin = loginPreference == LoginPreference.WALLET;
 
+  const { address, isConnected } = useAccount();
+  // Prevents automatic wallet disconnection on page load
+  useEffect(() => {
+    if (isConnected) {
+      console.log("Wallet is already connected:", address);
+    }
+  }, [isConnected, address]);
+
   const standardLogin = async (values: any) => {
     const { email, password } = values;
-    const result: any = await signIn("standard", {
-      email: email.toLowerCase(),
-      password,
-      redirect: false,
-    });
 
-    if (!result.ok) {
-      if (result.status == 401) {
-        toast.error("Login failed. This user is not authorized.");
-      } else {
-        toast.error("An authorization error occurred. Please try again later or contact your administrator.");
+    try {
+      // Show loading state
+      toast.info("Logging in...", { autoClose: false, toastId: "login" });
+
+      const result = await signIn("standard", {
+        email: email.toLowerCase(),
+        password,
+        redirect: false,
+      });
+
+      if (!result?.ok) {
+        toast.dismiss("login");
+        toast.error(result?.status === 401 ? "Login failed. Unauthorized." : "An error occurred.");
+        return;
       }
-    } else {
-      toast.error(null);
-      const urlParams = new URLSearchParams(window.location.search);
-      const redirectUrl = urlParams.get("redirect") || "/";
-      router.push(redirectUrl);
+
+      // Check session with retries
+      const maxRetries = 5;
+      let session = null;
+
+      for (let i = 0; i < maxRetries; i++) {
+        session = await getSession();
+        if (session?.user?.accessToken) {
+          break;
+        }
+        await new Promise((resolve) => setTimeout(resolve, 1000));
+      }
+
+      if (!session?.user?.accessToken) {
+        toast.dismiss("login");
+        toast.error("Session initialization failed");
+        window.location.href = "/login"; // Force reload login page
+        return;
+      }
+
+      // Determine redirect URL
+      let redirectUrl = typeof callbackUrl === "string" ? callbackUrl : Array.isArray(callbackUrl) ? callbackUrl[0] : "/dashboard";
+
+      toast.dismiss("login");
+      toast.success("Login successful!");
+
+      // Try programmatic navigation first
+      try {
+        //router.push(redirectUrl);
+        window.location.href = redirectUrl;
+      } catch (error) {
+        console.error("Router navigation failed:", error);
+        // Fallback to window.location
+        window.location.href = redirectUrl;
+      }
+    } catch (error) {
+      console.error("Login error:", error);
+      toast.dismiss("login");
+      toast.error("An unexpected error occurred");
     }
   };
+
+  // In your Login component, add this effect
+  useEffect(() => {
+    const checkAndRedirect = async () => {
+      const session = await getSession();
+      if (session?.user?.accessToken) {
+        const redirectUrl = typeof callbackUrl === "string" ? callbackUrl : Array.isArray(callbackUrl) ? callbackUrl[0] : "/dashboard";
+        window.location.href = redirectUrl;
+      }
+    };
+
+    checkAndRedirect();
+  }, [callbackUrl]);
 
   useEffect(() => {
     const handleWalletDisconnect = async () => {
@@ -205,6 +264,7 @@ const Login = function ({ csrfToken, callbackUrl }: InferGetServerSidePropsType<
 export default Login;
 
 export async function getServerSideProps(context: GetServerSidePropsContext) {
+  context.res.setHeader("Cache-Control", "no-store, no-cache, must-revalidate, proxy-revalidate");
   return {
     props: {
       csrfToken: await getCsrfToken(context),
