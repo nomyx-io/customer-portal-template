@@ -17,6 +17,7 @@ class GemforceAppState {
   _retiredTokens: Token[] | null = null;
   _deposits: any = null;
   _withdrawals: any = null;
+  _userWithdrawals: any = null;
   _tokenWithdrawals: any = null;
   _portfolioPerformance: any[] | null = null;
   _events: any = null;
@@ -110,6 +111,22 @@ class GemforceAppState {
 
   set withdrawals(withdrawals: any) {
     this._withdrawals = withdrawals;
+  }
+
+  get userWithdrawals() {
+    if (!this._userWithdrawals) {
+      const user = this.session?.user;
+      KronosCustomerService.getWithdrawalsForUser(user?.walletAddress).then((ws: any) => {
+        PubSub.publish(NomyxEvent.GemforceStateChange, { userWithdrawals: ws });
+        this._userWithdrawals = ws;
+        return ws;
+      });
+    }
+    return this._userWithdrawals;
+  }
+
+  set userWithdrawals(withdrawals: any) {
+    this._userWithdrawals = withdrawals;
   }
 
   get tokenWithdrawals() {

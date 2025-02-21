@@ -5,6 +5,7 @@ import { FolderCross } from "iconsax-react";
 import PubSub from "pubsub-js";
 import { toast } from "react-toastify";
 
+import ListingClaimedTokens from "@/components/ListingClaimedTokens";
 import ListingRetiredTokens from "@/components/ListingRetiredTokens";
 import TokenDetail from "@/components/TokenDetail";
 import { Industries } from "@/config/generalConfig";
@@ -16,6 +17,7 @@ import { NomyxEvent, WalletPreference } from "@/utils/Constants";
 const ClaimInterest: React.FC = () => {
   const { appState }: any = useGemforceApp();
   const [tokens, setTokens] = useState<any[]>([]);
+  const [withdrawals, setWithdrawals] = useState<any[]>([]);
   const [selectedToken, setSelectedToken] = useState<any | null>(null);
   const [redemptionToken, setRedemptionToken] = useState<any[]>([]);
   const [selectedProject, setSelectedProject] = useState<any | null>(null);
@@ -24,17 +26,18 @@ const ClaimInterest: React.FC = () => {
   const projectCacheRef = useRef<{ [key: string]: any }>({}); // Cache for projects
 
   useEffect(() => {
-    if (appState) {
-      const subscription = PubSub.subscribe(NomyxEvent.GemforceStateChange, function (event: any, data: any) {
-        if (data.tokens) setTokens(data.tokens);
-      });
-      setTokens(appState.tokens);
+    if (!appState) return;
+    const subscription = PubSub.subscribe(NomyxEvent.GemforceStateChange, (event: any, data: any) => {
+      if (data.tokens) setTokens(data.tokens);
+      if (data.userWithdrawals) setWithdrawals(data.userWithdrawals);
+    });
 
-      // Cleanup subscription on unmount
-      return () => {
-        PubSub.unsubscribe(subscription);
-      };
-    }
+    setTokens(appState.tokens);
+    setWithdrawals(appState.userWithdrawals);
+    // Cleanup subscription on unmount
+    return () => {
+      PubSub.unsubscribe(subscription);
+    };
   }, [appState]);
 
   useEffect(() => {
@@ -64,10 +67,29 @@ const ClaimInterest: React.FC = () => {
   }, []);
 
   // Ensure filteredTokens is always an array
-  const filteredTokens: any[] = useMemo(
-    () => (Array.isArray(tokens) ? tokens.filter((t) => !redemptionToken.includes(t.tokenId)) : []),
-    [tokens, redemptionToken]
-  );
+  const filteredTokens: any[] = useMemo(() => {
+    if (!Array.isArray(tokens)) return [];
+
+    return tokens.filter((t) => {
+      const withdrawal = (t.withdrawalAmount ?? 0) / 1_000_000;
+      const deposit = (t.depositAmount ?? 0) / 1_000_000;
+      const price = isNaN(parseFloat(t.price)) ? 0 : parseFloat(t.price);
+
+      return !redemptionToken.includes(t.tokenId) && (withdrawal < deposit || withdrawal < price);
+    });
+  }, [tokens, redemptionToken]);
+
+  const formatWithdrawnTokens: any[] = useMemo(() => {
+    if (!Array.isArray(withdrawals)) return [];
+
+    return withdrawals.map((t) => ({
+      objectId: t.objectId,
+      tokenId: t.token?.tokenId, // Ensure token exists before accessing properties
+      nftTitle: t.token?.nftTitle,
+      withdrawalAmount: t.amount,
+      createdDate: t.createdAt,
+    }));
+  }, [withdrawals]);
 
   // New useEffect to set selectedToken as the first token in filteredTokens
   useEffect(() => {
@@ -253,6 +275,16 @@ const ClaimInterest: React.FC = () => {
               if (completeWithdrawError) {
                 throw "CompleteWithdrawError: " + completeWithdrawError;
               }
+              const updatedTokens = await KronosCustomerService.getTokensForUser(user.walletAddress);
+              const updatedWithdrawals = await KronosCustomerService.getWithdrawalsForUser(user.walletAddress);
+
+              setTokens(updatedTokens);
+              setWithdrawals(updatedWithdrawals);
+              if (filteredTokens.filter((t) => t.tokenId == token.tokenId)) {
+                setSelectedToken(token);
+              } else {
+                setSelectedToken(filteredTokens[0]);
+              }
             } else {
               throw "Invalid wallet preference.";
             }
@@ -359,7 +391,16 @@ const ClaimInterest: React.FC = () => {
         </div>
       ),
     },
-  ];
+    {
+      key: "3",
+      label: "Paid Off",
+      children: (
+        <div>
+          <ListingClaimedTokens tokens={formatWithdrawnTokens} />
+        </div>
+      ),
+    },
+  ].filter((tab): tab is any => tab !== null);
 
   return (
     <div className="my-portfolio-tabs">
