@@ -9,10 +9,10 @@ export const authOptions = {
   providers,
   session: {
     strategy: "jwt",
-    maxAge: 60 * 60,
+    maxAge: 30 * 60,
   },
   jwt: {
-    maxAge: 60 * 60,
+    maxAge: 30 * 60,
   },
   callbacks: {
     async signIn({ user, account, profile, email, credentials }: any) {
@@ -25,12 +25,12 @@ export const authOptions = {
 
       if (user) {
         // User exists → First login or sign-in → Set fresh expiration & return user details
-        return { ...token, ...user, exp: Math.floor(Date.now() / 1000) + 60 * 60 };
+        return { ...token, ...user, exp: Math.floor(Date.now() / 1000) + 30 * 60 };
       }
 
       if (!token.exp) {
         // Ensure exp is always set in case of unexpected behavior
-        token.exp = Math.floor(Date.now() / 1000) + 60 * 60;
+        token.exp = Math.floor(Date.now() / 1000) + 30 * 60;
       }
       return token;
     },
