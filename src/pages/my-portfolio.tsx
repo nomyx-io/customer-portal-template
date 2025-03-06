@@ -167,7 +167,7 @@ const ClaimInterest: React.FC = () => {
 
         // Check if the balance is valid
         if (balance !== null && balance > 0) {
-          toast.promise(
+          await toast.promise(
             async () => {
               if (walletPreference === WalletPreference.PRIVATE) {
                 // Handle PRIVATE wallet retire process
@@ -241,12 +241,21 @@ const ClaimInterest: React.FC = () => {
         const dfnsToken = user?.dfns_token;
         const tokenId = parseInt(token.tokenId);
 
-        toast.promise(
+        await toast.promise(
           async () => {
             if (walletPreference === WalletPreference.PRIVATE) {
               // Handle PRIVATE wallet withdrawal
               if (tokenId < 0) throw new Error("Invalid token ID for withdrawal.");
               await BlockchainService.withdraw([tokenId]);
+
+              const [updatedTokens, updatedWithdrawals] = await Promise.all([
+                KronosCustomerService.getTokensForUser(user.walletAddress),
+                KronosCustomerService.getWithdrawalsForUser(user.walletAddress),
+              ]);
+              setTokens(updatedTokens);
+              setWithdrawals(updatedWithdrawals);
+
+              setSelectedToken(filteredTokens.some((t) => t.tokenId == token.tokenId) ? token : filteredTokens[0]);
             } else if (walletPreference === WalletPreference.MANAGED) {
               // Handle MANAGED wallet withdrawal
               if (!walletId || !dfnsToken) {
@@ -275,16 +284,15 @@ const ClaimInterest: React.FC = () => {
               if (completeWithdrawError) {
                 throw "CompleteWithdrawError: " + completeWithdrawError;
               }
-              const updatedTokens = await KronosCustomerService.getTokensForUser(user.walletAddress);
-              const updatedWithdrawals = await KronosCustomerService.getWithdrawalsForUser(user.walletAddress);
+              const [updatedTokens, updatedWithdrawals] = await Promise.all([
+                KronosCustomerService.getTokensForUser(user.walletAddress),
+                KronosCustomerService.getWithdrawalsForUser(user.walletAddress),
+              ]);
 
               setTokens(updatedTokens);
               setWithdrawals(updatedWithdrawals);
-              if (filteredTokens.filter((t) => t.tokenId == token.tokenId)) {
-                setSelectedToken(token);
-              } else {
-                setSelectedToken(filteredTokens[0]);
-              }
+
+              setSelectedToken(filteredTokens.some((t) => t.tokenId == token.tokenId) ? token : filteredTokens[0]);
             } else {
               throw "Invalid wallet preference.";
             }
@@ -303,7 +311,7 @@ const ClaimInterest: React.FC = () => {
         console.error("Failed to withdraw token:", error);
       }
     },
-    [appState, walletPreference]
+    [appState, walletPreference, setTokens, setWithdrawals, setSelectedToken, filteredTokens]
   );
 
   const getTokenActionDetails = useCallback(
