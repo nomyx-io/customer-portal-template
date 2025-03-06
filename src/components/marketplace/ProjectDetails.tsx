@@ -259,12 +259,15 @@ const ProjectDetails: React.FC<ProjectDetailsProps> = ({ project, onBack }) => {
       setListings((prevListings) => {
         const updatedListings = prevListings.filter((item) => item.tokenId !== tokenId);
         console.log("Updated Listings:", updatedListings);
-        return updatedListings;
+        return [...updatedListings];
       });
 
       // Wait for state update before API calls
-      await new Promise((resolve) => setTimeout(resolve, 100));
+      await new Promise((resolve) => setTimeout(resolve, 1000));
       await fetchSales();
+
+      // Introduce a delay before refreshing tokens
+      await new Promise((resolve) => setTimeout(resolve, 3000)); // Wait 4 seconds
       await appState.refreshTokens();
     } catch (error) {
       //toast.error("Error during approval and purchase process:" + error + "");
