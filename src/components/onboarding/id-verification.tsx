@@ -73,8 +73,8 @@ const IDVerification: React.FC<IDVerificationProps> = ({ setActiveTab, setRegist
           <>
             <h2 className="text-2xl font-extrabold text-[#1F1F1F] text-center">Please verify your identity</h2>
             <p className="text-base mt-4 text-[#1F1F1F] text-center max-w-[600px]">
-              We will use Persona to verify your identity. Click the &apos;KYC&apos; button for individual verification and the &apos;KYB&apos; button
-              for business verification to proceed!
+              We will use Persona to verify your identity. Click the &apos;Register as a User&apos; button for individual verification and the
+              &apos;Register as a Business&apos; button for business verification to proceed!
             </p>
             <div className="flex space-x-4 mt-8">
               <Button type="primary" onClick={handleKYC}>
