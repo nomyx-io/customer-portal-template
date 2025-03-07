@@ -4,15 +4,6 @@ import { getToken } from "next-auth/jwt";
 
 const protectedRoutes: Set<string> = new Set(["/dashboard", "/my-portfolio", "/marketplace"]);
 
-//nextjs already verifies the crf token, so we just check if it exists
-const verifyNextAuthCsrfToken = (request: NextRequest): boolean => {
-  const baseUrl: string = process.env.NEXTAUTH_URL || process.env.VERCEL_URL || "";
-  const useSecureCookies = baseUrl.startsWith("https://");
-  const csrfCookieName = useSecureCookies ? "__Host-next-auth.csrf-token" : "next-auth.csrf-token";
-
-  return !!request.cookies.get(csrfCookieName);
-};
-
 export async function middleware(request: NextRequest): Promise<NextResponse> {
   if (request.method === "OPTIONS") {
     return NextResponse.json({});
@@ -21,16 +12,35 @@ export async function middleware(request: NextRequest): Promise<NextResponse> {
   const requestUrl = new URL(request.url);
   const path = requestUrl.pathname;
 
+  // Check if it's a protected route
   if (protectedRoutes.has(path)) {
-    const token: any = await getToken({ req: request });
-    const tokenVerified = token && verifyNextAuthCsrfToken(request);
+    try {
+      const token = await getToken({
+        req: request,
+        secret: process.env.NEXTAUTH_SECRET,
+      });
 
-    if (!tokenVerified) {
-      const redirectUrl = new URL("/login", requestUrl.toString());
+      if (!token?.accessToken) {
+        // Construct the login URL with the current URL as the redirect parameter
+        const loginUrl = new URL("/login", request.url);
+        loginUrl.searchParams.set("redirect", request.url);
 
-      redirectUrl.searchParams.append("redirect", requestUrl.toString());
+        // Create response with redirect
+        const response = NextResponse.redirect(loginUrl);
 
-      return NextResponse.redirect(redirectUrl);
+        // Only clear cookies if there's no token at all,
+        if (!token) {
+          response.cookies.delete("next-auth.session-token");
+          response.cookies.delete("__Secure-next-auth.session-token");
+        }
+
+        return response;
+      }
+    } catch (error) {
+      console.error("Middleware error:", error);
+      // Handle error case with redirect
+      const loginUrl = new URL("/login", request.url);
+      return NextResponse.redirect(loginUrl);
     }
   }
 
@@ -38,5 +48,12 @@ export async function middleware(request: NextRequest): Promise<NextResponse> {
 }
 
 export const config = {
-  matcher: ["/((?!api|_next/static|_next/image|.*\\.png$).*)"],
+  matcher: [
+    /*
+     * Match all protected routes
+     */
+    "/dashboard/:path*",
+    "/my-portfolio/:path*",
+    "/marketplace/:path*",
+  ],
 };

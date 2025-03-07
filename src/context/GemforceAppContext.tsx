@@ -164,6 +164,15 @@ const WalletConnectHandler = ({ children }: any) => {
           })
         );
 
+        // Check if we're in the registration flow
+        const isRegistrationFlow = window.location.pathname.includes("/onboarding");
+
+        if (isRegistrationFlow) {
+          // Just publish the wallet linked event for registration
+          PubSub.publish(NomyxEvent.WalletLinked);
+          return;
+        }
+
         const result = await signIn("ethereum", {
           signature,
           message,
