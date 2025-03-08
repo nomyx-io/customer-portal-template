@@ -9,6 +9,10 @@ export const authOptions = {
   providers,
   session: {
     strategy: "jwt",
+    maxAge: 30 * 60,
+  },
+  jwt: {
+    maxAge: 30 * 60,
   },
   callbacks: {
     async signIn({ user, account, profile, email, credentials }: any) {
@@ -18,13 +22,31 @@ export const authOptions = {
     async jwt({ token, user, account, profile }: any) {
       // return token;
       console.log("next-auth jwt!");
+
       if (user) {
-        return { ...token, ...user };
+        // User exists → First login or sign-in → Set fresh expiration & return user details
+        return { ...token, ...user, exp: Math.floor(Date.now() / 1000) + 30 * 60 };
+      }
+
+      if (!token.exp) {
+        // Ensure exp is always set in case of unexpected behavior
+        token.exp = Math.floor(Date.now() / 1000) + 30 * 60;
       }
       return token;
     },
     async session({ session, token }: { session: any; token: any }) {
+      if (!token?.exp) {
+        console.warn("⚠️ Warning: No expiration found. Assuming session is still valid.");
+        return session; // Keep session alive if expiration is missing
+      }
+
+      if (Date.now() >= token.exp * 1000) {
+        return null; // Force logout if expired
+      }
+
       session.user = token;
+      session.expires = new Date(token.exp * 1000).toISOString();
+
       return session;
     },
   },
