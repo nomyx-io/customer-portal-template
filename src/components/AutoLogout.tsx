@@ -60,8 +60,6 @@ const AutoLogout = () => {
 
     return () => clearInterval(intervalId); // Clean up interval on unmount
   }, [expirationTime, status, isInitialized, hasLoggedOut]);
-
-  return <div>{expirationTime && status === "authenticated" && <p>⏳ Logging out at: {new Date(expirationTime).toLocaleTimeString()}</p>}</div>;
 };
 
 export default AutoLogout;
