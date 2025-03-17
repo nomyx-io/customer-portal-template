@@ -69,7 +69,7 @@ const ProjectInfo: React.FC<ProjectInfoProps> = ({
               </div>
             </>
           )}
-          {tokenBalance && (
+          {tokenBalance && !carbonCreditBalance && (
             <>
               <div className="text-gray-900 dark:text-white font-bold text-lg mb-2">Token Balance:</div>
               <div className="text-3xl font-bold text-gray-900 dark:text-white">

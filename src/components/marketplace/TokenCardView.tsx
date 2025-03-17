@@ -147,7 +147,7 @@ const TokenCardView: React.FC<TokenCardViewProps> = ({ projects, onProjectClick,
                 {[
                   {
                     label: "Total Price",
-                    value: `${formatPrice(Number(project.token.price) * Number(project.token?.existingCredits), "USD")}`,
+                    value: `${formatPrice(Number(project.token.price), "USD")}`,
                   },
                   ...dynamicColumnData,
                 ].map((item, index) => (

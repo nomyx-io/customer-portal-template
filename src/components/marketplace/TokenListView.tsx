@@ -187,7 +187,7 @@ const TokenListView: React.FC<TokenListViewProps> = ({ projects, onProjectClick,
     {
       title: "Price",
       dataIndex: "price", // Total price coming from TokenListing in parse
-      render: (price: number) => (isSalesHistory ? formatPrice(price, "USD") : formatPrice(price / 1_000_000, "USD")), // Convert from small units to regular price format
+      render: (price: number, record: any) => (isSalesHistory ? formatPrice(record?.token?.price, "USD") : formatPrice(price / 1_000_000, "USD")), // Convert from small units to regular price format
       sorter: (a: any, b: any) => a.price - b.price,
     },
     ...additionalColumns,

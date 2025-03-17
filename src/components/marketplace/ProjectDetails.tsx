@@ -255,8 +255,20 @@ const ProjectDetails: React.FC<ProjectDetailsProps> = ({ project, onBack }) => {
         throw completePurchaseError;
       }
 
-      // Success: Clear all pending states and store final response
-      let response = purchaseCompleteResponse;
+      // Success: refresh token list data
+      setListings((prevListings) => {
+        const updatedListings = prevListings.filter((item) => item.tokenId !== tokenId);
+        console.log("Updated Listings:", updatedListings);
+        return [...updatedListings];
+      });
+
+      // Wait for state update before API calls
+      await new Promise((resolve) => setTimeout(resolve, 1000));
+      await fetchSales();
+
+      // Introduce a delay before refreshing tokens
+      await new Promise((resolve) => setTimeout(resolve, 3000)); // Wait 4 seconds
+      await appState.refreshTokens();
     } catch (error) {
       //toast.error("Error during approval and purchase process:" + error + "");
       throw error;
@@ -267,7 +279,7 @@ const ProjectDetails: React.FC<ProjectDetailsProps> = ({ project, onBack }) => {
   // Function to handle individual token purchase
 
   const handleIndividualPurchase = async (token: any) => {
-    toast.promise(
+    await toast.promise(
       async () => {
         try {
           const onComplete = async () => {
@@ -308,7 +320,7 @@ const ProjectDetails: React.FC<ProjectDetailsProps> = ({ project, onBack }) => {
       return;
     }
 
-    toast.promise(
+    await toast.promise(
       async () => {
         try {
           const processSelectedPurchase = async () => {
