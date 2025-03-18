@@ -31,7 +31,9 @@ export const actions = {
           throw new Error("The purchase was rejected.");
         }
       } else if (walletPreference === WalletPreference.MANAGED) {
-        await handleApprovalAndPurchase(token.tokenId, token.price);
+        const totalCost = Number(token.price) * Number(token.existingCredits);
+        console.log("totalCost: ", totalCost);
+        await handleApprovalAndPurchase(token.tokenId, totalCost);
       } else {
         throw new Error("Invalid wallet preference");
       }
