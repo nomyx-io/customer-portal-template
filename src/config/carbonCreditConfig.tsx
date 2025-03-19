@@ -22,7 +22,7 @@ export const actions = {
   handleIndividualPurchase: async (
     token: any,
     walletPreference: WalletPreference,
-    handleApprovalAndPurchase: (tokenId: number, price: number) => Promise<void>
+    handleApprovalAndPurchase: (tokenId: number, price: string) => Promise<void>
   ) => {
     const processPurchase = async (onComplete: () => Promise<void>) => {
       if (walletPreference === WalletPreference.PRIVATE) {
@@ -31,7 +31,9 @@ export const actions = {
           throw new Error("The purchase was rejected.");
         }
       } else if (walletPreference === WalletPreference.MANAGED) {
-        await handleApprovalAndPurchase(token.tokenId, token.price);
+        const totalCost = (Number(token.price) * Number(token.existingCredits)).toString();
+        console.log("totalCost: ", totalCost);
+        await handleApprovalAndPurchase(token.tokenId, totalCost);
       } else {
         throw new Error("Invalid wallet preference");
       }
