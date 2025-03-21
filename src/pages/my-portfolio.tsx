@@ -7,6 +7,7 @@ import { toast } from "react-toastify";
 
 import ListingClaimedTokens from "@/components/ListingClaimedTokens";
 import ListingRetiredTokens from "@/components/ListingRetiredTokens";
+import PoolListPage from "@/components/Pool/PoolListPage";
 import TokenDetail from "@/components/TokenDetail";
 import { Industries } from "@/config/generalConfig";
 import { useGemforceApp } from "@/context/GemforceAppContext";
@@ -369,46 +370,67 @@ const ClaimInterest: React.FC = () => {
   const tabItems = [
     {
       key: "1",
-      label: "Available Tokens",
-      children: (
-        <div className="claimableTokens">
-          {selectedToken ? (
-            <TokenDetail
-              tokens={filteredTokens}
-              currentIndex={filteredTokens.findIndex((t) => t.tokenId === selectedToken.tokenId)}
-              project={selectedProject}
-              onTokenAction={tokenAction}
-              tokenActionLabel={tokenActionLabel}
-              onSlideChange={handleSlideChange}
-            />
-          ) : (
-            <div className="flex flex-col text-nomyx-text-light dark:text-nomyx-text-dark h-[80%] text-xl items-center justify-center w-full grow mt-[10%]">
-              <FolderCross className="w-52 h-52" variant="Linear" />
-              <p>Please purchase some tokens to display under your portfolio.</p>
-            </div>
-          )}
-        </div>
-      ),
-    },
-    {
-      key: "2",
-      label: "Retired Tokens",
+      label: "Pools",
       children: (
         <div>
-          <ListingRetiredTokens tokens={tokens && tokens.filter((t) => redemptionToken.includes(t.tokenId))} />
+          <PoolListPage />
         </div>
       ),
     },
-    {
-      key: "3",
-      label: "Paid Off",
-      children: (
-        <div>
-          <ListingClaimedTokens tokens={formatWithdrawnTokens} />
-        </div>
-      ),
-    },
-  ].filter((tab): tab is any => tab !== null);
+    ...(filteredTokens.length > 0 || selectedToken
+      ? [
+          {
+            key: "2",
+            label: "Available Tokens",
+            children: (
+              <div className="claimableTokens">
+                {selectedToken ? (
+                  <TokenDetail
+                    tokens={filteredTokens}
+                    currentIndex={filteredTokens.findIndex((t) => t.tokenId === selectedToken.tokenId)}
+                    project={selectedProject}
+                    onTokenAction={tokenAction}
+                    tokenActionLabel={tokenActionLabel}
+                    onSlideChange={handleSlideChange}
+                  />
+                ) : (
+                  <div className="flex flex-col text-nomyx-text-light dark:text-nomyx-text-dark h-[80%] text-xl items-center justify-center w-full grow mt-[10%]">
+                    <FolderCross className="w-52 h-52" variant="Linear" />
+                    <p>Please purchase some tokens to display under your portfolio.</p>
+                  </div>
+                )}
+              </div>
+            ),
+          },
+        ]
+      : []),
+    ...(tokens?.some((t) => redemptionToken.includes(t.tokenId))
+      ? [
+          {
+            key: "3",
+            label: "Retired Tokens",
+            children: (
+              <div>
+                <ListingRetiredTokens tokens={tokens.filter((t) => redemptionToken.includes(t.tokenId))} />
+              </div>
+            ),
+          },
+        ]
+      : []),
+    ...(formatWithdrawnTokens.length > 0
+      ? [
+          {
+            key: "4",
+            label: "Paid Off",
+            children: (
+              <div>
+                <ListingClaimedTokens tokens={formatWithdrawnTokens} />
+              </div>
+            ),
+          },
+        ]
+      : []),
+  ];
 
   return (
     <div className="my-portfolio-tabs">

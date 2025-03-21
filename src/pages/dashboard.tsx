@@ -39,17 +39,34 @@ const Dashboard: React.FC = () => {
   const stats = useMemo(
     () => [
       {
-        title: "Tokens",
+        title: "Total Pools Funded",
         value: tokens?.length,
         // Icon KronosSymbolDark or KronosSymbolLight depending on the theme
         icon: <Coin />,
         color: tokens?.length < 1 ? "text-nomyx-danger-light dark:text-nomyx-danger-dark" : "text-nomyx-text-light dark:text-nomyx-text-dark",
       },
       {
-        title: "Current Value",
+        title: "Total Pool Available",
         value: currentValue ? currentValue.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ",") : "0.00",
         icon: <DollarCircle className="text-nomyx-text-light dark:text-nomyx-text-dark" />,
         color: "text-nomyx-text-light dark:text-nomyx-text-dark",
+      },
+      {
+        title: "Total Pool Investment",
+        value: currentValue ? currentValue.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ",") : "0.00",
+        icon: <DollarCircle className="text-nomyx-text-light dark:text-nomyx-text-dark" />,
+        color: "text-nomyx-text-light dark:text-nomyx-text-dark",
+      },
+      {
+        title: "Interest Generated",
+        value: currentValue ? currentValue.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ",") : "0.00",
+        icon: <DollarCircle className="text-nomyx-text-light dark:text-nomyx-text-dark" />,
+        color: "text-nomyx-text-light dark:text-nomyx-text-dark",
+      },
+      {
+        title: "Average APY %",
+        value: tokens?.length,
+        color: tokens?.length < 1 ? "text-nomyx-danger-light dark:text-nomyx-danger-dark" : "text-nomyx-text-light dark:text-nomyx-text-dark",
       },
     ],
     [tokens.length, currentValue]
@@ -112,6 +129,18 @@ const Dashboard: React.FC = () => {
         children: <Bar data={prepareTokenChartData()} options={chartOptions} />,
         className: "chart",
       },
+      {
+        key: "2",
+        label: "Invoice Insights",
+        children: <Bar data={prepareTokenChartData()} options={chartOptions} />,
+        className: "chart",
+      },
+      {
+        key: "3",
+        label: "Pool Insights",
+        children: <Bar data={prepareTokenChartData()} options={chartOptions} />,
+        className: "chart",
+      },
     ],
     [prepareTokenChartData, chartOptions]
   );
@@ -120,7 +149,7 @@ const Dashboard: React.FC = () => {
     () => [
       {
         key: "1",
-        label: "Purchases",
+        label: "Deposits",
         children: (
           <List
             itemLayout="horizontal"
@@ -145,7 +174,7 @@ const Dashboard: React.FC = () => {
       },
       {
         key: "2",
-        label: "Redemptions",
+        label: "Sales",
         children: (
           <List
             itemLayout="horizontal"

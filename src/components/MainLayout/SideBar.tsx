@@ -44,6 +44,7 @@ const SideNavBar = () => {
     getItem("Dashboard", "menu-item-1", "/dashboard", <ChartSquare className="!text-nomyx-text-light dark:!text-nomyx-text-dark" />),
     getItem("My Portfolio", "menu-item-2", "/my-portfolio", <LanguageSquare className="!text-nomyx-text-light dark:!text-nomyx-text-dark" />),
     getItem("Marketplace", "menu-item-3", "/marketplace", <Shop className="!text-nomyx-text-light dark:!text-nomyx-text-dark" />),
+    //getItem("Fund Pools", "menu-item-3", "/fund-pools", <Shop className="!text-nomyx-text-light dark:!text-nomyx-text-dark" />),
     getItem("Transfer In/Out", "menu-item-4", "/transfer-in-out", <MoneyChange className="!text-nomyx-text-light dark:!text-nomyx-text-dark" />),
   ];
 

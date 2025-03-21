@@ -15,7 +15,7 @@ export const hslToHex = (h: number, s: number, l: number): string => {
 // Improved hash function for better uniqueness
 export const hashCode = (str: string): number => {
   let hash = 0;
-  for (let i = 0; i < str.length; i++) {
+  for (let i = 0; i < str?.length; i++) {
     hash = (Math.imul(31, hash) + str.charCodeAt(i)) | 0; // Ensures 32-bit integer result
   }
   return hash;

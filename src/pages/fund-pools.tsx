@@ -1,70 +1,61 @@
 import React, { useCallback, useEffect, useMemo, useState } from "react";
 
-import { Shop } from "iconsax-react";
-import { Category, RowVertical, SearchNormal1 } from "iconsax-react";
+import { Shop, Category, RowVertical, SearchNormal1 } from "iconsax-react";
 
-import ProjectCard from "@/components/marketplace/ProjectCard";
-import ProjectDetails from "@/components/marketplace/ProjectDetails";
-import ProjectListView from "@/components/marketplace/ProjectListView";
+import FundPoolsCardView from "@/components/Pool/PoolDetails/FundPools/FundPoolsCardView";
+import FundPoolsTableView from "@/components/Pool/PoolDetails/FundPools/FundPoolsTableView";
 import InvestInPoolView from "@/components/Pool/PoolDetails/FundPools/InvestInPoolView";
 import KronosCustomerService from "@/services/KronosCustomerService";
+import { TradeFinancePool } from "@/types/poolData";
 
-const Marketplace: React.FC = () => {
-  const [projectList, setProjectList] = useState<Parse.Object<Project>[]>([]);
+const FundPools: React.FC = () => {
+  const [poolList, setPoolList] = useState<TradeFinancePool[]>([]);
   const [searchQuery, setSearchQuery] = useState<string>("");
   const [viewMode, setViewMode] = useState<string>("card");
-  const [selectedProject, setSelectedProject] = useState<Parse.Object<Project> | null>(null);
+  const [selectedPool, setSelectedPool] = useState<TradeFinancePool | null>(null);
 
-  // Memoize the filtered projects to prevent unnecessary recalculations
-  const filteredProjects = useMemo(() => {
-    return projectList.filter(
-      (project) =>
-        project.attributes.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        project.attributes.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        project.attributes.registryURL.toLowerCase().includes(searchQuery.toLowerCase())
+  // Memoized filtered pools
+  const filteredPools = useMemo(() => {
+    return poolList.filter(
+      (pool) => pool.title?.toLowerCase().includes(searchQuery.toLowerCase()) || pool.description?.toLowerCase().includes(searchQuery.toLowerCase())
     );
-  }, [projectList, searchQuery]);
+  }, [poolList, searchQuery]);
 
-  const fetchProjects = useCallback(async () => {
+  // Fetch trade finance pools
+  const fetchTradeFinancePools = useCallback(async () => {
     try {
-      const projects = await KronosCustomerService.getProjects();
-      setProjectList(projects);
+      const pools = await KronosCustomerService.getTradeFinanceProjects();
+      setPoolList(pools);
     } catch (error) {
       console.error("Failed to fetch projects:", error);
     }
   }, []);
 
   useEffect(() => {
-    fetchProjects();
-  }, [fetchProjects]);
+    fetchTradeFinancePools();
+    console.log("Updated poolList:", poolList);
+  }, [fetchTradeFinancePools]);
 
-  // View mode toggle logic (now updates local state)
-  const toggleView = (view: string) => {
-    setViewMode(view);
-  };
+  // Toggle View Mode
+  const toggleView = (view: string) => setViewMode(view);
 
-  // Handle search bar input change
+  // Search Input Change Handler
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setSearchQuery(e.target.value);
   };
 
-  // Handle project card or list item click
-  const handleProjectClick = (project: Parse.Object<Project>) => {
-    console.log("selected project", project);
-    setSelectedProject(project);
+  // Handle pool selection
+  const handlePoolClick = (pool: TradeFinancePool) => {
+    setSelectedPool(pool);
   };
 
   return (
     <>
-      {selectedProject && selectedProject.attributes?.industryTemplate !== "trade_finance" ? (
-        // Render Project Details
-        <ProjectDetails project={selectedProject} onBack={() => setSelectedProject(null)} />
-      ) : selectedProject && selectedProject.attributes?.industryTemplate === "trade_finance" ? (
-        // Render Invest In Pool View
-        <InvestInPoolView id={selectedProject?.id?.toString()} onBack={() => setSelectedProject(null)} />
+      {selectedPool ? (
+        <InvestInPoolView id={selectedPool.objectId.toString()} onBack={() => setSelectedPool(null)} />
       ) : (
         <>
-          {/* Header and View Toggle Section */}
+          {/* Header Section */}
           <div className="flex justify-between items-center p-2 rounded-lg bg-nomyx-dark2-light dark:bg-nomyx-dark2-dark text-nomyx-text-light dark:text-nomyx-text-dark">
             {/* Search Bar */}
             <div className="bg-nomyx-dark1-light dark:bg-nomyx-dark1-dark flex-shrink-0 w-64 flex items-center rounded-sm h-8 py-1 px-2">
@@ -96,22 +87,21 @@ const Marketplace: React.FC = () => {
           </div>
 
           {/* Content Section */}
-          {filteredProjects.length > 0 ? (
+          {filteredPools.length > 0 ? (
             viewMode === "table" ? (
-              <ProjectListView projects={filteredProjects} className="mt-5" onProjectClick={handleProjectClick} />
+              <FundPoolsTableView pools={filteredPools} />
             ) : (
               <div className="gap-5 grid grid-cols-2 xl:grid-cols-3 mt-5">
-                {filteredProjects.map((project) => (
-                  <ProjectCard key={project.id} project={project} onProjectClick={() => handleProjectClick(project)} />
+                {filteredPools.map((pool) => (
+                  <FundPoolsCardView key={pool.objectId} pool={pool} onPoolClick={() => handlePoolClick(pool)} />
                 ))}
               </div>
             )
           ) : (
             <div className="flex flex-col text-nomyx-text-light dark:text-nomyx-text-dark h-[80%] text-xl items-center justify-center w-full grow">
               <Shop className="w-60 h-60" variant="Linear" />
-              <p>Is it The Holidays Already?</p>
-              <p>This marketplace seems to be empty for now,</p>
-              <p>come back later and check it out.</p>
+              <p>No Pools around here?</p>
+              <p>Come back again soon</p>
             </div>
           )}
         </>
@@ -120,4 +110,4 @@ const Marketplace: React.FC = () => {
   );
 };
 
-export default Marketplace;
+export default FundPools;

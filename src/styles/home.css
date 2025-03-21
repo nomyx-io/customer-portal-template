@@ -344,3 +344,17 @@
 .filter-search-btn.ant-btn > span {
   display: ruby !important;
 }
+
+ .light .ant-table-tbody > tr:last-child > td,
+ .dark .ant-table-tbody > tr:last-child > td {
+ border: none !important;
+}
+.ant-table-wrapper .ant-table-cell-fix-left {
+  background: none !important;
+}
+.ant-table-pagination-right {
+  padding: 0.25rem;
+  border-radius: 0.5rem;
+  background-color: #fff;
+  border: 1px solid #D1D5DB;
+}
