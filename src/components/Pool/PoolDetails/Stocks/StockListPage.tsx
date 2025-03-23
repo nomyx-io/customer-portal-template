@@ -1,6 +1,7 @@
 import React, { useCallback, useEffect, useRef, useState, useMemo } from "react";
 
 import { Input, DatePicker, Select } from "antd";
+import { parseUnits } from "ethers";
 import { Category, RowVertical, SearchNormal1 } from "iconsax-react";
 import { toast } from "react-toastify";
 
@@ -53,10 +54,6 @@ const StockListPage: React.FC<StockListPageProps> = ({ type }) => {
 
   const handleDepositUSDC = useCallback(
     async (tradeDealId: any) => {
-      // if (!tradeDealId?.tokenId) {
-      //   console.error("Trade Deal Id is missing");
-      //   return;
-      // }
       try {
         const user = appState?.session?.user;
         const walletId = user?.walletId;
@@ -64,27 +61,32 @@ const StockListPage: React.FC<StockListPageProps> = ({ type }) => {
         const tradeDealId = 10;
         const amount = 10;
 
+        // Convert amount to USDC format early
+        const usdcPrice = parseUnits(amount.toString(), 6);
+
         await toast.promise(
           async () => {
             if (walletPreference === WalletPreference.PRIVATE) {
-              // Handle PRIVATE wallet invest
-              if (tradeDealId < 0) throw new Error("Invalid Trade Deal Id for Deposit.");
-              await BlockchainService.tradeInvestUSDC(tradeDealId, amount);
+              // Step 1: Approve USDC
+              const approvalTx = await BlockchainService.approve(usdcPrice);
+              if (approvalTx === "rejected") throw new Error("User rejected USDC approval");
+
+              // Step 2: Deposit USDC into trade deal
+              await BlockchainService.tradeInvest(tradeDealId, amount);
 
               const [updatedTokens, updatedWithdrawals] = await Promise.all([
                 KronosCustomerService.getTokensForUser(user.walletAddress),
                 KronosCustomerService.getWithdrawalsForUser(user.walletAddress),
               ]);
+              // Optional UI state update
               // setTokens(updatedTokens);
               // setWithdrawals(updatedWithdrawals);
-              // setSelectedToken(filteredTokens.some((t) => t.tokenId == token.tokenId) ? token : filteredTokens[0]);
             } else if (walletPreference === WalletPreference.MANAGED) {
-              // Handle MANAGED wallet withdrawal
               if (!walletId || !dfnsToken) {
                 throw "No wallet or DFNS token available for Deposit.";
               }
 
-              // Step 1: Initiate the invest process
+              // Step 1: Initiate approval/invest (backend will do approval on user's behalf)
               const { initiateResponse: depositResponse, error: depositInitiateError } = await TradeFinanceService.initiateTradeInvestUSDC(
                 tradeDealId,
                 amount,
@@ -92,11 +94,9 @@ const StockListPage: React.FC<StockListPageProps> = ({ type }) => {
                 dfnsToken
               );
 
-              if (depositInitiateError) {
-                throw "DepositInitiateError: " + depositInitiateError;
-              }
+              if (depositInitiateError) throw "DepositInitiateError: " + depositInitiateError;
 
-              // Step 2: Complete the invest process
+              // Step 2: Complete invest
               const { completeResponse: depositCompleteResponse, error: completeDepositError } = await TradeFinanceService.completeTradeInvestUSDC(
                 walletId,
                 dfnsToken,
@@ -104,17 +104,15 @@ const StockListPage: React.FC<StockListPageProps> = ({ type }) => {
                 depositResponse.requestBody
               );
 
-              if (completeDepositError) {
-                throw "CompleteDepositError: " + completeDepositError;
-              }
+              if (completeDepositError) throw "CompleteDepositError: " + completeDepositError;
+
               const [updatedTokens, updatedWithdrawals] = await Promise.all([
                 KronosCustomerService.getTokensForUser(user.walletAddress),
                 KronosCustomerService.getWithdrawalsForUser(user.walletAddress),
               ]);
-
+              // Optional UI state update
               // setTokens(updatedTokens);
               // setWithdrawals(updatedWithdrawals);
-              // setSelectedToken(filteredTokens.some((t) => t.tokenId == token.tokenId) ? token : filteredTokens[0]);
             } else {
               throw "Invalid wallet preference.";
             }
@@ -133,7 +131,6 @@ const StockListPage: React.FC<StockListPageProps> = ({ type }) => {
         console.error("Failed to deposit trade deal:", error);
       }
     },
-    //[appState, walletPreference, setTokens, setWithdrawals, setSelectedToken, filteredTokens]
     [appState, walletPreference]
   );
 

@@ -28,8 +28,8 @@ class BlockchainService {
   private treasuryService: any;
   private usdcService: any;
   private marketplaceService: any;
-  private tradeDealAddress: any;
-  private tradeDealService: any;
+  //private tradeDealAddress: any;
+  //private tradeDealService: any;
 
   private constructor() {
     if (process.browser) {
@@ -59,12 +59,12 @@ class BlockchainService {
     this.contractAddress = process.env.NEXT_PUBLIC_HARDHAT_CONTRACT_ADDRESS;
     this.treasuryAddress = process.env.NEXT_PUBLIC_HARDHAT_TREASURY_ADDRESS;
     this.usdcAddress = process.env.NEXT_PUBLIC_HARDHAT_USDC_ADDRESS;
-    this.tradeDealAddress = process.env.NEXT_PUBLIC_HARDHAT_TRADE_DEAL_ADDRESS;
+    //this.tradeDealAddress = process.env.NEXT_PUBLIC_HARDHAT_TRADE_DEAL_ADDRESS;
 
     this.treasuryService = new ethers.Contract(this.treasuryAddress, this.treasuryAbi, this.provider);
     this.usdcService = new ethers.Contract(this.usdcAddress, this.usdcAbi, this.provider);
     this.marketplaceService = new ethers.Contract(this.contractAddress, this.marketplaceAbi, this.provider);
-    this.tradeDealService = new ethers.Contract(this.tradeDealAddress, this.tradeDealAbi, this.provider);
+    //this.tradeDealService = new ethers.Contract(this.tradeDealAddress, this.tradeDealAbi, this.provider);
   }
 
   public static get instance(): BlockchainService {
@@ -200,16 +200,22 @@ class BlockchainService {
     }
   }
 
-  async tradeInvest(tradeDealId: number, amount: number) {
+  async tradeInvest(tradeDealId: number, amount: number): Promise<any> {
     try {
       if (this.signer) {
-        const contractWithSigner: any = this.tradeDealService?.connect(this.signer);
-        return await contractWithSigner.tdDepositUSDC(tradeDealId, amount);
+        const tradeDealContract = new ethers.Contract(this.contractAddress, this.tradeDealAbi, this.signer);
+
+        const tx = await tradeDealContract.tdDepositUSDC(tradeDealId, amount);
+        await tx.wait();
+
+        return tx;
       }
+
+      throw new Error("Signer is not available.");
     } catch (e: any) {
-      console.log(e);
-      if (e.reason != "rejected") throw e;
-      else return "rejected";
+      console.error("Error depositing USDC to Trade Deal:", e);
+      if (e.reason !== "rejected") throw e;
+      return "rejected";
     }
   }
 
@@ -223,26 +229,34 @@ class BlockchainService {
     return await this.tradeInvest(tradeDealId, amount);
   }
 
-  async tradeWithdraw(tradeDealId: number, amount: number) {
+  async tradeWithdraw(tradeDealId: number, amount: number): Promise<any> {
     try {
       if (this.signer) {
-        const contractWithSigner: any = this.tradeDealService?.connect(this.signer);
-        return await contractWithSigner.tdWithdrawUSDC(tradeDealId, amount);
+        const tradeDealContract = new ethers.Contract(this.contractAddress, this.tradeDealAbi, this.signer);
+
+        const tx = await tradeDealContract.tdWithdrawUSDC(tradeDealId, amount);
+        await tx.wait();
+
+        return tx;
       }
+
+      throw new Error("Signer is not available.");
     } catch (e: any) {
-      console.log(e);
-      if (e.reason != "rejected") throw e;
-      else return "rejected";
+      console.error("Error withdrawing USDC from Trade Deal:", e);
+      if (e.reason !== "rejected") throw e;
+      return "rejected";
     }
   }
 
-  public async tradeWithdrawUSDC(tradeDealId: number, amount: number) {
+  public async tradeWithdrawUSDC(tradeDealId: number, amount: number): Promise<any> {
     const usdcPrice = parseUnits(amount.toString(), 6);
     const response = await this.approve(usdcPrice);
     console.log("response", response);
-    if (response == "rejected") {
+
+    if (response === "rejected") {
       return "rejected";
     }
+
     return await this.tradeWithdraw(tradeDealId, amount);
   }
 }
