@@ -6,7 +6,6 @@ import { Category, RowVertical, SearchNormal1 } from "iconsax-react";
 import ProjectCard from "@/components/marketplace/ProjectCard";
 import ProjectDetails from "@/components/marketplace/ProjectDetails";
 import ProjectListView from "@/components/marketplace/ProjectListView";
-import InvestInPoolView from "@/components/Pool/PoolDetails/FundPools/InvestInPoolView";
 import KronosCustomerService from "@/services/KronosCustomerService";
 
 const Marketplace: React.FC = () => {
@@ -56,12 +55,9 @@ const Marketplace: React.FC = () => {
 
   return (
     <>
-      {selectedProject && selectedProject.attributes?.industryTemplate !== "trade_finance" ? (
+      {selectedProject ? (
         // Render Project Details
         <ProjectDetails project={selectedProject} onBack={() => setSelectedProject(null)} />
-      ) : selectedProject && selectedProject.attributes?.industryTemplate === "trade_finance" ? (
-        // Render Invest In Pool View
-        <InvestInPoolView id={selectedProject?.id?.toString()} onBack={() => setSelectedProject(null)} />
       ) : (
         <>
           {/* Header and View Toggle Section */}

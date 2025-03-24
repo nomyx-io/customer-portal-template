@@ -1,7 +1,7 @@
-import React, { useEffect, useState, useMemo } from "react";
+import React, { useEffect, useState, useMemo, useCallback } from "react";
 
-import { Button, Card, Modal, Tabs, Table } from "antd";
-import { ethers } from "ethers";
+import { Button, Card, Modal, Tabs, Table, Select, InputNumber, ConfigProvider } from "antd";
+import { ethers, parseUnits } from "ethers";
 import { SearchNormal1, Category, RowVertical, ArrowLeft } from "iconsax-react";
 import Image from "next/image";
 import PubSub from "pubsub-js";
@@ -11,19 +11,24 @@ import TokenCardView from "@/components/marketplace/TokenCardView";
 import TokenListView from "@/components/marketplace/TokenListView";
 import TokenDetail from "@/components/TokenDetail";
 import { actions } from "@/config/carbonCreditConfig";
+import { Industries } from "@/config/generalConfig";
 import { useGemforceApp } from "@/context/GemforceAppContext";
 import projectBackground from "@/images/projects_background.png";
 import BlockchainService from "@/services/BlockchainService";
 import KronosCustomerService from "@/services/KronosCustomerService";
+import TradeFinanceService from "@/services/TradeFinanceService";
 import { NomyxEvent, WalletPreference } from "@/utils/Constants";
 import { formatNumber } from "@/utils/numberFormatter";
+
+import HistoryListPage from "../Pool/PoolDetails/History/HistoryListPage";
 
 interface ProjectDetailsProps {
   project: Parse.Object<Project>;
   onBack: () => void;
+  type?: string;
 }
 
-const ProjectDetails: React.FC<ProjectDetailsProps> = ({ project, onBack }) => {
+const ProjectDetails: React.FC<ProjectDetailsProps> = ({ project, onBack, type = "invest" }) => {
   const { appState }: any = useGemforceApp();
   const [listings, setListings] = useState<any[]>([]);
   const [sales, setSales] = useState<any[]>([]);
@@ -34,6 +39,8 @@ const ProjectDetails: React.FC<ProjectDetailsProps> = ({ project, onBack }) => {
   const [showStats, setShowStats] = useState(true);
   const [selectedToken, setSelectedToken] = useState<any | null>(null);
   const walletPreference = appState?.session?.user?.walletPreference;
+  const [isInvestModalOpen, setIsInvestModalOpen] = useState(false);
+  const [investAmount, setInvestAmount] = useState<number | null>(null);
 
   const searchAllProperties = (item: any, query: string): boolean => {
     const searchInObject = (obj: any): boolean => {
@@ -276,6 +283,14 @@ const ProjectDetails: React.FC<ProjectDetailsProps> = ({ project, onBack }) => {
     }
   };
 
+  const showInvestModal = () => {
+    setIsInvestModalOpen(true);
+  };
+
+  const handleInvestCancel = () => {
+    setIsInvestModalOpen(false);
+  };
+
   // Function to handle individual token purchase
 
   const handleIndividualPurchase = async (token: any) => {
@@ -382,6 +397,172 @@ const ProjectDetails: React.FC<ProjectDetailsProps> = ({ project, onBack }) => {
     return sum + tokenPrice;
   }, 0);
 
+  const handleWithdrawUSDC = useCallback(
+    async (tradeDealId: any) => {
+      // if (!tradeDealId?.tokenId) {
+      //   console.error("Trade Deal Id is missing");
+      //   return;
+      // }
+      try {
+        const user = appState?.session?.user;
+        const walletId = user?.walletId;
+        const dfnsToken = user?.dfns_token;
+        const tradeDealId = 10;
+        const amount = 10;
+
+        await toast.promise(
+          async () => {
+            if (walletPreference === WalletPreference.PRIVATE) {
+              // Handle PRIVATE wallet invest
+              if (tradeDealId < 0) throw new Error("Invalid Trade Deal Id for Withdraw.");
+              await BlockchainService.tradeWithdrawUSDC(tradeDealId, amount);
+
+              const [updatedTokens, updatedWithdrawals] = await Promise.all([
+                KronosCustomerService.getTokensForUser(user.walletAddress),
+                KronosCustomerService.getWithdrawalsForUser(user.walletAddress),
+              ]);
+              // setTokens(updatedTokens);
+              // setWithdrawals(updatedWithdrawals);
+              // setSelectedToken(filteredTokens.some((t) => t.tokenId == token.tokenId) ? token : filteredTokens[0]);
+            } else if (walletPreference === WalletPreference.MANAGED) {
+              // Handle MANAGED wallet withdrawal
+              if (!walletId || !dfnsToken) {
+                throw "No wallet or DFNS token available for Withdraw.";
+              }
+
+              // Step 1: Initiate the invest process
+              const { initiateResponse: withdrawResponse, error: withdrawInitiateError } = await TradeFinanceService.initiateTradeWithdrawUSDC(
+                tradeDealId,
+                amount,
+                walletId,
+                dfnsToken
+              );
+
+              if (withdrawInitiateError) {
+                throw "WithdrawInitiateError: " + withdrawInitiateError;
+              }
+
+              // Step 2: Complete the invest process
+              const { completeResponse: withdrawCompleteResponse, error: completeWithdrawError } =
+                await TradeFinanceService.completeTradeWithdrawUSDC(walletId, dfnsToken, withdrawResponse.challenge, withdrawResponse.requestBody);
+
+              if (completeWithdrawError) {
+                throw "CompleteWithdrawError: " + completeWithdrawError;
+              }
+              const [updatedTokens, updatedWithdrawals] = await Promise.all([
+                KronosCustomerService.getTokensForUser(user.walletAddress),
+                KronosCustomerService.getWithdrawalsForUser(user.walletAddress),
+              ]);
+
+              // setTokens(updatedTokens);
+              // setWithdrawals(updatedWithdrawals);
+              // setSelectedToken(filteredTokens.some((t) => t.tokenId == token.tokenId) ? token : filteredTokens[0]);
+            } else {
+              throw "Invalid wallet preference.";
+            }
+          },
+          {
+            pending: "Processing Withdraw...",
+            success: "Trade deal withdrawn successfully.",
+            error: {
+              render({ data }: { data: any }) {
+                return <div>{data?.reason || data || "An error occurred during withdraw."}</div>;
+              },
+            },
+          }
+        );
+      } catch (error: any) {
+        console.error("Failed to withdraw trade deal:", error);
+      }
+    },
+    //[appState, walletPreference, setTokens, setWithdrawals, setSelectedToken, filteredTokens]
+    [appState, walletPreference]
+  );
+
+  const handleDepositUSDC = useCallback(
+    async (investAmount: number) => {
+      try {
+        const user = appState?.session?.user;
+        const walletId = user?.walletId;
+        const dfnsToken = user?.dfns_token;
+        const tradeDealId = 10;
+        const amount = investAmount || 0;
+
+        // Convert amount to USDC format early
+        const usdcPrice = parseUnits(amount.toString(), 6);
+
+        await toast.promise(
+          async () => {
+            if (walletPreference === WalletPreference.PRIVATE) {
+              // Step 1: Approve USDC
+              const approvalTx = await BlockchainService.approve(usdcPrice);
+              if (approvalTx === "rejected") throw new Error("User rejected USDC approval");
+
+              // Step 2: Deposit USDC into trade deal
+              await BlockchainService.tradeInvest(tradeDealId, amount);
+
+              const [updatedTokens, updatedWithdrawals] = await Promise.all([
+                KronosCustomerService.getTokensForUser(user.walletAddress),
+                KronosCustomerService.getWithdrawalsForUser(user.walletAddress),
+              ]);
+              // Optional UI state update
+              // setTokens(updatedTokens);
+              // setWithdrawals(updatedWithdrawals);
+              setIsInvestModalOpen(false);
+            } else if (walletPreference === WalletPreference.MANAGED) {
+              if (!walletId || !dfnsToken) {
+                throw "No wallet or DFNS token available for Deposit.";
+              }
+
+              // Step 1: Initiate approval/invest (backend will do approval on user's behalf)
+              const { initiateResponse: depositResponse, error: depositInitiateError } = await TradeFinanceService.initiateTradeInvestUSDC(
+                tradeDealId,
+                amount,
+                walletId,
+                dfnsToken
+              );
+
+              if (depositInitiateError) throw "DepositInitiateError: " + depositInitiateError;
+
+              // Step 2: Complete invest
+              const { completeResponse: depositCompleteResponse, error: completeDepositError } = await TradeFinanceService.completeTradeInvestUSDC(
+                walletId,
+                dfnsToken,
+                depositResponse.challenge,
+                depositResponse.requestBody
+              );
+
+              if (completeDepositError) throw "CompleteDepositError: " + completeDepositError;
+
+              const [updatedTokens, updatedWithdrawals] = await Promise.all([
+                KronosCustomerService.getTokensForUser(user.walletAddress),
+                KronosCustomerService.getWithdrawalsForUser(user.walletAddress),
+              ]);
+              // Optional UI state update
+              // setTokens(updatedTokens);
+              // setWithdrawals(updatedWithdrawals);
+              setIsInvestModalOpen(false);
+            } else {
+              throw "Invalid wallet preference.";
+            }
+          },
+          {
+            pending: "Processing deposit...",
+            success: "Trade deal deposited successfully.",
+            error: {
+              render({ data }: { data: any }) {
+                return <div>{data?.reason || data || "An error occurred during deposit."}</div>;
+              },
+            },
+          }
+        );
+      } catch (error: any) {
+        console.error("Failed to deposit trade deal:", error);
+      }
+    },
+    [appState, walletPreference]
+  );
+
   return (
     <div className="project-details">
       {selectedToken ? (
@@ -432,48 +613,134 @@ const ProjectDetails: React.FC<ProjectDetailsProps> = ({ project, onBack }) => {
                 </div>
 
                 {/* Project Stats (Moves below on small screens) */}
-                <div
-                  className={`mt-6 md:mt-0 flex flex-col md:flex-row md:flex-nowrap space-y-4 md:space-y-0 md:space-x-4 bg-nomyx-dark2-light dark:bg-nomyx-dark2-dark p-4 rounded-lg shadow-md transition-opacity duration-500 opacity-100`}
-                  style={{ maxWidth: "100%", overflow: "hidden" }}
-                >
-                  <div className="stat-item bg-nomyx-dark1-light dark:bg-nomyx-dark1-dark p-3 rounded-lg text-center">
-                    <span className="text-sm">Total Value</span>
-                    <h2 className="text-lg font-bold">{formatNumber(totalListingValue + totalSalesValue)}</h2>
+                {project.attributes.industryTemplate === Industries.TRADE_FINANCE ? (
+                  <div className="mt-6 md:mt-0 bg-nomyx-dark2-light dark:bg-nomyx-dark2-dark p-4 rounded-lg shadow-md transition-opacity duration-500 opacity-100">
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                      {[
+                        { label: "Development method", value: "52.53%" },
+                        { label: "Newera Score", value: "4/5" },
+                        { label: "Fund Size", value: "200 M" },
+                        { label: "Generation", value: "03" },
+                        { label: "Economics", value: "2% - 20%" },
+                        { label: "Target Return", value: "3-4x Gross" },
+                        { label: "Category", value: "Venture" },
+                        { label: "Stage", value: "Early/Venture" },
+                        //   { label: "Phase", value: "Closing Soon" },
+                      ].map((stat, index) => (
+                        <div key={index} className="stat-item bg-nomyx-dark1-light dark:bg-nomyx-dark1-dark p-3 rounded-lg text-center">
+                          <span className="text-xs md:text-sm text-gray-700">{stat.label}</span>
+                          <h2 className="text-base font-bold text-black dark:text-white">{stat.value}</h2>
+                        </div>
+                      ))}
+                    </div>
                   </div>
-                  <div className="stat-item bg-nomyx-dark1-light dark:bg-nomyx-dark1-dark p-3 rounded-lg text-center">
-                    <span className="text-sm">Project Creation Date</span>
-                    <h2 className="text-lg font-bold">{project.attributes.createdAt?.toLocaleDateString()}</h2>
+                ) : (
+                  <div
+                    className={`mt-6 md:mt-0 flex flex-col md:flex-row md:flex-nowrap space-y-4 md:space-y-0 md:space-x-4 bg-nomyx-dark2-light dark:bg-nomyx-dark2-dark p-4 rounded-lg shadow-md transition-opacity duration-500 opacity-100`}
+                    style={{ maxWidth: "100%", overflow: "hidden" }}
+                  >
+                    <div className="stat-item bg-nomyx-dark1-light dark:bg-nomyx-dark1-dark p-3 rounded-lg text-center">
+                      <span className="text-sm">Total Value</span>
+                      <h2 className="text-lg font-bold">{formatNumber(totalListingValue + totalSalesValue)}</h2>
+                    </div>
+                    <div className="stat-item bg-nomyx-dark1-light dark:bg-nomyx-dark1-dark p-3 rounded-lg text-center">
+                      <span className="text-sm">Project Creation Date</span>
+                      <h2 className="text-lg font-bold">{project.attributes.createdAt?.toLocaleDateString()}</h2>
+                    </div>
+                    <div className="stat-item bg-nomyx-dark1-light dark:bg-nomyx-dark1-dark p-3 rounded-lg text-center">
+                      <span className="text-sm">Total Tokens</span>
+                      <h2 className="text-lg font-bold">{formatNumber(totalTokens)}</h2>
+                    </div>
                   </div>
-                  <div className="stat-item bg-nomyx-dark1-light dark:bg-nomyx-dark1-dark p-3 rounded-lg text-center">
-                    <span className="text-sm">Total Tokens</span>
-                    <h2 className="text-lg font-bold">{formatNumber(totalTokens)}</h2>
-                  </div>
-                </div>
+                )}
               </div>
             </div>
 
             {/* Header Section with Search Bar */}
             <div className="flex justify-between items-center p-2 rounded-lg bg-nomyx-dark2-light dark:bg-nomyx-dark2-dark text-nomyx-text-light dark:text-nomyx-text-dark mt-4">
               {/* Search Bar */}
-              <div className="bg-nomyx-dark1-light dark:bg-nomyx-dark1-dark flex-shrink-0 w-64 flex items-center rounded-sm h-8 py-1 px-2">
-                <SearchNormal1 size="24" />
-                <input
-                  type="text"
-                  placeholder="Search all columns"
-                  className="bg-nomyx-dark1-light dark:bg-nomyx-dark1-dark ml-2 w-full focus:outline-none"
-                  onChange={handleSearchChange}
-                  value={searchQuery}
-                />
-              </div>
+              {project.attributes.industryTemplate !== Industries.TRADE_FINANCE ? (
+                <div className="bg-nomyx-dark1-light dark:bg-nomyx-dark1-dark flex-shrink-0 w-64 flex items-center rounded-sm h-8 py-1 px-2">
+                  <SearchNormal1 size="24" />
+                  <input
+                    type="text"
+                    placeholder="Search all columns"
+                    className="bg-nomyx-dark1-light dark:bg-nomyx-dark1-dark ml-2 w-full focus:outline-none"
+                    onChange={handleSearchChange}
+                    value={searchQuery}
+                  />
+                </div>
+              ) : (
+                // Left Section: Search & Filters
+                <div className="flex items-center gap-3">
+                  {/* Search Bar */}
+                  <div className="flex items-center border border-gray-300 rounded-md px-2 py-1 bg-white">
+                    <SearchNormal1 size="20" className="text-gray-500" />
+                    <input
+                      type="text"
+                      placeholder="Search by Stock ID"
+                      className="bg-transparent ml-2 w-40 focus:outline-none text-gray-900"
+                      onChange={handleSearchChange}
+                      value={searchQuery}
+                    />
+                  </div>
+
+                  {/* Dropdown Filters */}
+                  <Select
+                    placeholder="Issuance Date"
+                    className="w-40 bg-transparent ml-2 focus:outline-none text-gray-900 rounded-md border border-gray-500"
+                  />
+                  <Select
+                    placeholder="Held By"
+                    className="w-40 bg-transparent ml-2 focus:outline-none text-gray-900 rounded-md border border-gray-500"
+                  />
+                  <Select
+                    placeholder="Maturity Date"
+                    className="w-40 bg-transparent ml-2 focus:outline-none text-gray-900 rounded-md border border-gray-500"
+                  />
+                  <Select
+                    placeholder="Company"
+                    className="w-40 bg-transparent ml-2 focus:outline-none text-gray-900 rounded-md border border-gray-500"
+                  />
+
+                  {/* Item Count */}
+                  {/* <span className="font-medium text-gray-700">4 Items</span> */}
+                </div>
+              )}
 
               {/* View Toggle and Purchase Selected Button */}
-              <div className="flex items-center">
-                {/* Purchase Selected Button */}
-                <Button type="primary" className="mr-4 !text-white" onClick={handlePurchaseSelectedTokens}>
-                  Purchase Selected
-                </Button>
+              {project.attributes.industryTemplate !== Industries.TRADE_FINANCE ? (
+                <div className="flex items-center justify-end w-full mr-4">
+                  {/* Purchase Selected Button */}
+                  <Button type="primary" className="mr-4 !text-white" onClick={handlePurchaseSelectedTokens}>
+                    Purchase Selected
+                  </Button>
+                </div>
+              ) : (
+                <>
+                  {type.toLowerCase() === "swap" && (
+                    <div className="flex items-center justify-end w-full mr-4">
+                      <div>
+                        <button className="bg-blue-600 text-white px-4 py-2 rounded-md text-sm font-medium" onClick={handleWithdrawUSDC}>
+                          Swap Collateral Token to USDC
+                        </button>
+                        {/* <button className="bg-blue-600 text-white px-4 py-2 rounded-md text-sm font-medium ml-2">Swap Dividend Token to USDC</button> */}
+                      </div>
+                    </div>
+                  )}
 
-                {/* View Toggle Buttons */}
+                  {type.toLowerCase() === "invest" && (
+                    <div className="flex items-center justify-end w-full mr-4">
+                      <button className="bg-blue-600 text-white px-4 py-2 rounded-md text-sm font-medium" onClick={showInvestModal}>
+                        Invest in Pool
+                      </button>
+                    </div>
+                  )}
+                </>
+              )}
+
+              {/* View Toggle Buttons */}
+              <div className="flex items-center gap-1">
                 <button
                   onClick={() => setViewMode("card")}
                   className={`p-0.5 rounded-sm mr-2 ${
@@ -500,7 +767,7 @@ const ProjectDetails: React.FC<ProjectDetailsProps> = ({ project, onBack }) => {
                 items={[
                   {
                     key: "1",
-                    label: "Current Listings",
+                    label: project.attributes.industryTemplate === Industries.TRADE_FINANCE ? "Stocks" : "Current Listings",
                     children: (
                       <>
                         {viewMode === "table" ? (
@@ -523,22 +790,73 @@ const ProjectDetails: React.FC<ProjectDetailsProps> = ({ project, onBack }) => {
                       </>
                     ),
                   },
-                  {
-                    key: "2",
-                    label: "Sales History",
-                    children:
-                      viewMode === "table" ? (
-                        <TokenListView projects={filteredSales} onProjectClick={handleDetailsClick} isSalesHistory={true} />
-                      ) : (
-                        <TokenCardView projects={filteredSales} onProjectClick={handleDetailsClick} isSalesHistory={true} />
-                      ),
-                  },
+                  ...(project.attributes.industryTemplate === Industries.TRADE_FINANCE
+                    ? [
+                        {
+                          key: "2",
+                          label: "History",
+                          children: <HistoryListPage />,
+                        },
+                      ]
+                    : []),
+                  ...(project.attributes.industryTemplate !== Industries.TRADE_FINANCE
+                    ? [
+                        {
+                          key: "2",
+                          label: "Sales History",
+                          children:
+                            viewMode === "table" ? (
+                              <TokenListView projects={filteredSales} onProjectClick={handleDetailsClick} isSalesHistory={true} />
+                            ) : (
+                              <TokenCardView projects={filteredSales} onProjectClick={handleDetailsClick} isSalesHistory={true} />
+                            ),
+                        },
+                      ]
+                    : []),
                 ]}
               />
             </Card>
           </div>
         </>
       )}
+
+      <ConfigProvider
+        theme={{
+          token: {
+            colorBgElevated: "#ffffff", // Light theme modal background
+            colorText: "#000000", // Light theme text
+          },
+        }}
+      >
+        <Modal
+          title="Confirm Investment"
+          open={isInvestModalOpen}
+          onCancel={handleInvestCancel}
+          footer={[
+            <Button key="cancel" onClick={handleInvestCancel} className="text-gray-700 dark:text-gray-300">
+              Cancel
+            </Button>,
+            <Button
+              key="submit"
+              type="default"
+              className="bg-blue-600 text-white hover:bg-blue-700 disabled:bg-blue-300"
+              onClick={() => handleDepositUSDC(investAmount || 0)}
+              disabled={!investAmount}
+            >
+              Submit
+            </Button>,
+          ]}
+        >
+          <p>Enter the amount you want to invest in the pool:</p>
+          <InputNumber
+            min={1}
+            value={investAmount}
+            onChange={setInvestAmount}
+            className="w-full mt-2 border rounded-md bg-white focus-within:bg-white text-black"
+            placeholder="Enter amount"
+          />
+        </Modal>
+      </ConfigProvider>
     </div>
   );
 };
