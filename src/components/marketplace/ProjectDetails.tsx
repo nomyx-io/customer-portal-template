@@ -409,13 +409,16 @@ const ProjectDetails: React.FC<ProjectDetailsProps> = ({ project, onBack, type =
         const dfnsToken = user?.dfns_token;
         const tradeDealId = 10;
         const amount = 10;
+        const usdcPrice = parseUnits(amount.toString(), 6);
 
         await toast.promise(
           async () => {
             if (walletPreference === WalletPreference.PRIVATE) {
               // Handle PRIVATE wallet invest
               if (tradeDealId < 0) throw new Error("Invalid Trade Deal Id for Withdraw.");
-              await BlockchainService.tradeWithdrawUSDC(tradeDealId, amount);
+              const approvalTx = await BlockchainService.approve(usdcPrice);
+              if (approvalTx === "rejected") throw new Error("User rejected USDC approval");
+              await BlockchainService.tradeWithdraw(tradeDealId, amount);
 
               const [updatedTokens, updatedWithdrawals] = await Promise.all([
                 KronosCustomerService.getTokensForUser(user.walletAddress),
@@ -777,6 +780,7 @@ const ProjectDetails: React.FC<ProjectDetailsProps> = ({ project, onBack, type =
                             onSelectionChange={setSelectedListings}
                             onPurchaseToken={handleIndividualPurchase}
                             isSalesHistory={false}
+                            industryTemplate={project.attributes.industryTemplate}
                           />
                         ) : (
                           <TokenCardView
@@ -795,6 +799,20 @@ const ProjectDetails: React.FC<ProjectDetailsProps> = ({ project, onBack, type =
                         {
                           key: "2",
                           label: "History",
+                          children: <HistoryListPage />,
+                        },
+                      ]
+                    : []),
+                  ...(project.attributes.industryTemplate === Industries.TRADE_FINANCE && type == "swap"
+                    ? [
+                        {
+                          key: "3",
+                          label: "Redeemed VABB",
+                          children: <HistoryListPage />,
+                        },
+                        {
+                          key: "4",
+                          label: "Redeemed VABI",
                           children: <HistoryListPage />,
                         },
                       ]

@@ -3,6 +3,7 @@ import React, { useState, useEffect } from "react";
 import { EyeOutlined } from "@ant-design/icons";
 import { Table, Checkbox, Button } from "antd";
 
+import { Industries } from "@/config/generalConfig";
 import { ColumnConfig, EXCLUDED_COLUMNS } from "@/types/dynamicTableColumn";
 import { hashToColor } from "@/utils/colorUtils";
 import { formatPrice } from "@/utils/currencyFormater";
@@ -13,9 +14,17 @@ interface TokenListViewProps {
   onSelectionChange?: (selectedProjects: any[]) => void; // Prop for selection change callback
   onPurchaseToken?: (token: any) => void; // Prop for handling purchase of a single token
   isSalesHistory: boolean; // New prop to determine if this is a sales history view
+  industryTemplate?: string;
 }
 
-const TokenListView: React.FC<TokenListViewProps> = ({ projects, onProjectClick, onSelectionChange, onPurchaseToken, isSalesHistory }) => {
+const TokenListView: React.FC<TokenListViewProps> = ({
+  projects,
+  onProjectClick,
+  onSelectionChange,
+  onPurchaseToken,
+  isSalesHistory,
+  industryTemplate,
+}) => {
   const [selectAllChecked, setSelectAllChecked] = useState(false);
   const [filteredProjects, setFilteredProjects] = useState(projects);
   const [filterQuery, setFilterQuery] = useState("");
@@ -192,7 +201,7 @@ const TokenListView: React.FC<TokenListViewProps> = ({ projects, onProjectClick,
     },
     ...additionalColumns,
 
-    ...(!isSalesHistory
+    ...(!isSalesHistory && industryTemplate && industryTemplate != Industries.TRADE_FINANCE
       ? [
           {
             title: "Actions",

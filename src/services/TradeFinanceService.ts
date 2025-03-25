@@ -1,7 +1,10 @@
 import { WebAuthnSigner } from "@dfns/sdk-browser";
 
+import { TradeFinancePool } from "@/types/poolData";
+
 import BlockchainService from "./BlockchainService";
 import ParseClient from "./ParseService";
+import ParseService from "./ParseService";
 
 class TradeFinanceService {
   private static _instance: TradeFinanceService;
@@ -105,6 +108,51 @@ class TradeFinanceService {
       console.error("Error completing withdraw:", error);
       return { completeResponse: null, error: error.message };
     }
+  }
+
+  public async getUserTradePools(userAddress: string): Promise<TradeFinancePool[]> {
+    // Step 1: Fetch TradeDealUSDCDeposit records for the ownerAddress
+    const records = await ParseService.getRecords("TradeDealUSDCDeposit", ["ownerAddress"], [userAddress], ["tradeDealId", "amount"]);
+
+    if (!records || records.length === 0) return [];
+
+    // Step 2: Aggregate total amount for each unique tradeDealId
+    const tradeDealMap: Record<number, number> = {};
+
+    records.forEach((record) => {
+      const tradeDealId = record.get("tradeDealId") as number;
+      const amount = (record.get("amount") as number) || 0;
+      tradeDealMap[tradeDealId] = (tradeDealMap[tradeDealId] || 0) + Number(amount);
+    });
+
+    // Step 3: Fetch TokenProject records for unique tradeDealIds
+    const uniqueTradeDealIds = Object.keys(tradeDealMap).map((id) => Number(id));
+
+    if (uniqueTradeDealIds.length === 0) return [];
+
+    const tokenProjects = await ParseService.getRecords(
+      "TokenProject",
+      ["tradeDealId"],
+      [uniqueTradeDealIds], // Ensure Parse query supports arrays
+      ["tradeDealId", "title", "logo", "coverImage"]
+    );
+
+    // Step 4: Create a final combined result
+    const result = uniqueTradeDealIds.map((tradeDealId) => {
+      const project = tokenProjects?.find((p) => p.get("tradeDealId") == tradeDealId);
+      debugger;
+      return {
+        tradeDealId: tradeDealId,
+        title: (project?.get("title") as string) || "Unknown",
+        description: (project?.get("description") as string) || "Unknown",
+        totalInvestedAmount: tradeDealMap[tradeDealId],
+        projectId: project?.id ?? "", // Ensure it's always a string
+        logo: project?.get("logo") ?? "", // Provide a default if required
+        coverImage: project?.get("coverImage") ?? "", // Provide a default if required
+      };
+    });
+
+    return result;
   }
 }
 

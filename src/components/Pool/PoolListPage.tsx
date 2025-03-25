@@ -1,46 +1,45 @@
-import { useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 
 import { DatePicker, Select } from "antd";
 import dayjs, { Dayjs } from "dayjs";
+import { parseUnits } from "ethers";
 import { Category, RowVertical, SearchNormal1 } from "iconsax-react";
+import { toast } from "react-toastify";
+
+import { useGemforceApp } from "@/context/GemforceAppContext";
+import BlockchainService from "@/services/BlockchainService";
+import KronosCustomerService from "@/services/KronosCustomerService";
+import { WalletPreference } from "@/utils/Constants";
 
 import PoolCardView from "./PoolCardView";
 import PoolTableView from "./PoolTableView";
+import TradeFinanceService from "../../services/TradeFinanceService"; // Import service
 import { TradeFinancePool } from "../../types/poolData";
-
-const mockData: TradeFinancePool[] = [
-  {
-    objectId: "1",
-    title: "Pool 1",
-    logo: undefined,
-    description: "Test Desc",
-    startDate: "2024-05-09",
-    maturityDate: "2024-09-05",
-    investedAmount: 20000,
-    allocatedVABB: 62000,
-    vabiEarned: 4960,
-    totalVabiYield: 4960,
-    yieldPercentage: "8%",
-  },
-  {
-    objectId: "2",
-    title: "Pool 2",
-    logo: undefined,
-    description: "Test Desc",
-    startDate: "2024-05-09",
-    maturityDate: "2024-09-05",
-    investedAmount: 22000,
-    allocatedVABB: 22000,
-    vabiEarned: 1540,
-    totalVabiYield: 1540,
-    yieldPercentage: "7%",
-  },
-];
 
 const PoolListPage = () => {
   const [searchText, setSearchText] = useState("");
   const [dateRange, setDateRange] = useState<[Dayjs | null, Dayjs | null] | null>(null);
   const [viewMode, setViewMode] = useState<"table" | "card">("table");
+  const [pools, setPools] = useState<TradeFinancePool[]>([]); // State for fetched pools
+  const { appState }: any = useGemforceApp();
+  const walletPreference = appState?.session?.user?.walletPreference;
+
+  // Fetch pools on component mount
+  useEffect(() => {
+    const fetchPools = async () => {
+      try {
+        const user = appState?.session?.user;
+        if (user?.walletAddress) {
+          const fetchedPools = await TradeFinanceService.getUserTradePools(user.walletAddress); // Call service method
+          setPools(fetchedPools);
+        }
+      } catch (error) {
+        console.error("Error fetching pools:", error);
+      }
+    };
+
+    fetchPools();
+  }, []);
 
   // Handle search input
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -53,17 +52,103 @@ const PoolListPage = () => {
   };
 
   // Filter pools based on search text and date range
-  const filteredData = mockData.filter((pool) => {
+  const filteredData = pools.filter((pool) => {
     const matchesSearch = pool.title.toLowerCase().includes(searchText.toLowerCase());
 
     if (dateRange && dateRange[0] && dateRange[1]) {
-      const startDate = dayjs(pool.startDate);
-      const maturityDate = dayjs(pool.maturityDate);
-      return matchesSearch && startDate.isAfter(dateRange[0]) && maturityDate.isBefore(dateRange[1]);
+      // const startDate = dayjs(pool.startDate);
+      // const maturityDate = dayjs(pool.maturityDate);
+      // return matchesSearch && startDate.isAfter(dateRange[0]) && maturityDate.isBefore(dateRange[1]);
     }
 
     return matchesSearch;
   });
+
+  const handleWithdrawUSDC = useCallback(
+    async (tradeDealId: any) => {
+      // if (!tradeDealId?.tokenId) {
+      //   console.error("Trade Deal Id is missing");
+      //   return;
+      // }
+      try {
+        const user = appState?.session?.user;
+        const walletId = user?.walletId;
+        const dfnsToken = user?.dfns_token;
+        const tradeDealId = 10;
+        const amount = 10;
+        const usdcPrice = parseUnits(amount.toString(), 6);
+
+        await toast.promise(
+          async () => {
+            if (walletPreference === WalletPreference.PRIVATE) {
+              // Handle PRIVATE wallet invest
+              if (tradeDealId < 0) throw new Error("Invalid Trade Deal Id for Withdraw.");
+
+              const approvalTx = await BlockchainService.approve(usdcPrice);
+              if (approvalTx === "rejected") throw new Error("User rejected USDC approval");
+              await BlockchainService.tradeWithdraw(tradeDealId, amount);
+
+              const [updatedTokens, updatedWithdrawals] = await Promise.all([
+                KronosCustomerService.getTokensForUser(user.walletAddress),
+                KronosCustomerService.getWithdrawalsForUser(user.walletAddress),
+              ]);
+              // setTokens(updatedTokens);
+              // setWithdrawals(updatedWithdrawals);
+              // setSelectedToken(filteredTokens.some((t) => t.tokenId == token.tokenId) ? token : filteredTokens[0]);
+            } else if (walletPreference === WalletPreference.MANAGED) {
+              // Handle MANAGED wallet withdrawal
+              if (!walletId || !dfnsToken) {
+                throw "No wallet or DFNS token available for Withdraw.";
+              }
+
+              // Step 1: Initiate the invest process
+              const { initiateResponse: withdrawResponse, error: withdrawInitiateError } = await TradeFinanceService.initiateTradeWithdrawUSDC(
+                tradeDealId,
+                amount,
+                walletId,
+                dfnsToken
+              );
+
+              if (withdrawInitiateError) {
+                throw "WithdrawInitiateError: " + withdrawInitiateError;
+              }
+
+              // Step 2: Complete the invest process
+              const { completeResponse: withdrawCompleteResponse, error: completeWithdrawError } =
+                await TradeFinanceService.completeTradeWithdrawUSDC(walletId, dfnsToken, withdrawResponse.challenge, withdrawResponse.requestBody);
+
+              if (completeWithdrawError) {
+                throw "CompleteWithdrawError: " + completeWithdrawError;
+              }
+              const [updatedTokens, updatedWithdrawals] = await Promise.all([
+                KronosCustomerService.getTokensForUser(user.walletAddress),
+                KronosCustomerService.getWithdrawalsForUser(user.walletAddress),
+              ]);
+
+              // setTokens(updatedTokens);
+              // setWithdrawals(updatedWithdrawals);
+              // setSelectedToken(filteredTokens.some((t) => t.tokenId == token.tokenId) ? token : filteredTokens[0]);
+            } else {
+              throw "Invalid wallet preference.";
+            }
+          },
+          {
+            pending: "Processing Withdraw...",
+            success: "Trade deal withdrawn successfully.",
+            error: {
+              render({ data }: { data: any }) {
+                return <div>{data?.reason || data || "An error occurred during withdraw."}</div>;
+              },
+            },
+          }
+        );
+      } catch (error: any) {
+        console.error("Failed to withdraw trade deal:", error);
+      }
+    },
+    //[appState, walletPreference, setTokens, setWithdrawals, setSelectedToken, filteredTokens]
+    [appState, walletPreference]
+  );
 
   return (
     <div className="p-4 rounded-lg">
@@ -107,7 +192,7 @@ const PoolListPage = () => {
       </div>
 
       {/* Pool List View (Table or Card) */}
-      {viewMode === "table" ? <PoolTableView pools={filteredData} /> : <PoolCardView pools={filteredData} />}
+      {viewMode === "table" ? <PoolTableView pools={filteredData} handleWithdrawUSDC={handleWithdrawUSDC} /> : <PoolCardView pools={filteredData} />}
     </div>
   );
 };

@@ -1,6 +1,7 @@
 import React from "react";
 
 import { Card, Button } from "antd";
+import Image from "next/image"; // Ensure Next.js optimization
 
 import { formatPrice } from "@/utils/currencyFormater";
 
@@ -17,27 +18,32 @@ const PoolCardView: React.FC<Props> = ({ pools, onSwapCollateral, onSwapDividend
     <div className="grid gap-5 grid-cols-2 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3 mt-5">
       {pools.map((pool) => (
         <Card
-          key={pool.objectId}
-          className="rounded-lg shadow-md transition-transform duration-300 ease-in-out bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 hover:shadow-2xl hover:scale-105 cursor-pointer"
+          key={pool.projectId}
+          className="rounded-lg shadow-md transition-transform duration-300 ease-in-out bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 cursor-pointer overflow-hidden"
         >
+          {/* Cover Image */}
+          <div className="relative w-full h-40">
+            <Image
+              src={pool.coverImage?.url() || "/default-cover.png"}
+              alt={pool.title || "Pool Cover Image"}
+              layout="fill"
+              objectFit="cover"
+              className="rounded-t-lg"
+            />
+          </div>
+
           <div className="p-4">
             <h2 className="text-lg font-bold mb-2">{pool.title}</h2>
-            <p className="text-sm text-gray-600 dark:text-gray-400">Start Date: {pool.startDate}</p>
-            <p className="text-sm text-gray-600 dark:text-gray-400">Maturity Date: {pool.maturityDate}</p>
+
             <div className="mt-4 grid gap-2">
-              {[
-                { label: "Total Invested", value: formatPrice(pool.investedAmount ?? 0, "USD") },
-                { label: "Total Allocated", value: formatPrice(pool.allocatedVABB ?? 0, "USD") },
-                { label: "Total Earned", value: formatPrice(pool.vabiEarned ?? 0, "USD") },
-                { label: "Total Yield", value: formatPrice(pool.totalVabiYield ?? 0, "USD") },
-                { label: "Yield %", value: `${pool.yieldPercentage}` },
-              ].map((item, index) => (
+              {[{ label: "Total Invested", value: formatPrice(pool.totalInvestedAmount / 1_000_000, "USD") }].map((item, index) => (
                 <div key={index} className="flex justify-between items-center">
                   <span className="font-semibold">{item.label}</span>
                   <span className="bg-gray-100 dark:bg-gray-700 p-2 rounded text-right w-2/3">{item.value}</span>
                 </div>
               ))}
             </div>
+
             <div className="mt-4 flex gap-3 justify-center">
               <Button
                 type="primary"
@@ -49,7 +55,7 @@ const PoolCardView: React.FC<Props> = ({ pools, onSwapCollateral, onSwapDividend
               >
                 Swap Collateral Token to USDC
               </Button>
-              {/* <Button
+              <Button
                 type="primary"
                 className="w-full md:w-auto"
                 onClick={(e) => {
@@ -58,7 +64,7 @@ const PoolCardView: React.FC<Props> = ({ pools, onSwapCollateral, onSwapDividend
                 }}
               >
                 Swap Dividend Token to USDC
-              </Button> */}
+              </Button>
             </div>
           </div>
         </Card>

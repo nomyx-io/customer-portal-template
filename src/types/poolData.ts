@@ -1,17 +1,12 @@
 // types.ts
 export interface TradeFinancePool {
-  objectId: string;
+  tradeDealId: number;
+  projectId: string;
+  totalInvestedAmount: number;
   title: string;
   description: string;
   logo?: Parse.File;
   coverImage?: Parse.File;
-  startDate: string;
-  maturityDate: string;
-  investedAmount?: number;
-  allocatedVABB?: number;
-  vabiEarned?: number;
-  totalVabiYield?: number;
-  yieldPercentage: string;
 }
 
 export interface StockData {
