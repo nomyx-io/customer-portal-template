@@ -259,6 +259,24 @@ class BlockchainService {
 
     return await this.tradeWithdraw(tradeDealId, amount);
   }
+
+  async redeemVABBTokens(tradeDealId: number, vabbAmount: bigint): Promise<any> {
+    try {
+      if (this.signer) {
+        const tradeDealContract = new ethers.Contract(this.contractAddress, this.tradeDealAbi, this.signer);
+
+        const tx = await tradeDealContract.redeemVABBTokens(tradeDealId, vabbAmount);
+        await tx.wait();
+
+        return tx;
+      }
+      return null;
+    } catch (e: any) {
+      console.error("Error redeeming VABB from Trade Deal:", e);
+      if (e.reason !== "rejected") throw e;
+      return "rejected";
+    }
+  }
 }
 
 export default BlockchainService.instance;

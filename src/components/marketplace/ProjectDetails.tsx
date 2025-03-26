@@ -40,7 +40,9 @@ const ProjectDetails: React.FC<ProjectDetailsProps> = ({ project, onBack, type =
   const [selectedToken, setSelectedToken] = useState<any | null>(null);
   const walletPreference = appState?.session?.user?.walletPreference;
   const [isInvestModalOpen, setIsInvestModalOpen] = useState(false);
+  const [isRdeeemVABBModalOpen, setIsRdeeemVABBModalOpen] = useState(false);
   const [investAmount, setInvestAmount] = useState<number | null>(null);
+  const [vabbAmount, setVabbAmount] = useState<number | null>(null);
 
   const searchAllProperties = (item: any, query: string): boolean => {
     const searchInObject = (obj: any): boolean => {
@@ -291,6 +293,14 @@ const ProjectDetails: React.FC<ProjectDetailsProps> = ({ project, onBack, type =
     setIsInvestModalOpen(false);
   };
 
+  const showRedeemVABBModal = () => {
+    setIsRdeeemVABBModalOpen(true);
+  };
+
+  const handleRedeemVABBCancel = () => {
+    setIsRdeeemVABBModalOpen(false);
+  };
+
   // Function to handle individual token purchase
 
   const handleIndividualPurchase = async (token: any) => {
@@ -397,8 +407,8 @@ const ProjectDetails: React.FC<ProjectDetailsProps> = ({ project, onBack, type =
     return sum + tokenPrice;
   }, 0);
 
-  const handleWithdrawUSDC = useCallback(
-    async (tradeDealId: any) => {
+  const handleRedeemVABB = useCallback(
+    async (tradeDealId: number, vabbAmount: any) => {
       // if (!tradeDealId?.tokenId) {
       //   console.error("Trade Deal Id is missing");
       //   return;
@@ -407,18 +417,19 @@ const ProjectDetails: React.FC<ProjectDetailsProps> = ({ project, onBack, type =
         const user = appState?.session?.user;
         const walletId = user?.walletId;
         const dfnsToken = user?.dfns_token;
-        const tradeDealId = 10;
-        const amount = 10;
-        const usdcPrice = parseUnits(amount.toString(), 6);
+        const amount = parseUnits(vabbAmount.toString(), 6);
 
         await toast.promise(
           async () => {
             if (walletPreference === WalletPreference.PRIVATE) {
               // Handle PRIVATE wallet invest
-              if (tradeDealId < 0) throw new Error("Invalid Trade Deal Id for Withdraw.");
-              const approvalTx = await BlockchainService.approve(usdcPrice);
-              if (approvalTx === "rejected") throw new Error("User rejected USDC approval");
-              await BlockchainService.tradeWithdraw(tradeDealId, amount);
+              if (tradeDealId < 0) throw new Error("Invalid Trade Deal Id for Redeem.");
+              // const approvalTx = await BlockchainService.approve(amount);
+              // if (approvalTx === "rejected") throw new Error("User rejected USDC approval");
+              const response = await BlockchainService.redeemVABBTokens(tradeDealId, amount);
+              if (!response) {
+                throw "Signer is not available.";
+              }
 
               const [updatedTokens, updatedWithdrawals] = await Promise.all([
                 KronosCustomerService.getTokensForUser(user.walletAddress),
@@ -430,7 +441,7 @@ const ProjectDetails: React.FC<ProjectDetailsProps> = ({ project, onBack, type =
             } else if (walletPreference === WalletPreference.MANAGED) {
               // Handle MANAGED wallet withdrawal
               if (!walletId || !dfnsToken) {
-                throw "No wallet or DFNS token available for Withdraw.";
+                throw "No wallet or DFNS token available for Redeem.";
               }
 
               // Step 1: Initiate the invest process
@@ -465,17 +476,17 @@ const ProjectDetails: React.FC<ProjectDetailsProps> = ({ project, onBack, type =
             }
           },
           {
-            pending: "Processing Withdraw...",
-            success: "Trade deal withdrawn successfully.",
+            pending: "Processing Redeem...",
+            success: "Trade deal redeemed successfully.",
             error: {
               render({ data }: { data: any }) {
-                return <div>{data?.reason || data || "An error occurred during withdraw."}</div>;
+                return <div>{data?.reason || data || "An error occurred during redeem."}</div>;
               },
             },
           }
         );
       } catch (error: any) {
-        console.error("Failed to withdraw trade deal:", error);
+        console.error("Failed to redeem trade deal:", error);
       }
     },
     //[appState, walletPreference, setTokens, setWithdrawals, setSelectedToken, filteredTokens]
@@ -483,14 +494,12 @@ const ProjectDetails: React.FC<ProjectDetailsProps> = ({ project, onBack, type =
   );
 
   const handleDepositUSDC = useCallback(
-    async (investAmount: number) => {
+    async (tradeDealId: number, investAmount: number) => {
       try {
         const user = appState?.session?.user;
         const walletId = user?.walletId;
         const dfnsToken = user?.dfns_token;
-        const tradeDealId = 10;
-        const amount = investAmount || 0;
-
+        const amount = investAmount;
         // Convert amount to USDC format early
         const usdcPrice = parseUnits(amount.toString(), 6);
 
@@ -724,7 +733,7 @@ const ProjectDetails: React.FC<ProjectDetailsProps> = ({ project, onBack, type =
                   {type.toLowerCase() === "swap" && (
                     <div className="flex items-center justify-end w-full mr-4">
                       <div>
-                        <button className="bg-blue-600 text-white px-4 py-2 rounded-md text-sm font-medium" onClick={handleWithdrawUSDC}>
+                        <button className="bg-blue-600 text-white px-4 py-2 rounded-md text-sm font-medium" onClick={showRedeemVABBModal}>
                           Swap Collateral Token to USDC
                         </button>
                         {/* <button className="bg-blue-600 text-white px-4 py-2 rounded-md text-sm font-medium ml-2">Swap Dividend Token to USDC</button> */}
@@ -847,7 +856,7 @@ const ProjectDetails: React.FC<ProjectDetailsProps> = ({ project, onBack, type =
         }}
       >
         <Modal
-          title="Confirm Investment"
+          title="Invest in Pool"
           open={isInvestModalOpen}
           onCancel={handleInvestCancel}
           footer={[
@@ -858,7 +867,7 @@ const ProjectDetails: React.FC<ProjectDetailsProps> = ({ project, onBack, type =
               key="submit"
               type="default"
               className="bg-blue-600 text-white hover:bg-blue-700 disabled:bg-blue-300"
-              onClick={() => handleDepositUSDC(investAmount || 0)}
+              onClick={() => handleDepositUSDC(project.attributes.tradeDealId, investAmount || 0)}
               disabled={!investAmount}
             >
               Submit
@@ -870,6 +879,35 @@ const ProjectDetails: React.FC<ProjectDetailsProps> = ({ project, onBack, type =
             min={1}
             value={investAmount}
             onChange={setInvestAmount}
+            className="w-full mt-2 border rounded-md bg-white focus-within:bg-white text-black"
+            placeholder="Enter amount"
+          />
+        </Modal>
+
+        <Modal
+          title="Redeem VABB"
+          open={isRdeeemVABBModalOpen}
+          onCancel={handleRedeemVABBCancel}
+          footer={[
+            <Button key="cancel" onClick={handleRedeemVABBCancel} className="text-gray-700 dark:text-gray-300">
+              Cancel
+            </Button>,
+            <Button
+              key="submit"
+              type="default"
+              className="bg-blue-600 text-white hover:bg-blue-700 disabled:bg-blue-300"
+              onClick={() => handleRedeemVABB(project.attributes.tradeDealId, vabbAmount || 0)}
+              disabled={!vabbAmount}
+            >
+              Submit
+            </Button>,
+          ]}
+        >
+          <p>Enter the amount you want to redeem:</p>
+          <InputNumber
+            min={1}
+            value={vabbAmount}
+            onChange={setVabbAmount}
             className="w-full mt-2 border rounded-md bg-white focus-within:bg-white text-black"
             placeholder="Enter amount"
           />

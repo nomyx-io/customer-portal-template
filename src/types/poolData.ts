@@ -29,7 +29,8 @@ export interface HistoryData {
   investorName: string;
   investorId: string;
   amountDeposited: number;
-  vabbTokenIssued: number;
-  vabbTokenLockupPeriod: number;
-  vabiTokensIssued: number;
+  tradeDealId: number;
+  // vabbTokenIssued: number;
+  // vabbTokenLockupPeriod: number;
+  // vabiTokensIssued: number;
 }

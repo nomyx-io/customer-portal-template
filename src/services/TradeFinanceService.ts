@@ -1,6 +1,6 @@
 import { WebAuthnSigner } from "@dfns/sdk-browser";
 
-import { TradeFinancePool } from "@/types/poolData";
+import { HistoryData, TradeFinancePool } from "@/types/poolData";
 
 import BlockchainService from "./BlockchainService";
 import ParseClient from "./ParseService";
@@ -63,7 +63,7 @@ class TradeFinanceService {
     }
   }
 
-  public async initiateTradeWithdrawUSDC(tradeDealId: number, amount: number, walletId: string, dfnsToken: string) {
+  public async initiateTradeWithdrawUSDC(tradeDealId: number, amount: bigint, walletId: string, dfnsToken: string) {
     if (!tradeDealId || !amount || !walletId || !dfnsToken) {
       throw new Error("Missing required parameters for withdraw.");
     }
@@ -140,7 +140,6 @@ class TradeFinanceService {
     // Step 4: Create a final combined result
     const result = uniqueTradeDealIds.map((tradeDealId) => {
       const project = tokenProjects?.find((p) => p.get("tradeDealId") == tradeDealId);
-      debugger;
       return {
         tradeDealId: tradeDealId,
         title: (project?.get("title") as string) || "Unknown",
@@ -153,6 +152,25 @@ class TradeFinanceService {
     });
 
     return result;
+  }
+
+  public async getDepositHistory(userAddress: string): Promise<HistoryData[]> {
+    // Step 1: Fetch TradeDealUSDCDeposit records for the given user address
+    const tradeDealDeposits =
+      (await ParseService.getRecords("TradeDealUSDCDeposit", ["ownerAddress"], [userAddress], ["tradeDealId", "amount"])) || [];
+
+    if (tradeDealDeposits.length === 0) return [];
+
+    // Step 2: Fetch user details from the User table based on walletAddress
+    const userRecords = await ParseService.getFirstRecord("User", ["walletAddress"], [userAddress]);
+
+    // Step 3: Construct the final history data array
+    return tradeDealDeposits.map((deposit) => ({
+      investorName: `${userRecords?.get("firstName") || "Unknown"} ${userRecords?.get("lastName") || ""}`.trim(),
+      investorId: userRecords?.id || "",
+      amountDeposited: deposit.get("amount") as number,
+      tradeDealId: deposit.get("tradeDealId") as number,
+    }));
   }
 }
 

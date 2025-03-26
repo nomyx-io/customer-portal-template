@@ -64,8 +64,8 @@ const PoolListPage = () => {
     return matchesSearch;
   });
 
-  const handleWithdrawUSDC = useCallback(
-    async (tradeDealId: any) => {
+  const handleRedeemVABB = useCallback(
+    async (tradeDealId: any, vabbAmount: any) => {
       // if (!tradeDealId?.tokenId) {
       //   console.error("Trade Deal Id is missing");
       //   return;
@@ -74,19 +74,20 @@ const PoolListPage = () => {
         const user = appState?.session?.user;
         const walletId = user?.walletId;
         const dfnsToken = user?.dfns_token;
-        const tradeDealId = 10;
-        const amount = 10;
-        const usdcPrice = parseUnits(amount.toString(), 6);
+        const amount = parseUnits(vabbAmount.toString(), 6);
 
         await toast.promise(
           async () => {
             if (walletPreference === WalletPreference.PRIVATE) {
               // Handle PRIVATE wallet invest
-              if (tradeDealId < 0) throw new Error("Invalid Trade Deal Id for Withdraw.");
+              if (tradeDealId < 0) throw new Error("Invalid Trade Deal Id for Redeem.");
 
-              const approvalTx = await BlockchainService.approve(usdcPrice);
-              if (approvalTx === "rejected") throw new Error("User rejected USDC approval");
-              await BlockchainService.tradeWithdraw(tradeDealId, amount);
+              // const approvalTx = await BlockchainService.approve(amount);
+              // if (approvalTx === "rejected") throw new Error("User rejected USDC approval");
+              const response = await BlockchainService.redeemVABBTokens(tradeDealId, amount);
+              if (!response) {
+                throw "Signer is not available.";
+              }
 
               const [updatedTokens, updatedWithdrawals] = await Promise.all([
                 KronosCustomerService.getTokensForUser(user.walletAddress),
@@ -98,7 +99,7 @@ const PoolListPage = () => {
             } else if (walletPreference === WalletPreference.MANAGED) {
               // Handle MANAGED wallet withdrawal
               if (!walletId || !dfnsToken) {
-                throw "No wallet or DFNS token available for Withdraw.";
+                throw "No wallet or DFNS token available for Redeem.";
               }
 
               // Step 1: Initiate the invest process
@@ -133,17 +134,17 @@ const PoolListPage = () => {
             }
           },
           {
-            pending: "Processing Withdraw...",
-            success: "Trade deal withdrawn successfully.",
+            pending: "Processing Redeem...",
+            success: "Trade deal redeemed successfully.",
             error: {
               render({ data }: { data: any }) {
-                return <div>{data?.reason || data || "An error occurred during withdraw."}</div>;
+                return <div>{data?.reason || data || "An error occurred during redeem."}</div>;
               },
             },
           }
         );
       } catch (error: any) {
-        console.error("Failed to withdraw trade deal:", error);
+        console.error("Failed to redeem trade deal:", error);
       }
     },
     //[appState, walletPreference, setTokens, setWithdrawals, setSelectedToken, filteredTokens]
@@ -190,9 +191,16 @@ const PoolListPage = () => {
           </button>
         </div>
       </div>
-
       {/* Pool List View (Table or Card) */}
-      {viewMode === "table" ? <PoolTableView pools={filteredData} handleWithdrawUSDC={handleWithdrawUSDC} /> : <PoolCardView pools={filteredData} />}
+      {filteredData ? (
+        viewMode === "table" ? (
+          <PoolTableView pools={filteredData} handleRedeemVABB={handleRedeemVABB} />
+        ) : (
+          <PoolCardView pools={filteredData} />
+        )
+      ) : (
+        <p>No data found</p>
+      )}
     </div>
   );
 };

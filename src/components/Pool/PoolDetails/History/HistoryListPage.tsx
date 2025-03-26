@@ -1,38 +1,24 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 import { Table, Input, Button } from "antd";
 import type { ColumnsType } from "antd/es/table";
 import { useRouter } from "next/navigation";
 
-import { HistoryData } from "../../../../types/poolData";
+import { useGemforceApp } from "@/context/GemforceAppContext";
+import TradeFinanceService from "@/services/TradeFinanceService";
 
-const mockStockData: HistoryData[] = [
-  {
-    investorName: "John Doe",
-    investorId: "INV001",
-    amountDeposited: 50000,
-    vabbTokenIssued: 1000,
-    vabbTokenLockupPeriod: 12,
-    vabiTokensIssued: 200,
-  },
-  {
-    investorName: "Jane Smith",
-    investorId: "INV002",
-    amountDeposited: 75000,
-    vabbTokenIssued: 1500,
-    vabbTokenLockupPeriod: 24,
-    vabiTokensIssued: 300,
-  },
-];
+import { HistoryData } from "../../../../types/poolData";
 
 interface Props {
   histories?: HistoryData[];
 }
 
-const HistoryListPage: React.FC<Props> = ({ histories = mockStockData }) => {
+const HistoryListPage: React.FC<Props> = () => {
+  const { appState }: any = useGemforceApp();
   const [searchText, setSearchText] = useState("");
+  const [depositHistory, setDepositHistory] = useState<HistoryData[]>([]); // State for fetched pools
   const router = useRouter();
 
   const handleSearch = (value: string) => {
@@ -44,7 +30,23 @@ const HistoryListPage: React.FC<Props> = ({ histories = mockStockData }) => {
     // Add your withdrawal logic here
   };
 
-  const filteredData = histories.filter((history) => history.investorName.toLowerCase().includes(searchText));
+  useEffect(() => {
+    const fetchDepositHistories = async () => {
+      try {
+        const user = appState?.session?.user;
+        if (user?.walletAddress) {
+          const fetchedHistories = await TradeFinanceService.getDepositHistory(user.walletAddress); // Call service method
+          setDepositHistory(fetchedHistories);
+        }
+      } catch (error) {
+        console.error("Error fetching pools:", error);
+      }
+    };
+
+    fetchDepositHistories();
+  }, []);
+
+  const filteredData = depositHistory.filter((history) => history.investorName.toLowerCase().includes(searchText));
 
   const columns: ColumnsType<HistoryData> = [
     {
@@ -60,20 +62,6 @@ const HistoryListPage: React.FC<Props> = ({ histories = mockStockData }) => {
       title: "Amount Deposited",
       dataIndex: "amountDeposited",
       sorter: (a, b) => a.amountDeposited - b.amountDeposited,
-    },
-    {
-      title: "VABB Token Issued",
-      dataIndex: "vabbTokenIssued",
-      sorter: (a, b) => a.vabbTokenIssued - b.vabbTokenIssued,
-    },
-    {
-      title: "VABB Token Lockup Period",
-      dataIndex: "vabbTokenLockupPeriod",
-      sorter: (a, b) => a.vabbTokenLockupPeriod - b.vabbTokenLockupPeriod,
-    },
-    {
-      title: "VABI Tokens Issued",
-      dataIndex: "vabiTokensIssued",
     },
     {
       title: "", // Empty column header
