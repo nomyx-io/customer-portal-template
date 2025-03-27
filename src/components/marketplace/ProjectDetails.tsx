@@ -21,6 +21,7 @@ import { NomyxEvent, WalletPreference } from "@/utils/Constants";
 import { formatNumber } from "@/utils/numberFormatter";
 
 import HistoryListPage from "../Pool/PoolDetails/History/HistoryListPage";
+import RedeemedVABBListPage from "../Pool/PoolDetails/History/RedeemedVABBListPage";
 
 interface ProjectDetailsProps {
   project: Parse.Object<Project>;
@@ -817,7 +818,7 @@ const ProjectDetails: React.FC<ProjectDetailsProps> = ({ project, onBack, type =
                         {
                           key: "3",
                           label: "Redeemed VABB",
-                          children: <HistoryListPage />,
+                          children: <RedeemedVABBListPage />,
                         },
                         {
                           key: "4",

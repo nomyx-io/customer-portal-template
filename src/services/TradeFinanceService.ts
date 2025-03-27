@@ -1,6 +1,6 @@
 import { WebAuthnSigner } from "@dfns/sdk-browser";
 
-import { HistoryData, TradeFinancePool } from "@/types/poolData";
+import { HistoryData, RedeemedVABBHistory, TradeFinancePool } from "@/types/poolData";
 
 import BlockchainService from "./BlockchainService";
 import ParseClient from "./ParseService";
@@ -170,6 +170,26 @@ class TradeFinanceService {
       investorId: userRecords?.id || "",
       amountDeposited: deposit.get("amount") as number,
       tradeDealId: deposit.get("tradeDealId") as number,
+    }));
+  }
+
+  public async getRedeemedVABBHistory(userAddress: string): Promise<RedeemedVABBHistory[]> {
+    // Step 1: Fetch VABBTokensRedeemed records for the given user address
+    const redeemedVABBs =
+      (await ParseService.getRecords("VABBTokensRedeemed", ["ownerAddress"], [userAddress], ["tradeDealId", "vabbAmount", "usdcAmount"])) || [];
+
+    if (redeemedVABBs.length === 0) return [];
+
+    // Step 2: Fetch user details from the User table based on walletAddress
+    const userRecords = await ParseService.getFirstRecord("User", ["walletAddress"], [userAddress]);
+
+    // Step 3: Construct the final history data array
+    return redeemedVABBs.map((vabb) => ({
+      redeemerName: `${userRecords?.get("firstName") || "Unknown"} ${userRecords?.get("lastName") || ""}`.trim(),
+      redeemerId: userRecords?.id || "",
+      vabbAmount: vabb.get("vabbAmount") as number,
+      usdcAmount: vabb.get("usdcAmount") as number,
+      tradeDealId: vabb.get("tradeDealId") as number,
     }));
   }
 }

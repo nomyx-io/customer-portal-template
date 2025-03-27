@@ -10,16 +10,16 @@ import { useGemforceApp } from "@/context/GemforceAppContext";
 import TradeFinanceService from "@/services/TradeFinanceService";
 import { formatPrice } from "@/utils/currencyFormater";
 
-import { HistoryData } from "../../../../types/poolData";
+import { RedeemedVABBHistory } from "../../../../types/poolData";
 
 interface Props {
-  histories?: HistoryData[];
+  histories?: RedeemedVABBHistory[];
 }
 
-const HistoryListPage: React.FC<Props> = () => {
+const RedeemedVABBListPage: React.FC<Props> = () => {
   const { appState }: any = useGemforceApp();
   const [searchText, setSearchText] = useState("");
-  const [depositHistory, setDepositHistory] = useState<HistoryData[]>([]); // State for fetched pools
+  const [depositHistory, setDepositHistory] = useState<RedeemedVABBHistory[]>([]); // State for fetched pools
   const router = useRouter();
 
   const handleSearch = (value: string) => {
@@ -36,7 +36,7 @@ const HistoryListPage: React.FC<Props> = () => {
       try {
         const user = appState?.session?.user;
         if (user?.walletAddress) {
-          const fetchedHistories = await TradeFinanceService.getDepositHistory(user.walletAddress); // Call service method
+          const fetchedHistories = await TradeFinanceService.getRedeemedVABBHistory(user.walletAddress); // Call service method
           setDepositHistory(fetchedHistories);
         }
       } catch (error) {
@@ -47,29 +47,35 @@ const HistoryListPage: React.FC<Props> = () => {
     fetchDepositHistories();
   }, []);
 
-  const filteredData = depositHistory.filter((history) => history.investorName.toLowerCase().includes(searchText));
+  const filteredData = depositHistory.filter((history) => history.redeemerName.toLowerCase().includes(searchText));
 
-  const columns: ColumnsType<HistoryData> = [
+  const columns: ColumnsType<RedeemedVABBHistory> = [
     {
-      title: "Investor Name",
-      dataIndex: "investorName",
-      sorter: (a, b) => a.investorName.localeCompare(b.investorName),
+      title: "Redeemer Name",
+      dataIndex: "redeemerName",
+      sorter: (a, b) => a.redeemerName.localeCompare(b.redeemerName),
     },
     {
-      title: "Investor ID",
-      dataIndex: "investorId",
+      title: "Redeemer ID",
+      dataIndex: "redeemerId",
     },
     {
-      title: "Amount Deposited",
-      dataIndex: "amountDeposited",
-      render: (amountDeposited: number) => `${formatPrice(amountDeposited / 1_000_000, "USD")}`,
-      sorter: (a, b) => a.amountDeposited - b.amountDeposited,
+      title: "VABB Amount",
+      dataIndex: "vabbAmount",
+      render: (vabbAmount: number) => `${formatPrice(vabbAmount / 1_000_000, "USD")}`,
+      sorter: (a, b) => a.vabbAmount - b.vabbAmount,
+    },
+    {
+      title: "USDC Amount",
+      dataIndex: "usdcAmount",
+      render: (usdcAmount: number) => `${formatPrice(usdcAmount / 1_000_000, "USD")}`,
+      sorter: (a, b) => a.usdcAmount - b.usdcAmount,
     },
     {
       title: "", // Empty column header
       dataIndex: "withdraw",
       render: (_, record) => (
-        <Button type="primary" onClick={() => handleWithdraw(record.investorId)}>
+        <Button type="primary" onClick={() => handleWithdraw(record.redeemerId)}>
           Withdraw
         </Button>
       ),
@@ -84,9 +90,9 @@ const HistoryListPage: React.FC<Props> = () => {
         onChange={(e) => handleSearch(e.target.value)}
         style={{ marginBottom: 16, width: 300 }}
       /> */}
-      <Table columns={columns} dataSource={filteredData} rowKey={(record) => record.investorId} scroll={{ x: "max-content" }} />
+      <Table columns={columns} dataSource={filteredData} rowKey={(record) => record.redeemerId} scroll={{ x: "max-content" }} />
     </div>
   );
 };
 
-export default HistoryListPage;
+export default RedeemedVABBListPage;

@@ -34,3 +34,11 @@ export interface HistoryData {
   // vabbTokenLockupPeriod: number;
   // vabiTokensIssued: number;
 }
+
+export interface RedeemedVABBHistory {
+  redeemerName: string;
+  redeemerId: string;
+  vabbAmount: number;
+  usdcAmount: number;
+  tradeDealId: number;
+}
