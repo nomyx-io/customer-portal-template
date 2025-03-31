@@ -71,7 +71,7 @@ const ProjectInfo: React.FC<ProjectInfoProps> = ({
           )}
           {tokenBalance && !carbonCreditBalance && (
             <>
-              <div className="text-gray-900 dark:text-white font-bold text-lg mb-2">Token Balance:</div>
+              <div className="text-gray-900 dark:text-white font-bold text-lg mb-2">Yield Available for Claim:</div>
               <div className="text-3xl font-bold text-gray-900 dark:text-white">
                 {tokenBalance !== null ? formatPrice(tokenBalance / 1_000_000, "USD") : "Loading..."}
               </div>

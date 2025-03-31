@@ -49,7 +49,7 @@ const TokenDetail: React.FC<TokenDetailProps> = ({ tokens, currentIndex, project
       const balance = await BlockchainService.getTokenBalances([tokenId]);
       setTokenBalance(balance);
     } catch (error) {
-      console.error("Failed to fetch token balance:", error);
+      console.error("Failed to fetch Yield Aavailable for claim:", error);
     }
   }, []);
 
