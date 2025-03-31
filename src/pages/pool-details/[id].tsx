@@ -6,7 +6,8 @@ import ProjectDetails from "@/components/marketplace/ProjectDetails";
 import KronosCustomerService from "@/services/KronosCustomerService";
 
 const PoolDetailsPage = () => {
-  const { id } = useParams();
+  const params = useParams();
+  const id = params?.id;
   const [selectedProject, setSelectedProject] = useState<Parse.Object<Project> | null>(null);
 
   useEffect(() => {
