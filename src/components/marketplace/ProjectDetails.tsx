@@ -527,17 +527,42 @@ const ProjectDetails: React.FC<ProjectDetailsProps> = ({ project, onBack, type =
                 throw "No wallet or DFNS token available for Deposit.";
               }
 
-              // Step 1: Initiate approval/invest (backend will do approval on user's behalf)
+              // 💳 Step 0: Initiate Approval
+              const { initiateResponse: approvalResponse, error: approvalError } = await KronosCustomerService.initiateApproval(
+                walletId,
+                amount.toString(),
+                dfnsToken
+              );
+
+              if (approvalError) {
+                throw "ApprovalInitiateError: " + approvalError;
+              }
+
+              // ✅ Step 1: Complete Approval
+              const { completeResponse: approvalCompleteResponse, error: completeApprovalError } = await KronosCustomerService.completeApproval(
+                walletId,
+                dfnsToken,
+                approvalResponse.challenge,
+                approvalResponse.requestBody
+              );
+
+              if (completeApprovalError) {
+                throw "ApprovalCompleteError: " + completeApprovalError;
+              }
+
+              // 💸 Step 2: Initiate Deposit
               const { initiateResponse: depositResponse, error: depositInitiateError } = await TradeFinanceService.initiateTradeInvestUSDC(
                 tradeDealId,
-                amount,
+                amount.toString(), // again, make sure this is a string
                 walletId,
                 dfnsToken
               );
 
-              if (depositInitiateError) throw "DepositInitiateError: " + depositInitiateError;
+              if (depositInitiateError) {
+                throw "DepositInitiateError: " + depositInitiateError;
+              }
 
-              // Step 2: Complete invest
+              // 🧾 Step 3: Complete Deposit
               const { completeResponse: depositCompleteResponse, error: completeDepositError } = await TradeFinanceService.completeTradeInvestUSDC(
                 walletId,
                 dfnsToken,
@@ -545,7 +570,9 @@ const ProjectDetails: React.FC<ProjectDetailsProps> = ({ project, onBack, type =
                 depositResponse.requestBody
               );
 
-              if (completeDepositError) throw "CompleteDepositError: " + completeDepositError;
+              if (completeDepositError) {
+                throw "CompleteDepositError: " + completeDepositError;
+              }
 
               const [updatedTokens, updatedWithdrawals] = await Promise.all([
                 KronosCustomerService.getTokensForUser(user.walletAddress),

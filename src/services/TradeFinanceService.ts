@@ -1,4 +1,5 @@
 import { WebAuthnSigner } from "@dfns/sdk-browser";
+import Parse from "parse";
 
 import { HistoryData, RedeemedVABBHistory, TradeFinancePool } from "@/types/poolData";
 
@@ -16,7 +17,7 @@ class TradeFinanceService {
     return TradeFinanceService._instance;
   }
 
-  public async initiateTradeInvestUSDC(tradeDealId: number, amount: number, walletId: string, dfnsToken: string) {
+  public async initiateTradeInvestUSDC(tradeDealId: number, amount: string, walletId: string, dfnsToken: string) {
     if (!tradeDealId || !amount || !walletId || !dfnsToken) {
       throw new Error("Missing required parameters for invest USDC.");
     }
