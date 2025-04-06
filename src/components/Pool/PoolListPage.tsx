@@ -97,30 +97,36 @@ const PoolListPage = () => {
               // setWithdrawals(updatedWithdrawals);
               // setSelectedToken(filteredTokens.some((t) => t.tokenId == token.tokenId) ? token : filteredTokens[0]);
             } else if (walletPreference === WalletPreference.MANAGED) {
-              // Handle MANAGED wallet withdrawal
+              // Handle MANAGED wallet redemption
               if (!walletId || !dfnsToken) {
                 throw "No wallet or DFNS token available for Redeem.";
               }
 
-              // Step 1: Initiate the invest process
-              const { initiateResponse: withdrawResponse, error: withdrawInitiateError } = await TradeFinanceService.initiateTradeWithdrawUSDC(
+              // Step 1: Initiate the VABB redemption process
+              const { initiateResponse: redeemResponse, error: redeemInitiateError } = await TradeFinanceService.initiateRedeemVABBTokens(
                 tradeDealId,
-                amount,
+                amount.toString(),
                 walletId,
                 dfnsToken
               );
 
-              if (withdrawInitiateError) {
-                throw "WithdrawInitiateError: " + withdrawInitiateError;
+              if (redeemInitiateError) {
+                throw "RedeemInitiateError: " + redeemInitiateError;
               }
 
-              // Step 2: Complete the invest process
-              const { completeResponse: withdrawCompleteResponse, error: completeWithdrawError } =
-                await TradeFinanceService.completeTradeWithdrawUSDC(walletId, dfnsToken, withdrawResponse.challenge, withdrawResponse.requestBody);
+              // Step 2: Complete the VABB redemption process
+              const { completeResponse: redeemCompleteResponse, error: completeRedeemError } = await TradeFinanceService.completeRedeemVABBTokens(
+                walletId,
+                dfnsToken,
+                redeemResponse.challenge,
+                redeemResponse.requestBody
+              );
 
-              if (completeWithdrawError) {
-                throw "CompleteWithdrawError: " + completeWithdrawError;
+              if (completeRedeemError) {
+                throw "CompleteRedeemError: " + completeRedeemError;
               }
+
+              console.log("VABB tokens redeemed successfully:", redeemCompleteResponse);
               const [updatedTokens, updatedWithdrawals] = await Promise.all([
                 KronosCustomerService.getTokensForUser(user.walletAddress),
                 KronosCustomerService.getWithdrawalsForUser(user.walletAddress),

@@ -113,7 +113,7 @@ class TradeFinanceService {
 
   public async getUserTradePools(userAddress: string): Promise<TradeFinancePool[]> {
     // Step 1: Fetch TradeDealUSDCDeposit records for the ownerAddress
-    const records = await ParseService.getRecords("TradeDealUSDCDeposit", ["ownerAddress"], [userAddress], ["tradeDealId", "amount"]);
+    const records = await ParseService.getRecords("TradeDealUSDCDeposit", ["ownerAddress"], [userAddress.toLowerCase()], ["tradeDealId", "amount"]);
 
     if (!records || records.length === 0) return [];
 
@@ -192,6 +192,60 @@ class TradeFinanceService {
       usdcAmount: vabb.get("usdcAmount") as number,
       tradeDealId: vabb.get("tradeDealId") as number,
     }));
+  }
+
+  public async initiateRedeemVABBTokens(tradeDealId: number, vabbAmount: string, walletId: string, dfnsToken: string) {
+    if (!tradeDealId || !vabbAmount || !walletId || !dfnsToken) {
+      throw new Error("Missing required parameters for redeeming VABB tokens.");
+    }
+
+    try {
+      const initiateResponse = await Parse.Cloud.run("dfnsInitRedeemVABBTokens", {
+        tradeDealId,
+        vabbAmount,
+        walletId,
+        dfns_token: dfnsToken,
+      });
+
+      console.log("Pending redeem VABB tokens request:", initiateResponse);
+
+      return { initiateResponse, error: null };
+    } catch (error: any) {
+      console.error("Error initiating redeem VABB tokens:", error);
+      return {
+        initiateResponse: null,
+        error: error instanceof Error ? error.message : JSON.stringify(error),
+      };
+    }
+  }
+
+  public async completeRedeemVABBTokens(walletId: string, dfnsToken: string, challenge: any, requestBody: any) {
+    if (!walletId || !dfnsToken || !challenge || !requestBody) {
+      throw new Error("Missing required parameters for completing redeem VABB tokens.");
+    }
+
+    try {
+      const webauthn = new WebAuthnSigner();
+      const assertion = await webauthn.sign(challenge);
+
+      const completeResponse = await Parse.Cloud.run("dfnsCompleteRedeemVABBTokens", {
+        walletId,
+        dfns_token: dfnsToken,
+        signedChallenge: {
+          challengeIdentifier: challenge.challengeIdentifier,
+          firstFactor: assertion,
+        },
+        requestBody,
+      });
+
+      return { completeResponse, error: null };
+    } catch (error: any) {
+      console.error("Error completing redeem VABB tokens:", error);
+      return {
+        completeResponse: null,
+        error: error instanceof Error ? error.message : JSON.stringify(error),
+      };
+    }
   }
 }
 
