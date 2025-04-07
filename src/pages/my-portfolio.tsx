@@ -369,7 +369,7 @@ const ClaimInterest: React.FC = () => {
   const tabItems = [
     {
       key: "1",
-      label: "Available Tokens",
+      label: "Current Holdings",
       children: (
         <div className="claimableTokens">
           {selectedToken ? (
