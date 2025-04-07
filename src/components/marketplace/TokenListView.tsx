@@ -90,7 +90,7 @@ const TokenListView: React.FC<TokenListViewProps> = ({ projects, onProjectClick,
           dominantBaseline="middle"
           textAnchor="middle"
         >
-          KC
+          N
         </text>
       </svg>
     );

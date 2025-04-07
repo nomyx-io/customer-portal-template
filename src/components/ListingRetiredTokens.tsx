@@ -85,7 +85,7 @@ const ListingRetiredTokens = ({ tokens }: { tokens: Token[] }) => {
           dominantBaseline="middle"
           textAnchor="middle"
         >
-          KC
+          N
         </text>
       </svg>
     );
