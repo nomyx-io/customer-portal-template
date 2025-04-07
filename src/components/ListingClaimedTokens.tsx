@@ -79,7 +79,7 @@ const ListingClaimedTokens = ({ tokens }: { tokens: ClaimedToken[] }) => {
           dominantBaseline="middle"
           textAnchor="middle"
         >
-          KC
+          N
         </text>
       </svg>
     );
