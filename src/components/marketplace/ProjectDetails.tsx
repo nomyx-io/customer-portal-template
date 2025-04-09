@@ -36,6 +36,7 @@ const ProjectDetails: React.FC<ProjectDetailsProps> = ({ project, onBack, type =
   const [sales, setSales] = useState<any[]>([]);
   const [selectedListings, setSelectedListings] = useState<any[]>([]);
   const [projectStockList, setProjectStockList] = useState<any[]>([]);
+  const [projectInfo, setProjectInfo] = useState<Array<{ key: string; value: string }>>([]);
   const [activeTab, setActiveTab] = useState("1");
   const [searchQuery, setSearchQuery] = useState<string>("");
   const [viewMode, setViewMode] = useState<string>("table");
@@ -128,6 +129,14 @@ const ProjectDetails: React.FC<ProjectDetailsProps> = ({ project, onBack, type =
       try {
         // For trade finance projects, fetch stocks instead of listings
         if (project.attributes.industryTemplate === Industries.TRADE_FINANCE) {
+          // Parse project info for trade finance projects
+          try {
+            const parsedProjectInfo = JSON.parse(project.attributes.projectInfo || "[]");
+            setProjectInfo(parsedProjectInfo);
+          } catch (error) {
+            console.error("Error parsing project info:", error);
+            setProjectInfo([]);
+          }
           const projectTokens = await ParseService.getRecords("Token", ["projectId"], [project.id], ["*"]);
           if (projectTokens) {
             const sanitizedTokens = projectTokens.map((token: Parse.Object<any>) => ({
@@ -690,19 +699,9 @@ const ProjectDetails: React.FC<ProjectDetailsProps> = ({ project, onBack, type =
                 {project.attributes.industryTemplate === Industries.TRADE_FINANCE ? (
                   <div className="mt-6 md:mt-0 bg-nomyx-dark2-light dark:bg-nomyx-dark2-dark p-4 rounded-lg shadow-md transition-opacity duration-500 opacity-100">
                     <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                      {[
-                        { label: "Development method", value: "52.53%" },
-                        { label: "Newera Score", value: "4/5" },
-                        { label: "Fund Size", value: "200 M" },
-                        { label: "Generation", value: "03" },
-                        { label: "Economics", value: "2% - 20%" },
-                        { label: "Target Return", value: "3-4x Gross" },
-                        { label: "Category", value: "Venture" },
-                        { label: "Stage", value: "Early/Venture" },
-                        //   { label: "Phase", value: "Closing Soon" },
-                      ].map((stat, index) => (
+                      {projectInfo.map((stat, index) => (
                         <div key={index} className="stat-item bg-nomyx-dark1-light dark:bg-nomyx-dark1-dark p-3 rounded-lg text-center">
-                          <span className="text-xs md:text-sm text-gray-700">{stat.label}</span>
+                          <span className="text-xs md:text-sm text-gray-700">{stat.key}</span>
                           <h2 className="text-base font-bold text-black dark:text-white">{stat.value}</h2>
                         </div>
                       ))}
