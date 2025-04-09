@@ -128,7 +128,7 @@ const ProjectDetails: React.FC<ProjectDetailsProps> = ({ project, onBack, type =
       try {
         // For trade finance projects, fetch stocks instead of listings
         if (project.attributes.industryTemplate === Industries.TRADE_FINANCE) {
-          const projectTokens = await ParseService.getRecords("Token", ["projectId"], [project.attributes.id], ["*"]);
+          const projectTokens = await ParseService.getRecords("Token", ["projectId"], [project.id], ["*"]);
           if (projectTokens) {
             const sanitizedTokens = projectTokens.map((token: Parse.Object<any>) => ({
               ...token.attributes,
