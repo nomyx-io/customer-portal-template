@@ -16,6 +16,7 @@ import { useGemforceApp } from "@/context/GemforceAppContext";
 import projectBackground from "@/images/projects_background.png";
 import BlockchainService from "@/services/BlockchainService";
 import KronosCustomerService from "@/services/KronosCustomerService";
+import ParseService from "@/services/ParseService";
 import TradeFinanceService from "@/services/TradeFinanceService";
 import { NomyxEvent, WalletPreference } from "@/utils/Constants";
 import { formatNumber } from "@/utils/numberFormatter";
@@ -34,6 +35,7 @@ const ProjectDetails: React.FC<ProjectDetailsProps> = ({ project, onBack, type =
   const [listings, setListings] = useState<any[]>([]);
   const [sales, setSales] = useState<any[]>([]);
   const [selectedListings, setSelectedListings] = useState<any[]>([]);
+  const [projectStockList, setProjectStockList] = useState<any[]>([]);
   const [activeTab, setActiveTab] = useState("1");
   const [searchQuery, setSearchQuery] = useState<string>("");
   const [viewMode, setViewMode] = useState<string>("table");
@@ -65,7 +67,7 @@ const ProjectDetails: React.FC<ProjectDetailsProps> = ({ project, onBack, type =
     return searchInObject(item);
   };
 
-  // Memoize the filtered listings and sales
+  // Memoize the filtered listings, sales, and stocks
   const filteredListings = useMemo(() => {
     return listings.filter((listing) => searchAllProperties(listing, searchQuery));
   }, [listings, searchQuery]);
@@ -73,6 +75,10 @@ const ProjectDetails: React.FC<ProjectDetailsProps> = ({ project, onBack, type =
   const filteredSales = useMemo(() => {
     return sales.filter((sale) => searchAllProperties(sale, searchQuery));
   }, [sales, searchQuery]);
+
+  const filteredStocks = useMemo(() => {
+    return projectStockList.filter((stock) => searchAllProperties(stock, searchQuery));
+  }, [projectStockList, searchQuery]);
 
   // Cleanup Listings object to pass just tokens to the MarketPlaceTokenDetail component
   const tokens = useMemo(() => {
@@ -120,7 +126,26 @@ const ProjectDetails: React.FC<ProjectDetailsProps> = ({ project, onBack, type =
     // Define an asynchronous function inside useEffect
     const fetchAndFilterListings = async () => {
       try {
-        // Fetch listed tokens from the blockchain service
+        // For trade finance projects, fetch stocks instead of listings
+        if (project.attributes.industryTemplate === Industries.TRADE_FINANCE) {
+          const projectTokens = await ParseService.getRecords("Token", ["projectId"], [project.attributes.id], ["*"]);
+          if (projectTokens) {
+            const sanitizedTokens = projectTokens.map((token: Parse.Object<any>) => ({
+              ...token.attributes,
+              id: token.id,
+              tokenId: token.get("tokenId"),
+              projectId: token.get("projectId"),
+              price: token.get("price"),
+              existingCredits: token.get("existingCredits"),
+            }));
+            setProjectStockList(sanitizedTokens);
+          } else {
+            setProjectStockList([]);
+          }
+          return;
+        }
+
+        // For other projects, fetch listed tokens
         const listedTokens = await BlockchainService?.fetchItems();
         if (!listedTokens) {
           console.warn("No listed tokens fetched.");
@@ -812,7 +837,7 @@ const ProjectDetails: React.FC<ProjectDetailsProps> = ({ project, onBack, type =
                       <>
                         {viewMode === "table" ? (
                           <TokenListView
-                            projects={filteredListings}
+                            projects={project.attributes.industryTemplate === Industries.TRADE_FINANCE ? filteredStocks : filteredListings}
                             onProjectClick={handleDetailsClick}
                             onSelectionChange={setSelectedListings}
                             onPurchaseToken={handleIndividualPurchase}
@@ -821,11 +846,12 @@ const ProjectDetails: React.FC<ProjectDetailsProps> = ({ project, onBack, type =
                           />
                         ) : (
                           <TokenCardView
-                            projects={filteredListings}
+                            projects={project.attributes.industryTemplate === Industries.TRADE_FINANCE ? filteredStocks : filteredListings}
                             onProjectClick={handleDetailsClick}
                             onSelectionChange={setSelectedListings}
                             onPurchaseToken={handleIndividualPurchase}
                             isSalesHistory={false}
+                            industryTemplate={project.attributes.industryTemplate}
                           />
                         )}
                       </>
@@ -863,7 +889,12 @@ const ProjectDetails: React.FC<ProjectDetailsProps> = ({ project, onBack, type =
                             viewMode === "table" ? (
                               <TokenListView projects={filteredSales} onProjectClick={handleDetailsClick} isSalesHistory={true} />
                             ) : (
-                              <TokenCardView projects={filteredSales} onProjectClick={handleDetailsClick} isSalesHistory={true} />
+                              <TokenCardView
+                                projects={filteredSales}
+                                onProjectClick={handleDetailsClick}
+                                isSalesHistory={true}
+                                industryTemplate={project.attributes.industryTemplate}
+                              />
                             ),
                         },
                       ]

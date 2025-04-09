@@ -108,8 +108,9 @@ const TokenListView: React.FC<TokenListViewProps> = ({
   const getDynamicColumns = (maxColumns = 7): ColumnConfig[] => {
     const nonNullColumns: Record<string, ColumnConfig> = {};
     projects.forEach((token) => {
-      if (token.token) {
-        Object.entries(token.token).forEach(([key, value]) => {
+      const tokenData = industryTemplate === Industries.TRADE_FINANCE ? token : token.token;
+      if (tokenData) {
+        Object.entries(tokenData).forEach(([key, value]) => {
           // Check if the column is non-null, non-undefined, not already in nonNullColumns, and not excluded
           if (value != null && !(key in nonNullColumns) && !EXCLUDED_COLUMNS.has(key)) {
             nonNullColumns[key] = {
@@ -128,11 +129,11 @@ const TokenListView: React.FC<TokenListViewProps> = ({
   const createColumns = (nonNullColumns: ColumnConfig[]) => {
     return nonNullColumns.map(({ title, key }) => ({
       title,
-      dataIndex: ["token", key] as [string, string],
+      dataIndex: industryTemplate === Industries.TRADE_FINANCE ? key : ["token", key],
       render: (value: any) => (typeof value === "object" ? "N/A" : <span>{value}</span>),
       sorter: (a: any, b: any) => {
-        const aValue = a.token[key];
-        const bValue = b.token[key];
+        const aValue = industryTemplate === Industries.TRADE_FINANCE ? a[key] : a.token[key];
+        const bValue = industryTemplate === Industries.TRADE_FINANCE ? b[key] : b.token[key];
         return typeof aValue === "string" && typeof bValue === "string" ? aValue.localeCompare(bValue) : 0;
       },
     }));
@@ -167,6 +168,8 @@ const TokenListView: React.FC<TokenListViewProps> = ({
       dataIndex: "tokenId",
       render: (tokenId: string, record: any) => {
         const color = hashToColor(tokenId);
+        const title = industryTemplate === Industries.TRADE_FINANCE ? `Stock Certificate ${record.tokenId}` : record.token?.nftTitle;
+
         return (
           <div style={{ display: "flex", alignItems: "center" }}>
             {!isSalesHistory && (
@@ -187,17 +190,30 @@ const TokenListView: React.FC<TokenListViewProps> = ({
               />
             )}
             {generateSvgIcon(color)}
-            <span style={{ marginLeft: "10px", fontWeight: "bold" }}>{record.token?.nftTitle}</span>
+            <span style={{ marginLeft: "10px", fontWeight: "bold" }}>{title}</span>
           </div>
         );
       },
-      sorter: (a: any, b: any) => a.token.nftTitle.localeCompare(b.token.nftTitle),
+      sorter: (a: any, b: any) => {
+        const aTitle = industryTemplate === Industries.TRADE_FINANCE ? `Stock Certificate ${a.tokenId}` : a.token?.nftTitle;
+        const bTitle = industryTemplate === Industries.TRADE_FINANCE ? `Stock Certificate ${b.tokenId}` : b.token?.nftTitle;
+        return aTitle.localeCompare(bTitle);
+      },
     },
     {
       title: "Price",
-      dataIndex: "price", // Total price coming from TokenListing in parse
-      render: (price: number, record: any) => (isSalesHistory ? formatPrice(record?.token?.price, "USD") : formatPrice(price / 1_000_000, "USD")), // Convert from small units to regular price format
-      sorter: (a: any, b: any) => a.price - b.price,
+      dataIndex: "price",
+      render: (price: number, record: any) => {
+        if (industryTemplate === Industries.TRADE_FINANCE) {
+          return formatPrice(record.price, "USD");
+        }
+        return isSalesHistory ? formatPrice(record?.token?.price, "USD") : formatPrice(price / 1_000_000, "USD");
+      },
+      sorter: (a: any, b: any) => {
+        const aPrice = industryTemplate === Industries.TRADE_FINANCE ? a.price : a.token?.price;
+        const bPrice = industryTemplate === Industries.TRADE_FINANCE ? b.price : b.token?.price;
+        return aPrice - bPrice;
+      },
     },
     ...additionalColumns,
 
