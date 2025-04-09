@@ -476,7 +476,12 @@ class KronosCustomerService {
     if (!walletId || !price || !dfnsToken) {
       throw new Error("Missing required parameters for approval.");
     }
-    console.log("price", price);
+
+    console.log("🔍 initiateApproval called with:", {
+      walletId,
+      price,
+      dfnsToken,
+    });
 
     try {
       const initiateResponse = await Parse.Cloud.run("dfnsInitApproval", {
@@ -484,11 +489,11 @@ class KronosCustomerService {
         walletId,
         dfns_token: dfnsToken,
       });
-      console.log("Pending approval request:", initiateResponse);
+      console.log("✅ Pending approval request:", initiateResponse);
 
       return { initiateResponse, error: null };
     } catch (error: any) {
-      console.error("Error initiating approval:", error);
+      console.error("❌ Error initiating approval:", error);
       return { initiateResponse: null, error: error.message };
     }
   }

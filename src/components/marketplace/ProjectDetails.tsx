@@ -534,10 +534,12 @@ const ProjectDetails: React.FC<ProjectDetailsProps> = ({ project, onBack, type =
                 throw "No wallet or DFNS token available for Deposit.";
               }
 
+              const baseUnitAmount = (Number(amount) * 1000000).toString();
+
               // 💳 Step 0: Initiate Approval
               const { initiateResponse: approvalResponse, error: approvalError } = await KronosCustomerService.initiateApproval(
                 walletId,
-                amount.toString(),
+                baseUnitAmount,
                 dfnsToken
               );
 

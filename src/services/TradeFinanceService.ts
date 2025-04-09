@@ -18,7 +18,7 @@ class TradeFinanceService {
   }
 
   public async initiateTradeInvestUSDC(tradeDealId: number, amount: string, walletId: string, dfnsToken: string) {
-    if (!tradeDealId || !amount || !walletId || !dfnsToken) {
+    if (tradeDealId == null || amount == null || walletId == null || dfnsToken == null) {
       throw new Error("Missing required parameters for invest USDC.");
     }
 
