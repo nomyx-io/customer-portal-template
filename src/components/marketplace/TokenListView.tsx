@@ -8,6 +8,15 @@ import { ColumnConfig, EXCLUDED_COLUMNS } from "@/types/dynamicTableColumn";
 import { hashToColor } from "@/utils/colorUtils";
 import { formatPrice } from "@/utils/currencyFormater";
 
+const isValidUrl = (string: string): boolean => {
+  try {
+    new URL(string);
+    return true;
+  } catch (_) {
+    return false;
+  }
+};
+
 interface TokenListViewProps {
   projects: any[];
   onProjectClick: (project: any) => void;
@@ -125,12 +134,21 @@ const TokenListView: React.FC<TokenListViewProps> = ({
     });
     return Object.values(nonNullColumns).slice(0, maxColumns);
   };
-
   const createColumns = (nonNullColumns: ColumnConfig[]) => {
     return nonNullColumns.map(({ title, key }) => ({
       title,
       dataIndex: industryTemplate === Industries.TRADE_FINANCE ? key : ["token", key],
-      render: (value: any) => (typeof value === "object" ? "N/A" : <span>{value}</span>),
+      render: (value: any) => {
+        if (typeof value === "object") return "N/A";
+        if (typeof value === "string" && isValidUrl(value)) {
+          return (
+            <a href={value} target="_blank" rel="noopener noreferrer" className="text-blue-500 hover:text-blue-700">
+              View Document
+            </a>
+          );
+        }
+        return <span>{value}</span>;
+      },
       sorter: (a: any, b: any) => {
         const aValue = industryTemplate === Industries.TRADE_FINANCE ? a[key] : a.token[key];
         const bValue = industryTemplate === Industries.TRADE_FINANCE ? b[key] : b.token[key];

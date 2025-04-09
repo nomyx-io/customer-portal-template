@@ -7,6 +7,15 @@ import { ColumnConfig, EXCLUDED_COLUMNS, ColumnData } from "@/types/dynamicTable
 import { hashToColor } from "@/utils/colorUtils";
 import { formatPrice } from "@/utils/currencyFormater";
 
+const isValidUrl = (string: string): boolean => {
+  try {
+    new URL(string);
+    return true;
+  } catch (_) {
+    return false;
+  }
+};
+
 interface TokenCardViewProps {
   projects: any[];
   onProjectClick: (project: any) => void;
@@ -172,7 +181,15 @@ const TokenCardView: React.FC<TokenCardViewProps> = ({
                     <span className="font-semibold flex-1">{item.label}</span>
 
                     {/* Value on the right with consistent width */}
-                    <span className="bg-gray-100 dark:bg-nomyx-dark1-dark p-2 rounded text-right w-2/3">{item.value}</span>
+                    <span className="bg-gray-100 dark:bg-nomyx-dark1-dark p-2 rounded text-right w-2/3">
+                      {typeof item.value === "string" && isValidUrl(item.value) ? (
+                        <a href={item.value} target="_blank" rel="noopener noreferrer" className="text-blue-500 hover:text-blue-700">
+                          View Document
+                        </a>
+                      ) : (
+                        item.value
+                      )}
+                    </span>
                   </div>
                 ))}
               </div>
