@@ -81,10 +81,13 @@ const ProjectDetails: React.FC<ProjectDetailsProps> = ({ project, onBack, type =
     return projectStockList.filter((stock) => searchAllProperties(stock, searchQuery));
   }, [projectStockList, searchQuery]);
 
-  // Cleanup Listings object to pass just tokens to the MarketPlaceTokenDetail component
+  // Cleanup Listings/Stocks object to pass just tokens to the MarketPlaceTokenDetail component
   const tokens = useMemo(() => {
+    if (project.attributes.industryTemplate === Industries.TRADE_FINANCE) {
+      return filteredStocks.map((stock) => stock);
+    }
     return filteredListings.map((listing) => listing.token);
-  }, [filteredListings]);
+  }, [filteredListings, filteredStocks, project.attributes.industryTemplate]);
 
   // Handle search bar input change
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
