@@ -5,6 +5,7 @@ import { Card, List, Statistic, Tabs } from "antd/es";
 import { CategoryScale } from "chart.js";
 import Chart from "chart.js/auto";
 import { Setting, DollarCircle, Coin } from "iconsax-react";
+import Head from "next/head";
 import { useSession } from "next-auth/react";
 import { Bar } from "react-chartjs-2";
 
@@ -252,6 +253,9 @@ const Dashboard: React.FC = () => {
 
   return (
     <>
+      <Head>
+        <title>Dashboard - Customer Portal</title>
+      </Head>
       <div className="dashboard grid grid-cols-1 lg:grid-cols-4 gap-3">
         <div className="lg:col-span-3">
           {/* Statistics section */}

@@ -3,6 +3,7 @@ import React, { useEffect, useState } from "react";
 import { Layout } from "antd";
 import { Form, Input, Card, Radio, Button } from "antd/es";
 import type { GetServerSidePropsContext, InferGetServerSidePropsType } from "next";
+import Head from "next/head";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -118,146 +119,147 @@ const Login = function ({ csrfToken, callbackUrl }: InferGetServerSidePropsType<
   }, []);
 
   return (
-    <Layout
-      className="relative w-full min-h-screen overflow-hidden flex flex-col"
-      style={{
-        backgroundImage: "url('/images/nomyx_banner.svg')",
-        backgroundSize: "cover",
-        backgroundPosition: "center",
-      }}
-    >
-      <Header />
-      <div className="flex flex-1 flex-col lg:flex-row auth-page">
-        {/* Left Side */}
-        <div className="w-full lg:w-1/2 flex flex-col items-center justify-center px-4 md:px-6 my-10">
-          <div className="w-full max-w-2xl">
-            <Image src="/images/nomyx_logo_black.svg" alt="Logo" width={630} height={240} priority />
+    <>
+      <Head>
+        <title>Login - Customer Portal</title>
+      </Head>
+      <Layout
+        className="relative w-full min-h-screen overflow-hidden flex flex-col"
+        style={{
+          backgroundImage: "url('/images/nomyx_banner.svg')",
+          backgroundSize: "cover",
+          backgroundPosition: "center",
+        }}
+      >
+        {/* <Header /> */}
+        <div className="flex flex-1 flex-col lg:flex-row auth-page">
+          {/* Left Side */}
+          <div className="w-full lg:w-1/2 flex flex-col items-center justify-center px-4 md:px-6 my-10">
+            <div className="w-full max-w-2xl">
+              <Image src="/images/nomyx_logo_white.svg" alt="Logo" width={630} height={240} priority />
+            </div>
           </div>
-        </div>
-        {/* Right Side */}
-        <div className="w-full lg:w-1/2 flex flex-col px-4 md:px-6 my-10">
-          <div className={"flex flex-grow justify-center items-center align-middle"}>
-            <div className="flex justify-center items-center">
-              <Card
-                title={<span className="text-black">Sign In</span>} // Set title color to black
-                style={{
-                  width: "550px",
-                  border: "1px solid #BBBBBB", // Set Card border color inline
-                }}
-                className="signup-card bg-transparent wallet-setup-radio-group"
-                extra={
-                  <Radio.Group defaultValue={LoginPreference.USERNAME_PASSWORD} buttonStyle="solid">
-                    {Credentials &&
-                      Credentials.map((credentialConfig: any, index: number) => {
-                        const optionsId = credentialConfig.options.id;
-                        const loginPreferenceOptionValue = optionsId == "ethereum" ? LoginPreference.WALLET : LoginPreference.USERNAME_PASSWORD;
-                        const loginOptionLabel = credentialConfig.options.name;
+          {/* Right Side */}
+          <div className="w-full lg:w-1/2 flex items-center justify-center px-4 md:px-6">
+            <div className="bg-nomyxDark1 bg-opacity-90 text-nomyxWhite shadow-lg rounded-lg p-4 max-w-2xl w-full">
+              <div className="w-full flex flex-col justify-center items-center">
+                <Card
+                  title={<span className="text-white">Sign In</span>} // Set title color to black
+                  style={{
+                    width: "100%",
+                    maxWidth: "550px",
+                    border: "none",
+                  }}
+                  className="signup-card bg-transparent wallet-setup-radio-group"
+                  extra={
+                    <Radio.Group defaultValue={LoginPreference.USERNAME_PASSWORD} buttonStyle="solid">
+                      {Credentials &&
+                        Credentials.map((credentialConfig: any, index: number) => {
+                          const optionsId = credentialConfig.options.id;
+                          const loginPreferenceOptionValue = optionsId == "ethereum" ? LoginPreference.WALLET : LoginPreference.USERNAME_PASSWORD;
+                          const loginOptionLabel = credentialConfig.options.name;
 
-                        return (
-                          <Radio.Button
-                            key={`login-option-${credentialConfig.options.id}`}
-                            value={loginPreferenceOptionValue}
-                            onClick={(e: any) => {
-                              setLoginPreference(e.target.value);
-                            }}
-                            className="login-radio-button"
-                          >
-                            {loginOptionLabel}
-                          </Radio.Button>
-                        );
-                      })}
-                  </Radio.Group>
-                }
-              >
-                {Credentials &&
-                  Credentials.map((credentialConfig: any, index: number) => {
-                    const optionsId = credentialConfig.options.id;
+                          return (
+                            <Radio.Button
+                              key={`login-option-${credentialConfig.options.id}`}
+                              value={loginPreferenceOptionValue}
+                              onClick={(e: any) => {
+                                setLoginPreference(e.target.value);
+                              }}
+                              className="login-radio-button"
+                            >
+                              {loginOptionLabel}
+                            </Radio.Button>
+                          );
+                        })}
+                    </Radio.Group>
+                  }
+                >
+                  {Credentials &&
+                    Credentials.map((credentialConfig: any, index: number) => {
+                      const optionsId = credentialConfig.options.id;
 
-                    switch (optionsId) {
-                      case "ethereum":
-                        return (
-                          walletLogin && (
-                            <Card.Grid key={`login-${index}`} className="p-0 text-center" style={{ width: "100%" }}>
-                              <w3m-button />
-                              <p className="text-black font-medium mt-5 ">
-                                Need an account?&nbsp;
-                                <Link href="/signup" className="text-nomyx-violet-light">
-                                  Register here.
-                                </Link>
-                              </p>
-                            </Card.Grid>
-                          )
-                        );
-
-                      default:
-                        return (
-                          !walletLogin && (
-                            <Card.Grid key={`login-${index}`} className="pt-4" style={{ width: "100%" }}>
-                              <Form layout="vertical" onFinish={standardLogin}>
-                                <input name="csrfToken" type="hidden" defaultValue={csrfToken} />
-                                <input name="callbackUrl" type="hidden" defaultValue={callbackUrl} />
-
-                                {credentialConfig?.options?.credentials &&
-                                  Object.keys(credentialConfig.options.credentials).map((key: any, index: number) => {
-                                    const c = credentialConfig.options.credentials[key];
-
-                                    return (
-                                      <Form.Item
-                                        key={`form-item-${index}`}
-                                        name={key}
-                                        label={<span className="text-[#1F1F1F]">{c.label}</span>}
-                                        rules={[
-                                          {
-                                            required: true,
-                                            message: `Please input your ${key}!`,
-                                          },
-                                        ]}
-                                      >
-                                        <Input
-                                          name={key}
-                                          type={c.type}
-                                          placeholder={c.placeholder || `Enter ${c.label}`}
-                                          style={{
-                                            color: "#1F1F1F", // Text color
-                                            backgroundColor: "white", // Transparent background
-                                            border: "1px solid #BBBBBB", // Border color
-                                          }}
-                                          className="signup-input"
-                                        />
-                                      </Form.Item>
-                                    );
-                                  })}
-
-                                <Form.Item className="actions">
-                                  <Button type="primary" htmlType="submit">
-                                    Log in
-                                  </Button>
-                                </Form.Item>
-                              </Form>
-                              <div className="flex">
-                                <p>
-                                  <Link href="/forgot-password" className="text-nomyx-violet-light font-semibold">
-                                    Forgot Password?
-                                  </Link>
-                                </p>
-                                <p className="ml-auto text-black font-semibold">
+                      switch (optionsId) {
+                        case "ethereum":
+                          return (
+                            walletLogin && (
+                              <Card.Grid key={`login-${index}`} className="p-0 text-center" style={{ width: "100%" }}>
+                                <w3m-button />
+                                <p className="text-white font-medium mt-5 ">
                                   Need an account?&nbsp;
-                                  <Link href="/signup" className="text-nomyx-violet-light">
+                                  <Link href="/signup" className="text-blue-300">
                                     Register here.
                                   </Link>
                                 </p>
-                              </div>
-                            </Card.Grid>
-                          )
-                        );
-                    }
-                  })}
-              </Card>
+                              </Card.Grid>
+                            )
+                          );
+
+                        default:
+                          return (
+                            !walletLogin && (
+                              <Card.Grid key={`login-${index}`} className="pt-4" style={{ width: "100%" }}>
+                                <Form layout="vertical" onFinish={standardLogin}>
+                                  <input name="csrfToken" type="hidden" defaultValue={csrfToken} />
+                                  <input name="callbackUrl" type="hidden" defaultValue={callbackUrl} />
+
+                                  {credentialConfig?.options?.credentials &&
+                                    Object.keys(credentialConfig.options.credentials).map((key: any, index: number) => {
+                                      const c = credentialConfig.options.credentials[key];
+
+                                      return (
+                                        <Form.Item
+                                          key={`form-item-${index}`}
+                                          name={key}
+                                          label={<span className="text-nomyxGray1">{c.label}</span>}
+                                          rules={[
+                                            {
+                                              required: true,
+                                              message: `Please input your ${key}!`,
+                                            },
+                                          ]}
+                                        >
+                                          <Input
+                                            name={key}
+                                            type={c.type}
+                                            placeholder={c.placeholder || `Enter ${c.label}`}
+                                            className="signup-input"
+                                          />
+                                        </Form.Item>
+                                      );
+                                    })}
+
+                                  <Form.Item className="actions">
+                                    <Button type="primary" htmlType="submit" className="bg-blue-400 hover:bg-blue-700 text-nomyxWhite">
+                                      Log in
+                                    </Button>
+                                  </Form.Item>
+                                </Form>
+                                <div className="flex">
+                                  <p>
+                                    <Link href="/forgot-password" className="text-blue-500 font-semibold">
+                                      Forgot Password?
+                                    </Link>
+                                  </p>
+                                  <p className="ml-auto text-white font-semibold">
+                                    Need an account?&nbsp;
+                                    <Link href="/signup" className="text-blue-500">
+                                      Register here.
+                                    </Link>
+                                  </p>
+                                </div>
+                              </Card.Grid>
+                            )
+                          );
+                      }
+                    })}
+                </Card>
+              </div>
             </div>
           </div>
         </div>
-      </div>
-    </Layout>
+      </Layout>
+    </>
   );
 };
 

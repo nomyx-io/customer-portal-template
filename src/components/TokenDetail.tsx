@@ -97,12 +97,12 @@ const TokenDetail: React.FC<TokenDetailProps> = ({ tokens, currentIndex, project
           y="50%" // Adjusted to bring text to vertical center
           fontFamily="Arial, sans-serif"
           fontWeight="bold"
-          fontSize="300" // Increased font size to make "KC" bigger
+          fontSize="220" // Increased font size to make "KC" bigger
           fill="white"
           dominantBaseline="middle"
           textAnchor="middle"
         >
-          KC
+          SGH
         </text>
       </svg>
     );
@@ -215,10 +215,10 @@ const TokenDetail: React.FC<TokenDetailProps> = ({ tokens, currentIndex, project
         {/* Navigation Buttons */}
         <div className="flex items-center gap-2">
           <Button type="text" className="px-2 py-0" onClick={handlePrev}>
-            <ArrowLeft2 style={{ fontSize: "20px" }} />
+            <ArrowLeft2 className="w-5 h-5 text-black dark:text-white" />
           </Button>
           <Button type="text" className="px-2 py-0" onClick={handleNext}>
-            <ArrowRight2 style={{ fontSize: "20px" }} />
+            <ArrowRight2 className="w-5 h-5 text-black dark:text-white" />
           </Button>
         </div>
       </div>

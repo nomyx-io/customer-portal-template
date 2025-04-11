@@ -26,18 +26,19 @@ const SignUpForm = ({ onNext, formData }: any) => {
       {/* Left Side */}
       <div className="w-full lg:w-1/2 flex flex-col items-center justify-center px-4 md:px-6 my-10">
         <div className="w-full max-w-2xl">
-          <Image src="/images/nomyx_logo_black.svg" alt="Logo" width={630} height={240} priority />
+          <Image src="/images/nomyx_logo_white.svg" alt="Logo" width={630} height={240} priority />
         </div>
       </div>
       {/* Right Section - Sign Up Form */}
-      <div className="w-full lg:w-1/2 flex flex-col px-4 md:px-6 my-10">
-        <div className={"flex flex-grow justify-center items-center align-middle"}>
-          <div className="flex justify-center items-center">
+      <div className="w-full lg:w-1/2 flex items-center justify-center px-4 md:px-6">
+        <div className="bg-nomyxDark1 bg-opacity-90 text-nomyxWhite shadow-lg rounded-lg p-4 max-w-2xl w-full">
+          <div className="w-full flex flex-col justify-center items-center">
             <Card
-              title={<span className="text-black">Sign Up</span>} // Set title color to black
+              title={<span className="text-white">Sign Up</span>} // Set title color to black
               style={{
-                width: "550px",
-                border: "1px solid #BBBBBB", // Set Card border color inline
+                width: "100%",
+                maxWidth: "550px",
+                border: "none",
               }}
               className="signup-card bg-transparent"
             >
@@ -46,43 +47,27 @@ const SignUpForm = ({ onNext, formData }: any) => {
                 <div className="flex gap-4">
                   <Form.Item
                     name="firstName"
-                    label={<span className="text-[#1F1F1F]">First Name</span>} // Set label color
+                    label={<span className="text-nomyxGray1">First Name</span>} // Set label color
                     rules={[{ required: true, message: "Please enter your first name!" }]}
                     className="w-1/2"
                   >
-                    <Input
-                      placeholder="First Name"
-                      style={{
-                        color: "#1F1F1F", // Text color
-                        backgroundColor: "white",
-                        border: "1px solid #BBBBBB",
-                      }}
-                      className="signup-input"
-                    />
+                    <Input placeholder="First Name" className="signup-input" />
                   </Form.Item>
 
                   <Form.Item
                     name="lastName"
-                    label={<span className="text-[#1F1F1F]">Last Name</span>} // Set label color
+                    label={<span className="text-nomyxGray1">Last Name</span>} // Set label color
                     rules={[{ required: true, message: "Please enter your last name!" }]}
                     className="w-1/2"
                   >
-                    <Input
-                      placeholder="Last Name"
-                      style={{
-                        color: "#1F1F1F", // Text color
-                        backgroundColor: "white",
-                        border: "1px solid #BBBBBB",
-                      }}
-                      className="signup-input"
-                    />
+                    <Input placeholder="Last Name" className="signup-input" />
                   </Form.Item>
                 </div>
 
                 {/* Email with Validation */}
                 <Form.Item
                   name="email"
-                  label={<span className="text-[#1F1F1F]">Email</span>} // Set label color
+                  label={<span className="text-nomyxGray1">Email</span>} // Set label color
                   rules={[
                     { required: true, message: "Please enter your email!" },
                     {
@@ -91,21 +76,13 @@ const SignUpForm = ({ onNext, formData }: any) => {
                     },
                   ]}
                 >
-                  <Input
-                    placeholder="Email"
-                    style={{
-                      color: "#1F1F1F", // Text color
-                      backgroundColor: "white",
-                      border: "1px solid #BBBBBB",
-                    }}
-                    className="signup-input"
-                  />
+                  <Input placeholder="Email" className="signup-input" />
                 </Form.Item>
 
                 {/* Company/Organization */}
                 <Form.Item
                   name="company"
-                  label={<span className="text-[#1F1F1F]">Company/Organization</span>} // Set label color
+                  label={<span className="text-nomyxGray1">Company/Organization</span>} // Set label color
                   rules={[
                     {
                       required: true,
@@ -113,15 +90,7 @@ const SignUpForm = ({ onNext, formData }: any) => {
                     },
                   ]}
                 >
-                  <Input
-                    placeholder="Company/Organization"
-                    style={{
-                      color: "#1F1F1F", // Text color
-                      backgroundColor: "white",
-                      border: "1px solid #BBBBBB",
-                    }}
-                    className="signup-input"
-                  />
+                  <Input placeholder="Company/Organization" className="signup-input" />
                 </Form.Item>
 
                 {/* Submit Button */}
@@ -132,15 +101,15 @@ const SignUpForm = ({ onNext, formData }: any) => {
                 </Form.Item>
               </Form>
               <div className="flex justify-between">
-                <p className="text-black font-medium">
+                <p className="text-white font-medium">
                   Onboarding Pending?&nbsp;
-                  <Link href="#" onClick={handleOnboardClick} className="text-nomyx-violet-light">
+                  <Link href="#" onClick={handleOnboardClick} className="text-blue-500">
                     Onboard
                   </Link>
                 </p>
-                <p className="text-black font-medium">
+                <p className="text-white font-medium">
                   Already have an account?&nbsp;
-                  <Link href="/login" className="text-nomyx-violet-light">
+                  <Link href="/login" className="text-blue-500">
                     Sign In
                   </Link>
                 </p>

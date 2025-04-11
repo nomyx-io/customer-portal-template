@@ -688,7 +688,7 @@ const ProjectDetails: React.FC<ProjectDetailsProps> = ({ project, onBack, type =
                       <h2 className="text-lg font-bold">{project.attributes.createdAt?.toLocaleDateString()}</h2>
                     </div>
                     <div className="stat-item bg-nomyx-dark1-light dark:bg-nomyx-dark1-dark p-3 rounded-lg text-center">
-                      <span className="text-sm">Total Tokens</span>
+                      <span className="text-sm">Tokens Available</span>
                       <h2 className="text-lg font-bold">{formatNumber(totalTokens)}</h2>
                     </div>
                   </div>
