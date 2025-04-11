@@ -2,6 +2,7 @@ import React, { useState, useEffect, useCallback } from "react";
 
 import { Table, Popover, Tooltip } from "antd";
 import { ArrowRight, Copy, InfoCircle, Warning2 } from "iconsax-react";
+import Head from "next/head";
 import { useSession } from "next-auth/react";
 import Parse from "parse";
 import { toast } from "react-toastify";
@@ -620,6 +621,9 @@ const TransferInOut: React.FC = () => {
 
   return (
     <>
+      <Head>
+        <title>Transfer In/Out - Customer Portal</title>
+      </Head>
       {renderMainView()}
 
       <TransferInModal

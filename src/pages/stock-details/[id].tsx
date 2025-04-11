@@ -1,5 +1,6 @@
 import React from "react";
 
+import Head from "next/head";
 import { useRouter } from "next/router";
 
 const mockStocks = [
@@ -46,41 +47,46 @@ const StockDetailsPage: React.FC = () => {
   }
 
   return (
-    <div className="p-6 bg-white">
-      {/* Header Section */}
-      <div className="rounded-lg p-6 flex gap-6 border-gray-300 border mt-6 bg-white shadow-sm">
-        <img src={stockData.imageUrl} alt="Stock" className="w-48 h-48 rounded-md object-cover" />
-        <div>
-          <h1 className="text-2xl font-bold">
-            Stock {stockData.id} - Token ID {stockData.tokenId}
-          </h1>
-          <p className="text-gray-600 mt-2">{stockData.description}</p>
+    <>
+      <Head>
+        <title>Stock Details - Customer Portal</title>
+      </Head>
+      <div className="p-6 bg-white">
+        {/* Header Section */}
+        <div className="rounded-lg p-6 flex gap-6 border-gray-300 border mt-6 bg-white shadow-sm">
+          <img src={stockData.imageUrl} alt="Stock" className="w-48 h-48 rounded-md object-cover" />
+          <div>
+            <h1 className="text-2xl font-bold">
+              Stock {stockData.id} - Token ID {stockData.tokenId}
+            </h1>
+            <p className="text-gray-600 mt-2">{stockData.description}</p>
+          </div>
         </div>
-      </div>
 
-      {/* Full Description */}
-      <div className="mt-6 p-6 rounded-lg border border-gray-300 bg-white shadow-sm">
-        <h2 className="font-semibold text-lg mb-2">Full Description</h2>
-        {stockData.fullDescription.map((item, index) => (
-          <p key={index}>
-            <span className="font-semibold">{item.label}:</span> {item.value}
-          </p>
-        ))}
-      </div>
-
-      {/* Stock Information */}
-      <div className="mt-6 p-6 rounded-lg border border-gray-300 bg-white shadow-sm">
-        <h2 className="font-semibold text-xl mb-4">Stock Information</h2>
-        <div className="grid grid-cols-2 gap-6">
-          {stockData.stockInfo.map((item, index) => (
-            <div key={index} className="flex items-center">
-              <span className="w-1/2 text-gray-600 font-medium">{item.label}:</span>
-              <div className="w-1/2 bg-gray-100 text-gray-900 px-3 py-2 rounded-md shadow-md">{item.value}</div>
-            </div>
+        {/* Full Description */}
+        <div className="mt-6 p-6 rounded-lg border border-gray-300 bg-white shadow-sm">
+          <h2 className="font-semibold text-lg mb-2">Full Description</h2>
+          {stockData.fullDescription.map((item, index) => (
+            <p key={index}>
+              <span className="font-semibold">{item.label}:</span> {item.value}
+            </p>
           ))}
         </div>
+
+        {/* Stock Information */}
+        <div className="mt-6 p-6 rounded-lg border border-gray-300 bg-white shadow-sm">
+          <h2 className="font-semibold text-xl mb-4">Stock Information</h2>
+          <div className="grid grid-cols-2 gap-6">
+            {stockData.stockInfo.map((item, index) => (
+              <div key={index} className="flex items-center">
+                <span className="w-1/2 text-gray-600 font-medium">{item.label}:</span>
+                <div className="w-1/2 bg-gray-100 text-gray-900 px-3 py-2 rounded-md shadow-md">{item.value}</div>
+              </div>
+            ))}
+          </div>
+        </div>
       </div>
-    </div>
+    </>
   );
 };
 

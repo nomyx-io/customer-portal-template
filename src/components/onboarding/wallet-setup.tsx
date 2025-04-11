@@ -115,8 +115,8 @@ const WalletSetup: React.FC<WalletSetupProps> = ({ setActiveTab, setRegistration
   return (
     <div className="font-poppins flex flex-col min-h-[75vh]">
       <div className="flex flex-col justify-center items-center flex-grow">
-        <h2 className="text-2xl font-extrabold text-[#1F1F1F] text-center">Let&apos;s Create Your Wallet</h2>
-        <p className="text-base mt-4 text-[#1F1F1F] text-center max-w-[600px]">
+        <h2 className="text-2xl font-extrabold text-white text-center">Let&apos;s Create Your Wallet</h2>
+        <p className="text-base mt-4 text-nomyxGray1 text-center max-w-[600px]">
           A wallet will be created for you and linked to your <br />
           <b>{email}</b>
         </p>
@@ -140,10 +140,11 @@ const WalletSetup: React.FC<WalletSetupProps> = ({ setActiveTab, setRegistration
               </button>
             ) : (
               <>
-                <p className="text-base mt-4 text-[#1F1F1F]">Your wallet has been successfully created, and your signature saved.</p>
-                <p className="text-base mt-6 text-[#1F1F1F]">
+                <p className="text-base mt-4 text-white">Your wallet has been successfully created, and your signature saved.</p>
+                <p className="text-base mt-6 text-nomyxGray1">
                   Your recovery file has been generated. Please print and store it in a safe place. This file is essential for recovering your account
-                  in the event of any issues. Do not share it with anyone
+                  in the event of any issues. <br />
+                  Do not share it with anyone
                 </p>
                 <GenerateUserRecoveryKit
                   ref={userRecoveryKitRef} // Pass the ref to the child component
@@ -171,12 +172,12 @@ const WalletSetup: React.FC<WalletSetupProps> = ({ setActiveTab, setRegistration
 
       {/* Buttons container at the bottom */}
       <div className="flex justify-between p-4 mt-auto">
-        <button onClick={handleBack} className="text-nomyx-violet-light font-semibold">
+        <button onClick={handleBack} className="text-blue-500 font-semibold">
           Back
         </button>
         <button
           onClick={handleNext}
-          className="bg-nomyx-violet-light text-white px-4 py-2 rounded"
+          className="bg-nomyx-main1-light text-white px-4 py-2 rounded"
           disabled={isNextButtonDisabled()} // Disable condition based on preference
         >
           Next

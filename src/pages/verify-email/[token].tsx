@@ -2,6 +2,7 @@
 
 import React, { useEffect, useRef } from "react";
 
+import Head from "next/head";
 import { useRouter } from "next/navigation";
 import Parse from "parse";
 import { toast } from "react-toastify";
@@ -66,9 +67,14 @@ const VerifyEmailPage = ({ token }: { token: string }) => {
   }, [token, router]);
 
   return (
-    <NotificationCard title="Verifying Email...">
-      <p className="mb-4 text-center text-nomyxWhite font-normal text-base">Please wait while we verify your email.</p>
-    </NotificationCard>
+    <>
+      <Head>
+        <title>Verify Email - Customer Portal</title>
+      </Head>
+      <NotificationCard title="Verifying Email...">
+        <p className="mb-4 text-center text-nomyxWhite font-normal text-base">Please wait while we verify your email.</p>
+      </NotificationCard>
+    </>
   );
 };
 

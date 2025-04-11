@@ -40,44 +40,35 @@ const PasswordForm: React.FC<PasswordFormProps> = ({ onBack, onSubmit }) => {
       {/* Left Side */}
       <div className="w-full lg:w-1/2 flex flex-col items-center justify-center px-4 md:px-6 my-10">
         <div className="w-full max-w-2xl">
-          <Image src="/images/nomyx_logo_black.svg" alt="Logo" width={630} height={240} priority />
+          <Image src="/images/nomyx_logo_white.svg" alt="Logo" width={630} height={240} priority />
         </div>
       </div>
-      <div className="w-full lg:w-1/2 flex flex-col px-4 md:px-6 my-10">
-        <div className={"flex flex-grow justify-center items-center align-middle"}>
-          <div className="flex justify-center items-center">
+      <div className="w-full lg:w-1/2 flex items-center justify-center px-4 md:px-6">
+        <div className="bg-nomyxDark1 bg-opacity-90 text-nomyxWhite shadow-lg rounded-lg p-4 max-w-2xl w-full">
+          <div className="w-full flex flex-col justify-center items-center">
             <Card
-              title={<span className="text-black">Create Password</span>}
+              title={<span className="text-white">Create Password</span>}
               style={{
-                width: "550px",
-                border: "1px solid #BBBBBB",
+                width: "100%",
+                maxWidth: "550px",
+                border: "none",
               }}
-              className="password-card bg-transparent"
+              className="signup-card password-card bg-transparent"
             >
               <Form layout="vertical" onFinish={handleFormSubmit}>
                 {/* Password */}
                 <Form.Item
                   name="password"
-                  label={<span className="text-[#1F1F1F]">Password</span>}
+                  label={<span className="text-nomyxGray1">Password</span>}
                   rules={[{ required: true, message: "Please enter your password!" }]}
                 >
-                  <Input.Password
-                    placeholder="Password"
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    style={{
-                      color: "#1F1F1F", // Text color
-                      backgroundColor: "white",
-                      border: "1px solid #BBBBBB",
-                    }}
-                    className="signup-input"
-                  />
+                  <Input.Password placeholder="Password" value={password} onChange={(e) => setPassword(e.target.value)} className="signup-input" />
                 </Form.Item>
 
                 {/* Confirm Password */}
                 <Form.Item
                   name="confirmPassword"
-                  label={<span className="text-[#1F1F1F]">Confirm Password</span>}
+                  label={<span className="text-nomyxGray1">Confirm Password</span>}
                   dependencies={["password"]}
                   rules={[
                     { required: true, message: "Please confirm your password!" },
@@ -95,11 +86,6 @@ const PasswordForm: React.FC<PasswordFormProps> = ({ onBack, onSubmit }) => {
                     placeholder="Confirm Password"
                     value={confirmPassword}
                     onChange={(e) => setConfirmPassword(e.target.value)}
-                    style={{
-                      color: "#1F1F1F", // Text color
-                      backgroundColor: "white",
-                      border: "1px solid #BBBBBB", // Border color
-                    }}
                     className="signup-input"
                   />
                 </Form.Item>
@@ -133,7 +119,7 @@ const PasswordForm: React.FC<PasswordFormProps> = ({ onBack, onSubmit }) => {
                 <div className="grid grid-cols-2 gap-4 my-4">
                   {/* Back Link - Centered in Left Column */}
                   <div className="flex justify-center">
-                    <Button onClick={onBack} className="text-nomyx-violet-light border-none hover:text-blue-800 hover:!bg-transparent font-semibold">
+                    <Button onClick={onBack} className="text-blue-500 border-none hover:text-blue-800 hover:!bg-transparent font-semibold">
                       Back
                     </Button>
                   </div>

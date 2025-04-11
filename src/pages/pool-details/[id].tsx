@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 
+import Head from "next/head";
 import { useParams } from "next/navigation";
 
 import ProjectDetails from "@/components/marketplace/ProjectDetails";
@@ -26,13 +27,18 @@ const PoolDetailsPage = () => {
   }, [id]);
 
   return (
-    <div className="project-details">
-      {selectedProject && selectedProject.id ? (
-        <ProjectDetails project={selectedProject} onBack={() => setSelectedProject(null)} type="swap" />
-      ) : (
-        <p>Loading...</p> // Optional: Add a loading state or placeholder
-      )}
-    </div>
+    <>
+      <Head>
+        <title>Pool Details - Customer Portal</title>
+      </Head>
+      <div className="project-details">
+        {selectedProject && selectedProject.id ? (
+          <ProjectDetails project={selectedProject} onBack={() => setSelectedProject(null)} type="swap" />
+        ) : (
+          <p>Loading...</p> // Optional: Add a loading state or placeholder
+        )}
+      </div>
+    </>
   );
 };
 

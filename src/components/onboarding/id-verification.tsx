@@ -71,8 +71,8 @@ const IDVerification: React.FC<IDVerificationProps> = ({ setActiveTab, setRegist
       <div className="flex flex-col justify-center items-center flex-grow">
         {!verificationCompleted && (
           <>
-            <h2 className="text-2xl font-extrabold text-[#1F1F1F] text-center">Please verify your identity</h2>
-            <p className="text-base mt-4 text-[#1F1F1F] text-center max-w-[600px]">
+            <h2 className="text-2xl font-extrabold text-white text-center">Please verify your identity</h2>
+            <p className="text-base mt-4 text-nomyxGray1 text-center max-w-[600px]">
               We will use Persona to verify your identity. Click the &apos;Register as a User&apos; button for individual verification and the
               &apos;Register as a Business&apos; button for business verification to proceed!
             </p>
@@ -88,8 +88,8 @@ const IDVerification: React.FC<IDVerificationProps> = ({ setActiveTab, setRegist
         )}
         {verificationCompleted && (
           <>
-            <h2 className="text-2xl font-extrabold text-[#1F1F1F] text-center">Your identity is verified!</h2>
-            <p className="text-base mt-4 text-[#1F1F1F] text-center max-w-[600px]">Proceed to the next step.</p>
+            <h2 className="text-2xl font-extrabold text-white text-center">Your identity is verified!</h2>
+            <p className="text-base mt-4 text-nomyxGray1 text-center max-w-[600px]">Proceed to the next step.</p>
           </>
         )}
       </div>
@@ -115,10 +115,10 @@ const IDVerification: React.FC<IDVerificationProps> = ({ setActiveTab, setRegist
 
       {/* Buttons container at the bottom */}
       <div className="flex justify-between p-4 mt-auto">
-        <button onClick={handleBack} className="text-nomyx-violet-light font-semibold">
+        <button onClick={handleBack} className="text-blue-500 font-semibold">
           Back
         </button>
-        <button onClick={handleNext} className="bg-nomyx-violet-light text-white px-4 py-2 rounded" disabled={!verificationCompleted}>
+        <button onClick={handleNext} className="bg-nomyx-main1-light text-white px-4 py-2 rounded" disabled={!verificationCompleted}>
           Next
         </button>
       </div>

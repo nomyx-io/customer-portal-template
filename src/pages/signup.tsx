@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 
 import { Layout } from "antd";
+import Head from "next/head";
 import { useRouter } from "next/router";
 import Parse from "parse";
 import { toast } from "react-toastify"; // Assuming you are using react-toastify
@@ -73,23 +74,28 @@ const SignUp = () => {
   };
 
   return (
-    <Layout
-      className="relative w-full min-h-screen overflow-hidden flex flex-col"
-      style={{
-        backgroundImage: "url('/images/nomyx_banner.svg')",
-        backgroundSize: "cover",
-        backgroundPosition: "center",
-      }}
-    >
-      <Header />
-      {showConfirmMessage ? (
-        <ConfirmMessage email={formData.email} />
-      ) : showPasswordForm ? (
-        <PasswordForm onBack={handleBack} onSubmit={handleSubmit} />
-      ) : (
-        <SignUpForm onNext={handleNext} formData={formData} />
-      )}
-    </Layout>
+    <>
+      <Head>
+        <title>SignUp - Customer Portal</title>
+      </Head>
+      <Layout
+        className="relative w-full min-h-screen overflow-hidden flex flex-col"
+        style={{
+          backgroundImage: "url('/images/nomyx_banner.svg')",
+          backgroundSize: "cover",
+          backgroundPosition: "center",
+        }}
+      >
+        {/* <Header /> */}
+        {showConfirmMessage ? (
+          <ConfirmMessage email={formData.email} />
+        ) : showPasswordForm ? (
+          <PasswordForm onBack={handleBack} onSubmit={handleSubmit} />
+        ) : (
+          <SignUpForm onNext={handleNext} formData={formData} />
+        )}
+      </Layout>
+    </>
   );
 };
 
