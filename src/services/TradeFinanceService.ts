@@ -29,6 +29,7 @@ class TradeFinanceService {
         walletId,
         dfns_token: dfnsToken,
       });
+      console.log("tradeDealId: ", tradeDealId);
       console.log("Pending invest USDC request:", initiateResponse);
 
       return { initiateResponse, error: null };
@@ -195,9 +196,13 @@ class TradeFinanceService {
   }
 
   public async initiateRedeemVABBTokens(tradeDealId: number, vabbAmount: string, walletId: string, dfnsToken: string) {
-    if (!tradeDealId || !vabbAmount || !walletId || !dfnsToken) {
+    if (tradeDealId === null || tradeDealId === undefined || !vabbAmount || !walletId || !dfnsToken) {
       throw new Error("Missing required parameters for redeeming VABB tokens.");
     }
+
+    console.log("vabbAmoung: ", vabbAmount);
+
+    console.log("tradeDealId: ", tradeDealId);
 
     try {
       const initiateResponse = await Parse.Cloud.run("dfnsInitRedeemVABBTokens", {
