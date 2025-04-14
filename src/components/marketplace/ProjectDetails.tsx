@@ -470,8 +470,6 @@ const ProjectDetails: React.FC<ProjectDetailsProps> = ({ project, onBack, type =
                 throw "No wallet or DFNS token available for Redeem.";
               }
 
-              console.log("collateral amount: ", collateralAmount);
-
               // Step 1: Initiate the VABB redemption process
               const { initiateResponse: redeemResponse, error: redeemInitiateError } = await TradeFinanceService.initiateRedeemVABBTokens(
                 tradeDealId,

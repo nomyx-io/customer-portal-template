@@ -200,10 +200,6 @@ class TradeFinanceService {
       throw new Error("Missing required parameters for redeeming VABB tokens.");
     }
 
-    console.log("vabbAmoung: ", vabbAmount);
-
-    console.log("tradeDealId: ", tradeDealId);
-
     try {
       const initiateResponse = await Parse.Cloud.run("dfnsInitRedeemVABBTokens", {
         tradeDealId,
