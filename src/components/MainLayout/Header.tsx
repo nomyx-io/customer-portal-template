@@ -57,8 +57,12 @@ export const Header = () => {
         {walletPreference === WalletPreference.MANAGED && (
           <>
             <div>
+              <span className="border border-nomyx-main1-light dark:border-nomyx-main1-dark text-nomyx-text-light dark:text-nomyx-text-dark p-2 rounded-md mr-3">
+                Total Value: {formatPrice(parseFloat(usdcBalance), "USD")}
+                {/* USDC Value + current value of user's share in pool */}
+              </span>
               <span className="border border-nomyx-main1-light dark:border-nomyx-main1-dark text-nomyx-text-light dark:text-nomyx-text-dark p-2 rounded-md">
-                USDC Balance: {formatPrice(parseFloat(usdcBalance), "USD")}
+                Buying Power: {formatPrice(parseFloat(usdcBalance), "USD")}
               </span>
             </div>
             {/* Transfer Button */}

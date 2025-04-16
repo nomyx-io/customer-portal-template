@@ -69,7 +69,10 @@ const TokenCardView: React.FC<TokenCardViewProps> = ({ projects, onProjectClick,
         Object.entries(token.token).forEach(([key, value]) => {
           if (value != null && !(key in nonNullColumns) && !EXCLUDED_COLUMNS.has(key)) {
             nonNullColumns[key] = {
-              title: key.replace(/([A-Z])/g, " $1").replace(/^./, (str) => str.toUpperCase()),
+              title: key
+                .replace(/([A-Z])/g, " $1") // Add space before uppercase letters
+                .replaceAll("_", " ") // Replace underscores with spaces
+                .replace(/\b\w/g, (char) => char.toUpperCase()), // Capitalize first letter of every word,
               key,
             };
           }

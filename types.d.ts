@@ -7,6 +7,7 @@ interface Project extends Parse.Attributes {
   logo: Parse.File;
   title: string;
   updatedAt: Date;
+  tradeDealId: number;
 }
 
 interface DefaultField {

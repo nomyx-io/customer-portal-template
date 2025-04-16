@@ -2,6 +2,7 @@ import React, { useCallback, useEffect, useMemo, useState } from "react";
 
 import { Shop } from "iconsax-react";
 import { Category, RowVertical, SearchNormal1 } from "iconsax-react";
+import Head from "next/head";
 
 import ProjectCard from "@/components/marketplace/ProjectCard";
 import ProjectDetails from "@/components/marketplace/ProjectDetails";
@@ -49,11 +50,15 @@ const Marketplace: React.FC = () => {
 
   // Handle project card or list item click
   const handleProjectClick = (project: Parse.Object<Project>) => {
+    console.log("selected project", project);
     setSelectedProject(project);
   };
 
   return (
     <>
+      <Head>
+        <title>Marketplace - Customer Portal</title>
+      </Head>
       {selectedProject ? (
         // Render Project Details
         <ProjectDetails project={selectedProject} onBack={() => setSelectedProject(null)} />

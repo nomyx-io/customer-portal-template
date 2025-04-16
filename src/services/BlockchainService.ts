@@ -5,6 +5,7 @@ import { ethers, parseUnits } from "ethers";
 import CarbonCreditFacet from "@/abi/CarbonCreditFacet.json";
 import TreasuryRegistry from "@/abi/ITreasury.json";
 import MarketplaceRegistry from "@/abi/MarketplaceFacet.json";
+import TradeDealRegistry from "@/abi/TradeDealFacet.json";
 import USDCRegistry from "@/abi/USDC.json";
 import { getProvider, getSigner } from "@/utils/ethereumProvider";
 
@@ -15,6 +16,7 @@ class BlockchainService {
   private usdcAbi = USDCRegistry.abi;
   private marketplaceAbi = MarketplaceRegistry.abi;
   private CarbonCreditFacet = CarbonCreditFacet.abi;
+  private tradeDealAbi = TradeDealRegistry.abi;
 
   private provider: any;
   private dedicatedProvider: any;
@@ -26,6 +28,8 @@ class BlockchainService {
   private treasuryService: any;
   private usdcService: any;
   private marketplaceService: any;
+  //private tradeDealAddress: any;
+  //private tradeDealService: any;
 
   private constructor() {
     if (process.browser) {
@@ -55,10 +59,12 @@ class BlockchainService {
     this.contractAddress = process.env.NEXT_PUBLIC_HARDHAT_CONTRACT_ADDRESS;
     this.treasuryAddress = process.env.NEXT_PUBLIC_HARDHAT_TREASURY_ADDRESS;
     this.usdcAddress = process.env.NEXT_PUBLIC_HARDHAT_USDC_ADDRESS;
+    //this.tradeDealAddress = process.env.NEXT_PUBLIC_HARDHAT_TRADE_DEAL_ADDRESS;
 
     this.treasuryService = new ethers.Contract(this.treasuryAddress, this.treasuryAbi, this.provider);
     this.usdcService = new ethers.Contract(this.usdcAddress, this.usdcAbi, this.provider);
     this.marketplaceService = new ethers.Contract(this.contractAddress, this.marketplaceAbi, this.provider);
+    //this.tradeDealService = new ethers.Contract(this.tradeDealAddress, this.tradeDealAbi, this.provider);
   }
 
   public static get instance(): BlockchainService {
@@ -191,6 +197,84 @@ class BlockchainService {
     } catch (e) {
       console.log("Error in fetchItems:", e);
       throw e;
+    }
+  }
+
+  async tradeInvest(tradeDealId: number, amount: number): Promise<any> {
+    try {
+      if (this.signer) {
+        const tradeDealContract = new ethers.Contract(this.contractAddress, this.tradeDealAbi, this.signer);
+
+        const tx = await tradeDealContract.tdDepositUSDC(tradeDealId, amount);
+        await tx.wait();
+
+        return tx;
+      }
+
+      throw new Error("Signer is not available.");
+    } catch (e: any) {
+      console.error("Error depositing USDC to Trade Deal:", e);
+      if (e.reason !== "rejected") throw e;
+      return "rejected";
+    }
+  }
+
+  public async tradeInvestUSDC(tradeDealId: number, amount: number) {
+    const usdcPrice = parseUnits(amount.toString(), 6);
+    const response = await this.approve(usdcPrice);
+    console.log("response", response);
+    if (response == "rejected") {
+      return "rejected";
+    }
+    return await this.tradeInvest(tradeDealId, amount);
+  }
+
+  async tradeWithdraw(tradeDealId: number, amount: number): Promise<any> {
+    try {
+      if (this.signer) {
+        const tradeDealContract = new ethers.Contract(this.contractAddress, this.tradeDealAbi, this.signer);
+
+        const tx = await tradeDealContract.tdWithdrawUSDC(tradeDealId, amount);
+        await tx.wait();
+
+        return tx;
+      }
+
+      throw new Error("Signer is not available.");
+    } catch (e: any) {
+      console.error("Error withdrawing USDC from Trade Deal:", e);
+      if (e.reason !== "rejected") throw e;
+      return "rejected";
+    }
+  }
+
+  public async tradeWithdrawUSDC(tradeDealId: number, amount: number): Promise<any> {
+    const usdcPrice = parseUnits(amount.toString(), 6);
+    const response = await this.approve(usdcPrice);
+    console.log("response", response);
+
+    if (response === "rejected") {
+      return "rejected";
+    }
+
+    return await this.tradeWithdraw(tradeDealId, amount);
+  }
+
+  async redeemVABBTokens(tradeDealId: number, vabbAmount: bigint): Promise<any> {
+    try {
+      if (this.signer) {
+        const tradeDealContract = new ethers.Contract(this.contractAddress, this.tradeDealAbi, this.signer);
+
+        const tx = await tradeDealContract.redeemVABBTokens(tradeDealId, vabbAmount);
+        await tx.wait();
+
+        return tx;
+      }
+      return null;
+    } catch (e: any) {
+      console.error("Error redeeming VABB from Trade Deal:", e);
+      if (e.reason !== "rejected") throw e;
+      return "rejected";
     }
   }
 }

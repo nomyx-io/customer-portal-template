@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 import { getToken } from "next-auth/jwt";
 
-const protectedRoutes: Set<string> = new Set(["/dashboard", "/my-portfolio", "/marketplace"]);
+const protectedRoutes: Set<string> = new Set(["/dashboard", "/my-portfolio", "/marketplace", "/pool-funds"]);
 
 export async function middleware(request: NextRequest): Promise<NextResponse> {
   if (request.method === "OPTIONS") {
@@ -55,5 +55,6 @@ export const config = {
     "/dashboard/:path*",
     "/my-portfolio/:path*",
     "/marketplace/:path*",
+    "/pool-funds/:path*",
   ],
 };

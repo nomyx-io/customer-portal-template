@@ -40,7 +40,7 @@ const TermsConditions: React.FC<TermsConditionsProps> = ({ setActiveTab, setRegi
 
   return (
     <div className="font-poppins relative flex flex-col h-full auth-pages">
-      <h2 className="text-2xl font-extrabold text-[#1F1F1F] text-center">Please review and accept the terms and conditions!</h2>
+      <h2 className="text-2xl font-extrabold text-white text-center">Please review and accept the terms and conditions!</h2>
       <div className="min-h-[60vh] p-4">
         {/* Load external HTML content */}
         <iframe title="HTML Content" srcDoc={platformTerms} width="100%" style={{ border: "none", background: "white", height: "60vh" }} />
@@ -48,19 +48,19 @@ const TermsConditions: React.FC<TermsConditionsProps> = ({ setActiveTab, setRegi
       <Checkbox
         checked={agreed} // Use the agreed state from props
         onChange={(e) => setAgreed(e.target.checked)} // Update parent state
-        className="text-[#1F1F1F] mb-4 mt-3"
+        className="text-nomyxGray1 mb-4 mt-3"
       >
         I have read and agree to the terms
       </Checkbox>
       {/* Buttons container at the bottom */}
       <div className="flex justify-between mt-auto">
-        <button onClick={handleBack} className="text-nomyx-violet-light font-semibold">
+        <button onClick={handleBack} className="text-blue-500 font-semibold">
           Back
         </button>
         {/* Next button positioned at the bottom right */}
         <button
           onClick={handleNext}
-          className={`bg-nomyx-violet-light text-white px-4 py-2 rounded ${agreed ? "" : "opacity-50 cursor-not-allowed"}`}
+          className={`bg-nomyx-main1-light text-white px-4 py-2 rounded ${agreed ? "" : "opacity-50 cursor-not-allowed"}`}
           disabled={!agreed} // Disable the button if not agreed
         >
           Next

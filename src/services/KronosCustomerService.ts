@@ -836,6 +836,19 @@ class KronosCustomerService {
       return { completeResponse: null, error: error.message };
     }
   }
+
+  public async getTradeFinanceProjects() {
+    let records = await ParseService.getRecords("TokenProject", ["industryTemplate"], ["trade_finance"], ["*"]);
+    let sanitizedRecords = [];
+
+    if (records && records.length > 0) {
+      sanitizedRecords = JSON.parse(JSON.stringify(records));
+      // sanitizedRecords.forEach((r: any) => {
+      //   r.amount = formatUnits(String(r.amount), 6);
+      // });
+    }
+    return sanitizedRecords;
+  }
 }
 
 export default KronosCustomerService.instance;

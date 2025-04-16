@@ -14,7 +14,7 @@ interface Token {
   totalPrice: number;
   registerId: string;
   existingCredits: number;
-  issuanceDate: string;
+  createdAt: string;
   ghgReduction: string;
   state: string;
 }
@@ -117,9 +117,9 @@ const ListingRetiredTokens = ({ tokens }: { tokens: Token[] }) => {
     },
     {
       title: "Issuance Date",
-      dataIndex: "issuanceDate",
-      sorter: (a, b) => new Date(a.issuanceDate).getTime() - new Date(b.issuanceDate).getTime(),
-      ...getColumnSearchProps("issuanceDate"),
+      dataIndex: "createdAt",
+      sorter: (a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime(),
+      ...getColumnSearchProps("createdAt"),
     },
   ];
 
