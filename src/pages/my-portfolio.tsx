@@ -369,15 +369,15 @@ const ClaimInterest: React.FC = () => {
   );
 
   const tabItems = [
-    {
-      key: "1",
-      label: "Pools",
-      children: (
-        <div>
-          <PoolListPage />
-        </div>
-      ),
-    },
+    // {
+    //   key: "1",
+    //   label: "Pools",
+    //   children: (
+    //     <div>
+    //       <PoolListPage />
+    //     </div>
+    //   ),
+    // },
     ...(filteredTokens.length > 0 || selectedToken
       ? [
           {

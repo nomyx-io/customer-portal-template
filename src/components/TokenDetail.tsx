@@ -102,7 +102,7 @@ const TokenDetail: React.FC<TokenDetailProps> = ({ tokens, currentIndex, project
           dominantBaseline="middle"
           textAnchor="middle"
         >
-          SGH
+          N
         </text>
       </svg>
     );

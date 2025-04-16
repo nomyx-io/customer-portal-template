@@ -99,7 +99,7 @@ const TokenListView: React.FC<TokenListViewProps> = ({
           dominantBaseline="middle"
           textAnchor="middle"
         >
-          KC
+          N
         </text>
       </svg>
     );

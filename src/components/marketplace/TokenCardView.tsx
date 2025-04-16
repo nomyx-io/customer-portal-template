@@ -56,7 +56,7 @@ const TokenCardView: React.FC<TokenCardViewProps> = ({ projects, onProjectClick,
           dominantBaseline="middle"
           textAnchor="middle"
         >
-          KC
+          N
         </text>
       </svg>
     );
