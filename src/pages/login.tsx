@@ -74,6 +74,20 @@ const Login = function ({ csrfToken, callbackUrl }: InferGetServerSidePropsType<
       // Determine redirect URL
       let redirectUrl = typeof callbackUrl === "string" ? callbackUrl : Array.isArray(callbackUrl) ? callbackUrl[0] : "/dashboard";
 
+      // When redirectUrl is a relative path like "/dashboard"
+      if (redirectUrl.startsWith("/") && typeof window !== "undefined") {
+        // If we're on localhost, redirect to the proper domain using NEXTAUTH_URL
+        if (window.location.hostname === "localhost" || window.location.hostname.includes("127.0.0.1")) {
+          // Use NEXTAUTH_URL as the base URL
+          const baseUrl = process.env.NEXT_PUBLIC_NEXTAUTH_URL || "";
+          if (baseUrl) {
+            // Remove trailing slash from baseUrl if present
+            const formattedBaseUrl = baseUrl.endsWith("/") ? baseUrl.slice(0, -1) : baseUrl;
+            redirectUrl = `${formattedBaseUrl}${redirectUrl}`;
+          }
+        }
+      }
+
       toast.dismiss("login");
       toast.success("Login successful!");
 
@@ -98,7 +112,22 @@ const Login = function ({ csrfToken, callbackUrl }: InferGetServerSidePropsType<
     const checkAndRedirect = async () => {
       const session = await getSession();
       if (session?.user?.accessToken) {
-        const redirectUrl = typeof callbackUrl === "string" ? callbackUrl : Array.isArray(callbackUrl) ? callbackUrl[0] : "/dashboard";
+        let redirectUrl = typeof callbackUrl === "string" ? callbackUrl : Array.isArray(callbackUrl) ? callbackUrl[0] : "/dashboard";
+
+        // When redirectUrl is a relative path like "/dashboard"
+        if (redirectUrl.startsWith("/") && typeof window !== "undefined") {
+          // If we're on localhost, redirect to the proper domain using NEXTAUTH_URL
+          if (window.location.hostname === "localhost" || window.location.hostname.includes("127.0.0.1")) {
+            // Use NEXTAUTH_URL as the base URL
+            const baseUrl = process.env.NEXT_PUBLIC_NEXTAUTH_URL || "";
+            if (baseUrl) {
+              // Remove trailing slash from baseUrl if present
+              const formattedBaseUrl = baseUrl.endsWith("/") ? baseUrl.slice(0, -1) : baseUrl;
+              redirectUrl = `${formattedBaseUrl}${redirectUrl}`;
+            }
+          }
+        }
+
         window.location.href = redirectUrl;
       }
     };
