@@ -164,12 +164,12 @@ const TokenDetail: React.FC<TokenDetailProps> = ({ tokens, currentIndex, project
     if (value === undefined || value === null || (type === "string" && typeof value === "string" && value.trim() === "")) return "N/A";
 
     switch (type) {
-      case "string":
+      case "text":
         // If the string is a URL, render it as a link
         if (/^(http|https):\/\/[^ "]+$/.test(value)) {
           return (
             <a href={value} target="_blank" rel="noopener noreferrer" className="text-blue-500 underline">
-              {value}
+              View Document
             </a>
           );
         }
