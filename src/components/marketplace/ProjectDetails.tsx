@@ -29,6 +29,11 @@ interface ProjectDetailsProps {
   type?: string;
 }
 
+interface ProjectInfoField {
+  key: string;
+  value: string;
+}
+
 const ProjectDetails: React.FC<ProjectDetailsProps> = ({ project, onBack, type = "invest" }) => {
   const { appState }: any = useGemforceApp();
   const [listings, setListings] = useState<any[]>([]);
@@ -44,6 +49,7 @@ const ProjectDetails: React.FC<ProjectDetailsProps> = ({ project, onBack, type =
   const [isRdeeemVABBModalOpen, setIsRdeeemVABBModalOpen] = useState(false);
   const [investAmount, setInvestAmount] = useState<number | null>(null);
   const [vabbAmount, setVabbAmount] = useState<number | null>(null);
+  const [projectInfo, setProjectInfo] = useState<ProjectInfoField[]>([]);
 
   const searchAllProperties = (item: any, query: string): boolean => {
     const searchInObject = (obj: any): boolean => {
@@ -185,6 +191,9 @@ const ProjectDetails: React.FC<ProjectDetailsProps> = ({ project, onBack, type =
             setSales([]);
           }
         }
+
+        const parsedProjectInfo = JSON.parse(project.attributes?.projectInfo);
+        setProjectInfo(parsedProjectInfo);
       } catch (error) {
         console.error("Error fetching or filtering listings:", error);
       }
@@ -654,26 +663,21 @@ const ProjectDetails: React.FC<ProjectDetailsProps> = ({ project, onBack, type =
 
                 {/* Project Stats (Moves below on small screens) */}
                 {project.attributes.industryTemplate === Industries.TRADE_FINANCE ? (
-                  <div className="mt-6 md:mt-0 bg-nomyx-dark2-light dark:bg-nomyx-dark2-dark p-4 rounded-lg shadow-md transition-opacity duration-500 opacity-100">
-                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                      {[
-                        { label: "Development method", value: "52.53%" },
-                        { label: "Newera Score", value: "4/5" },
-                        { label: "Fund Size", value: "200 M" },
-                        { label: "Generation", value: "03" },
-                        { label: "Economics", value: "2% - 20%" },
-                        { label: "Target Return", value: "3-4x Gross" },
-                        { label: "Category", value: "Venture" },
-                        { label: "Stage", value: "Early/Venture" },
-                        //   { label: "Phase", value: "Closing Soon" },
-                      ].map((stat, index) => (
-                        <div key={index} className="stat-item bg-nomyx-dark1-light dark:bg-nomyx-dark1-dark p-3 rounded-lg text-center">
-                          <span className="text-xs md:text-sm text-gray-700">{stat.label}</span>
-                          <h2 className="text-base font-bold text-black dark:text-white">{stat.value}</h2>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
+                  <>
+                    {Array.isArray(projectInfo) && projectInfo.length > 0 && (
+                      <div
+                        className={`mt-6 md:mt-0 grid grid-cols-2 md:grid-cols-4 gap-4 bg-nomyx-dark2-light dark:bg-nomyx-dark2-dark p-4 rounded-lg shadow-md transition-opacity duration-500 opacity-100`}
+                        style={{ maxWidth: "100%", overflow: "hidden" }}
+                      >
+                        {projectInfo.map((item, index) => (
+                          <div key={index} className="stat-item bg-nomyx-dark1-light dark:bg-nomyx-dark1-dark p-3 rounded-lg text-center">
+                            <span className="text-sm">{item.key}</span>
+                            <h2 className="text-lg font-bold">{item.value}</h2>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </>
                 ) : (
                   <div
                     className={`mt-6 md:mt-0 flex flex-col md:flex-row md:flex-nowrap space-y-4 md:space-y-0 md:space-x-4 bg-nomyx-dark2-light dark:bg-nomyx-dark2-dark p-4 rounded-lg shadow-md transition-opacity duration-500 opacity-100`}

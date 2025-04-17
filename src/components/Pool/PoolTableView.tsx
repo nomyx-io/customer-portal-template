@@ -98,9 +98,9 @@ const PoolTableView: React.FC<Props> = ({ pools, handleRedeemVABB }) => {
           <Button type="primary" size="small" onClick={() => handleSwap(record.tradeDealId)}>
             Swap Collateral Token to USDC
           </Button>
-          <Button type="primary" size="small" onClick={() => handleSwap(record.tradeDealId)}>
+          {/* <Button type="primary" size="small" onClick={() => handleSwap(record.tradeDealId)}>
             Swap Dividend Token to USDC
-          </Button>
+          </Button> */}
         </div>
       ),
       width: 200,

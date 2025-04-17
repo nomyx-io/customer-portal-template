@@ -55,7 +55,7 @@ const PoolCardView: React.FC<Props> = ({ pools, onSwapCollateral, onSwapDividend
               >
                 Swap Collateral Token to USDC
               </Button>
-              <Button
+              {/* <Button
                 type="primary"
                 className="w-full md:w-auto"
                 onClick={(e) => {
@@ -64,7 +64,7 @@ const PoolCardView: React.FC<Props> = ({ pools, onSwapCollateral, onSwapDividend
                 }}
               >
                 Swap Dividend Token to USDC
-              </Button>
+              </Button> */}
             </div>
           </div>
         </Card>
