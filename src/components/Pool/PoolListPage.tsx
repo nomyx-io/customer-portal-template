@@ -75,7 +75,7 @@ const PoolListPage = () => {
         const walletId = user?.walletId;
         const dfnsToken = user?.dfns_token;
         const amount = parseUnits(vabbAmount.toString(), 6);
-
+        const collateralAmount = parseUnits(vabbAmount.toString(), 18);
         await toast.promise(
           async () => {
             if (walletPreference === WalletPreference.PRIVATE) {
@@ -105,7 +105,7 @@ const PoolListPage = () => {
               // Step 1: Initiate the VABB redemption process
               const { initiateResponse: redeemResponse, error: redeemInitiateError } = await TradeFinanceService.initiateRedeemVABBTokens(
                 tradeDealId,
-                amount.toString(),
+                collateralAmount.toString(),
                 walletId,
                 dfnsToken
               );
