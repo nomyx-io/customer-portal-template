@@ -73,7 +73,7 @@ const Login = function ({ csrfToken, callbackUrl }: InferGetServerSidePropsType<
       }
 
       // Determine redirect URL
-      let redirectUrl = typeof callbackUrl === "string" ? callbackUrl : Array.isArray(callbackUrl) ? callbackUrl[0] : "/dashboard";
+      let redirectUrl = "/dashboard";
 
       toast.dismiss("login");
       toast.success("Login successful!");
@@ -99,7 +99,7 @@ const Login = function ({ csrfToken, callbackUrl }: InferGetServerSidePropsType<
     const checkAndRedirect = async () => {
       const session = await getSession();
       if (session?.user?.accessToken) {
-        const redirectUrl = typeof callbackUrl === "string" ? callbackUrl : Array.isArray(callbackUrl) ? callbackUrl[0] : "/dashboard";
+        const redirectUrl = "/dashboard";
         window.location.href = redirectUrl;
       }
     };
