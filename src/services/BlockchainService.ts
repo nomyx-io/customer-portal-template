@@ -102,42 +102,70 @@ class BlockchainService {
   }
 
   async approve(price: bigint) {
-    // contract address
     try {
-      if (this.signer) {
-        const contractWithSigner: any = this.usdcService?.connect(this.signer);
-        return await contractWithSigner.approve(this.contractAddress, price);
-      }
+      if (!this.signer) throw new Error("Signer not available");
+
+      const contractWithSigner: any = this.usdcService?.connect(this.signer);
+      const tx = await contractWithSigner.approve(this.contractAddress, price);
+      console.log("Approval transaction sent:", tx);
+
+      const receipt = await tx.wait(); // ✅ Ensure approval is mined before proceeding
+      console.log("Approval confirmed:", receipt);
+
+      return receipt; // ✅ Returns a successful receipt
     } catch (e: any) {
-      console.log(e);
-      if (e.reason != "rejected") throw e;
-      else return "rejected";
+      console.error("Error approving token:", e);
+      if (e.reason !== "rejected") throw e;
+      return "rejected";
     }
   }
 
   async purchase(tokenId: string) {
     try {
-      if (this.signer) {
-        const contractWithSigner: any = this.marketplaceService?.connect(this.signer);
-        return await contractWithSigner.purchaseItem(this.contractAddress, tokenId);
-      }
+      if (!this.signer) throw new Error("Signer not available");
+
+      const contractWithSigner: any = this.marketplaceService?.connect(this.signer);
+      console.log(`Purchasing token ${tokenId}...`);
+
+      const tx = await contractWithSigner.purchaseItem(this.contractAddress, tokenId);
+      console.log("Purchase transaction sent:", tx);
+
+      const receipt = await tx.wait(); // ✅ Ensure transaction is mined
+      console.log("Purchase successful:", receipt);
+
+      return receipt;
     } catch (e: any) {
-      console.log(e);
-      if (e.reason != "rejected") throw e;
-      else return "rejected";
+      console.error("Error purchasing token:", e);
+      if (e.reason !== "rejected") throw e;
+      return "rejected";
     }
   }
 
   public async purchaseTokens(listings: any) {
+    let results = [];
+
     for (let listing of listings) {
-      const usdcPrice = parseUnits(listing.price, 6);
-      const response = await this.approve(usdcPrice);
-      console.log("response", response);
-      if (response == "rejected") {
-        return "rejected";
+      try {
+        const usdcPrice = parseUnits(listing.price, 6);
+        console.log(`Approving token ${listing.tokenId} for price ${usdcPrice}`);
+
+        const response = await this.approve(usdcPrice);
+        if (response === "rejected") {
+          console.warn(`Approval rejected for token ${listing.tokenId}`);
+          results.push({ tokenId: listing.tokenId, status: "rejected" });
+          continue; // Move to the next token instead of returning
+        }
+
+        console.log(`Purchasing token ${listing.tokenId}`);
+        const purchaseResponse = await this.purchase(listing.tokenId);
+        results.push({ tokenId: listing.tokenId, status: "success", response: purchaseResponse });
+      } catch (error) {
+        console.error(`Error purchasing token ${listing.tokenId}:`, error);
+        results.push({ tokenId: listing.tokenId, status: "error", error });
       }
-      return await this.purchase(listing.tokenId);
     }
+
+    return results; // ✅ Returns an array of statuses for all tokens
   }
 
   async retireCarbonCredits(tokenId: number, amount: number): Promise<any> {
