@@ -8,6 +8,7 @@ interface Project extends Parse.Attributes {
   title: string;
   updatedAt: Date;
   tradeDealId: number;
+  projectInfo: string;
 }
 
 interface DefaultField {

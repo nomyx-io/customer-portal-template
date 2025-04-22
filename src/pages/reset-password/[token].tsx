@@ -7,6 +7,7 @@ import { CheckOutlined } from "@ant-design/icons";
 import { Layout } from "antd";
 import { Form, Input, Card, Button } from "antd";
 import { GetServerSideProps } from "next";
+import Head from "next/head";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import Parse from "parse";
@@ -77,138 +78,133 @@ const ResetPassword = ({ token }: { token: string }) => {
   };
 
   return (
-    <Layout
-      className="relative w-full min-h-screen overflow-hidden flex flex-col"
-      style={{
-        backgroundImage: "url('/images/nomyx_banner.svg')",
-        backgroundSize: "cover",
-        backgroundPosition: "center",
-      }}
-    >
-      <Header />
-      <div className="flex flex-1 flex-col lg:flex-row auth-page">
-        {/* Left Side */}
-        <div className="w-full lg:w-1/2 flex flex-col items-center justify-center px-4 md:px-6 my-10">
-          <div className="w-full max-w-2xl">
-            <Image src="/images/nomyx_logo_black.svg" alt="Logo" width={630} height={240} priority />
+    <>
+      <Head>
+        <title>Reset Password - Customer Portal</title>
+      </Head>
+      <Layout
+        className="relative w-full min-h-screen overflow-hidden flex flex-col"
+        style={{
+          backgroundImage: "url('/images/nomyx_banner.svg')",
+          backgroundSize: "cover",
+          backgroundPosition: "center",
+        }}
+      >
+        {/* <Header /> */}
+        <div className="flex flex-1 flex-col lg:flex-row auth-page">
+          {/* Left Side */}
+          <div className="w-full lg:w-1/2 flex flex-col items-center justify-center px-4 md:px-6 my-10">
+            <div className="w-full max-w-2xl">
+              <Image src="/images/nomyx_logo_white.svg" alt="Logo" width={630} height={240} priority />
+            </div>
           </div>
-        </div>
-        {/* Right Section - Reset Password Form */}
-        <div className="w-full lg:w-1/2 flex flex-col px-4 md:px-6 my-10">
-          <div className={"flex flex-grow justify-center items-center align-middle"}>
-            <div className="flex justify-center items-center w-full">
-              <Card
-                title={<span className="text-black">Reset Password</span>}
-                style={{
-                  width: "100%",
-                  maxWidth: "550px",
-                  border: "1px solid #BBBBBB",
-                }}
-                className="password-card bg-transparent"
-              >
-                <Form layout="vertical" form={form} onFinish={onSubmit}>
-                  {/* Password */}
-                  <Form.Item
-                    name="password"
-                    label={<span className="text-[#1F1F1F]">Password</span>}
-                    rules={[
-                      {
-                        required: true,
-                        message: "Please enter your password!",
-                      },
-                      {
-                        pattern: /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&#])[A-Za-z\d@$!%*?&#]{8,}$/,
-                        message: "Password must be at least 8 characters long and contain uppercase, lowercase, number, and special character.",
-                      },
-                    ]}
-                  >
-                    <Input.Password
-                      placeholder="Enter your password"
-                      value={password}
-                      onChange={(e) => setPassword(e.target.value)}
-                      style={{
-                        color: "#1F1F1F",
-                        backgroundColor: "white",
-                        border: "1px solid #BBBBBB",
-                      }}
-                      className="signup-input"
-                    />
-                  </Form.Item>
-
-                  {/* Confirm Password */}
-                  <Form.Item
-                    name="confirmPassword"
-                    label={<span className="text-[#1F1F1F]">Confirm Password</span>}
-                    dependencies={["password"]}
-                    rules={[
-                      {
-                        required: true,
-                        message: "Please confirm your password!",
-                      },
-                      ({ getFieldValue }) => ({
-                        validator(_, value) {
-                          if (!value || getFieldValue("password") === value) {
-                            return Promise.resolve();
-                          }
-                          return Promise.reject(new Error("Passwords do not match!"));
+          {/* Right Section - Reset Password Form */}
+          <div className="w-full lg:w-1/2 flex items-center justify-center px-4 md:px-6">
+            <div className="bg-nomyxDark1 bg-opacity-90 text-nomyxWhite shadow-lg rounded-lg p-4 max-w-2xl w-full">
+              <div className="w-full flex flex-col justify-center items-center">
+                <Card
+                  title={<span className="text-white">Reset Password</span>}
+                  style={{
+                    width: "100%",
+                    maxWidth: "550px",
+                    border: "none",
+                  }}
+                  className="signup-card password-card bg-transparent"
+                >
+                  <Form layout="vertical" form={form} onFinish={onSubmit}>
+                    {/* Password */}
+                    <Form.Item
+                      name="password"
+                      label={<span className="text-nomyxGray1">Password</span>}
+                      rules={[
+                        {
+                          required: true,
+                          message: "Please enter your password!",
                         },
-                      }),
-                    ]}
-                  >
-                    <Input.Password
-                      placeholder="Confirm your password"
-                      value={confirmPassword}
-                      onChange={(e) => setConfirmPassword(e.target.value)}
-                      style={{
-                        color: "#1F1F1F",
-                        backgroundColor: "white",
-                        border: "1px solid #BBBBBB",
-                      }}
-                      className="signup-input"
-                    />
-                  </Form.Item>
+                        {
+                          pattern: /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&#])[A-Za-z\d@$!%*?&#]{8,}$/,
+                          message: "Password must be at least 8 characters long and contain uppercase, lowercase, number, and special character.",
+                        },
+                      ]}
+                    >
+                      <Input.Password
+                        placeholder="Enter your password"
+                        value={password}
+                        onChange={(e) => setPassword(e.target.value)}
+                        className="signup-input"
+                      />
+                    </Form.Item>
 
-                  {/* Password Requirements */}
-                  <div className="text-sm mb-4">
-                    <p className="flex items-center">
-                      {renderIcon(passwordCriteria.minLength)}
-                      <span className={`ml-2 ${passwordCriteria.minLength ? "text-green-700" : "text-gray-500"}`}>At least 8 characters</span>
-                    </p>
-                    <p className="flex items-center">
-                      {renderIcon(passwordCriteria.hasUppercase)}
-                      <span className={`ml-2 ${passwordCriteria.hasUppercase ? "text-green-700" : "text-gray-500"}`}>
-                        At least 1 uppercase letter
-                      </span>
-                    </p>
-                    <p className="flex items-center">
-                      {renderIcon(passwordCriteria.hasLowercase)}
-                      <span className={`ml-2 ${passwordCriteria.hasLowercase ? "text-green-700" : "text-gray-500"}`}>
-                        At least 1 lowercase letter
-                      </span>
-                    </p>
-                    <p className="flex items-center">
-                      {renderIcon(passwordCriteria.hasNumber)}
-                      <span className={`ml-2 ${passwordCriteria.hasNumber ? "text-green-700" : "text-gray-500"}`}>At least 1 number</span>
-                    </p>
-                    <p className="flex items-center">
-                      {renderIcon(passwordCriteria.hasSpecialChar)}
-                      <span className={`ml-2 ${passwordCriteria.hasSpecialChar ? "text-green-700" : "text-gray-500"}`}>
-                        At least 1 special character
-                      </span>
-                    </p>
-                  </div>
-                  <Form.Item className="actions">
-                    <Button type="primary" htmlType="submit">
-                      Reset Password
-                    </Button>
-                  </Form.Item>
-                </Form>
-              </Card>
+                    {/* Confirm Password */}
+                    <Form.Item
+                      name="confirmPassword"
+                      label={<span className="text-nomyxGray1">Confirm Password</span>}
+                      dependencies={["password"]}
+                      rules={[
+                        {
+                          required: true,
+                          message: "Please confirm your password!",
+                        },
+                        ({ getFieldValue }) => ({
+                          validator(_, value) {
+                            if (!value || getFieldValue("password") === value) {
+                              return Promise.resolve();
+                            }
+                            return Promise.reject(new Error("Passwords do not match!"));
+                          },
+                        }),
+                      ]}
+                    >
+                      <Input.Password
+                        placeholder="Confirm your password"
+                        value={confirmPassword}
+                        onChange={(e) => setConfirmPassword(e.target.value)}
+                        className="signup-input"
+                      />
+                    </Form.Item>
+
+                    {/* Password Requirements */}
+                    <div className="text-sm mb-4">
+                      <p className="flex items-center">
+                        {renderIcon(passwordCriteria.minLength)}
+                        <span className={`ml-2 ${passwordCriteria.minLength ? "text-green-700" : "text-gray-500"}`}>At least 8 characters</span>
+                      </p>
+                      <p className="flex items-center">
+                        {renderIcon(passwordCriteria.hasUppercase)}
+                        <span className={`ml-2 ${passwordCriteria.hasUppercase ? "text-green-700" : "text-gray-500"}`}>
+                          At least 1 uppercase letter
+                        </span>
+                      </p>
+                      <p className="flex items-center">
+                        {renderIcon(passwordCriteria.hasLowercase)}
+                        <span className={`ml-2 ${passwordCriteria.hasLowercase ? "text-green-700" : "text-gray-500"}`}>
+                          At least 1 lowercase letter
+                        </span>
+                      </p>
+                      <p className="flex items-center">
+                        {renderIcon(passwordCriteria.hasNumber)}
+                        <span className={`ml-2 ${passwordCriteria.hasNumber ? "text-green-700" : "text-gray-500"}`}>At least 1 number</span>
+                      </p>
+                      <p className="flex items-center">
+                        {renderIcon(passwordCriteria.hasSpecialChar)}
+                        <span className={`ml-2 ${passwordCriteria.hasSpecialChar ? "text-green-700" : "text-gray-500"}`}>
+                          At least 1 special character
+                        </span>
+                      </p>
+                    </div>
+                    <Form.Item className="actions">
+                      <Button type="primary" htmlType="submit">
+                        Reset Password
+                      </Button>
+                    </Form.Item>
+                  </Form>
+                </Card>
+              </div>
             </div>
           </div>
         </div>
-      </div>
-    </Layout>
+      </Layout>
+    </>
   );
 };
 

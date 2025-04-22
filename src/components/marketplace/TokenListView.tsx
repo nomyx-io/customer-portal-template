@@ -108,7 +108,7 @@ const TokenListView: React.FC<TokenListViewProps> = ({
           dominantBaseline="middle"
           textAnchor="middle"
         >
-          KC
+          N
         </text>
       </svg>
     );
@@ -124,8 +124,9 @@ const TokenListView: React.FC<TokenListViewProps> = ({
           if (value != null && !(key in nonNullColumns) && !EXCLUDED_COLUMNS.has(key)) {
             nonNullColumns[key] = {
               title: key
-                .replace(/([A-Z])/g, " $1") // Add a space before uppercase letters
-                .replace(/^./, (str) => str.toUpperCase()), // Capitalize the first letter
+                .replace(/([A-Z])/g, " $1") // Add space before uppercase letters
+                .replaceAll("_", " ") // Replace underscores with spaces
+                .replace(/\b\w/g, (char) => char.toUpperCase()), // Capitalize first letter of every word
               key,
             };
           }

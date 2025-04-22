@@ -30,6 +30,11 @@ interface ProjectDetailsProps {
   type?: string;
 }
 
+interface ProjectInfoField {
+  key: string;
+  value: string;
+}
+
 const ProjectDetails: React.FC<ProjectDetailsProps> = ({ project, onBack, type = "invest" }) => {
   const { appState }: any = useGemforceApp();
   const [listings, setListings] = useState<any[]>([]);
@@ -44,9 +49,10 @@ const ProjectDetails: React.FC<ProjectDetailsProps> = ({ project, onBack, type =
   const [selectedToken, setSelectedToken] = useState<any | null>(null);
   const walletPreference = appState?.session?.user?.walletPreference;
   const [isInvestModalOpen, setIsInvestModalOpen] = useState(false);
-  const [isRdeeemVABBModalOpen, setIsRdeeemVABBModalOpen] = useState(false);
+  const [isSwapUSDCModalOpen, setIsSwapUSDCModalOpen] = useState(false);
   const [investAmount, setInvestAmount] = useState<number | null>(null);
-  const [vabbAmount, setVabbAmount] = useState<number | null>(null);
+  const [usdcAmount, setUSDCAmount] = useState<number | null>(null);
+  const [projectInfo, setProjectInfo] = useState<ProjectInfoField[]>([]);
 
   const searchAllProperties = (item: any, query: string): boolean => {
     const searchInObject = (obj: any): boolean => {
@@ -222,6 +228,9 @@ const ProjectDetails: React.FC<ProjectDetailsProps> = ({ project, onBack, type =
             setSales([]);
           }
         }
+
+        const parsedProjectInfo = JSON.parse(project.attributes?.projectInfo);
+        setProjectInfo(parsedProjectInfo);
       } catch (error) {
         console.error("Error fetching or filtering listings:", error);
       }
@@ -331,12 +340,12 @@ const ProjectDetails: React.FC<ProjectDetailsProps> = ({ project, onBack, type =
     setIsInvestModalOpen(false);
   };
 
-  const showRedeemVABBModal = () => {
-    setIsRdeeemVABBModalOpen(true);
+  const showSwapUSDCModal = () => {
+    setIsSwapUSDCModalOpen(true);
   };
 
-  const handleRedeemVABBCancel = () => {
-    setIsRdeeemVABBModalOpen(false);
+  const handleSwapUSDCCancel = () => {
+    setIsSwapUSDCModalOpen(false);
   };
 
   // Function to handle individual token purchase
@@ -445,7 +454,7 @@ const ProjectDetails: React.FC<ProjectDetailsProps> = ({ project, onBack, type =
     return sum + tokenPrice;
   }, 0);
 
-  const handleRedeemVABB = useCallback(
+  const handleSwapUSDC = useCallback(
     async (tradeDealId: number, vabbAmount: any) => {
       // if (!tradeDealId?.tokenId) {
       //   console.error("Trade Deal Id is missing");
@@ -461,7 +470,7 @@ const ProjectDetails: React.FC<ProjectDetailsProps> = ({ project, onBack, type =
           async () => {
             if (walletPreference === WalletPreference.PRIVATE) {
               // Handle PRIVATE wallet invest
-              if (tradeDealId < 0) throw new Error("Invalid Trade Deal Id for Redeem.");
+              if (tradeDealId < 0) throw new Error("Invalid Trade Deal Id for Swap.");
               // const approvalTx = await BlockchainService.approve(amount);
               // if (approvalTx === "rejected") throw new Error("User rejected USDC approval");
               const response = await BlockchainService.redeemVABBTokens(tradeDealId, amount);
@@ -479,7 +488,7 @@ const ProjectDetails: React.FC<ProjectDetailsProps> = ({ project, onBack, type =
             } else if (walletPreference === WalletPreference.MANAGED) {
               // Handle MANAGED wallet redemption
               if (!walletId || !dfnsToken) {
-                throw "No wallet or DFNS token available for Redeem.";
+                throw "No wallet or DFNS token available for Swap.";
               }
 
               // Step 1: Initiate the VABB redemption process
@@ -493,7 +502,7 @@ const ProjectDetails: React.FC<ProjectDetailsProps> = ({ project, onBack, type =
               if (redeemInitiateError) {
                 throw "RedeemInitiateError: " + redeemInitiateError;
               }
-
+              
               // Step 2: Complete the VABB redemption process
               const { completeResponse: redeemCompleteResponse, error: completeRedeemError } = await TradeFinanceService.completeRedeemVABBTokens(
                 walletId,
@@ -521,17 +530,17 @@ const ProjectDetails: React.FC<ProjectDetailsProps> = ({ project, onBack, type =
             }
           },
           {
-            pending: "Processing Redeem...",
-            success: "Trade deal redeemed successfully.",
+            pending: "Processing Swap...",
+            success: "Trade deal swapped successfully.",
             error: {
               render({ data }: { data: any }) {
-                return <div>{data?.reason || data || "An error occurred during redeem."}</div>;
+                return <div>{data?.reason || data || "An error occurred during swap."}</div>;
               },
             },
           }
         );
       } catch (error: any) {
-        console.error("Failed to redeem trade deal:", error);
+        console.error("Failed to swap trade deal:", error);
       }
     },
     //[appState, walletPreference, setTokens, setWithdrawals, setSelectedToken, filteredTokens]
@@ -700,16 +709,21 @@ const ProjectDetails: React.FC<ProjectDetailsProps> = ({ project, onBack, type =
 
                 {/* Project Stats (Moves below on small screens) */}
                 {project.attributes.industryTemplate === Industries.TRADE_FINANCE ? (
-                  <div className="mt-6 md:mt-0 bg-nomyx-dark2-light dark:bg-nomyx-dark2-dark p-4 rounded-lg shadow-md transition-opacity duration-500 opacity-100">
-                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                      {projectInfo.map((stat, index) => (
-                        <div key={index} className="stat-item bg-nomyx-dark1-light dark:bg-nomyx-dark1-dark p-3 rounded-lg text-center">
-                          <span className="text-xs md:text-sm text-gray-700">{stat.key}</span>
-                          <h2 className="text-base font-bold text-black dark:text-white">{stat.value}</h2>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
+                  <>
+                    {Array.isArray(projectInfo) && projectInfo.length > 0 && (
+                      <div
+                        className={`mt-6 md:mt-0 grid grid-cols-2 md:grid-cols-4 gap-4 bg-nomyx-dark2-light dark:bg-nomyx-dark2-dark p-4 rounded-lg shadow-md transition-opacity duration-500 opacity-100`}
+                        style={{ maxWidth: "100%", overflow: "hidden" }}
+                      >
+                        {projectInfo.map((item, index) => (
+                          <div key={index} className="stat-item bg-nomyx-dark1-light dark:bg-nomyx-dark1-dark p-3 rounded-lg text-center">
+                            <span className="text-sm">{item.key}</span>
+                            <h2 className="text-lg font-bold">{item.value}</h2>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </>
                 ) : (
                   <div
                     className={`mt-6 md:mt-0 flex flex-col md:flex-row md:flex-nowrap space-y-4 md:space-y-0 md:space-x-4 bg-nomyx-dark2-light dark:bg-nomyx-dark2-dark p-4 rounded-lg shadow-md transition-opacity duration-500 opacity-100`}
@@ -724,7 +738,7 @@ const ProjectDetails: React.FC<ProjectDetailsProps> = ({ project, onBack, type =
                       <h2 className="text-lg font-bold">{project.attributes.createdAt?.toLocaleDateString()}</h2>
                     </div>
                     <div className="stat-item bg-nomyx-dark1-light dark:bg-nomyx-dark1-dark p-3 rounded-lg text-center">
-                      <span className="text-sm">Total Tokens</span>
+                      <span className="text-sm">Tokens Available</span>
                       <h2 className="text-lg font-bold">{formatNumber(totalTokens)}</h2>
                     </div>
                   </div>
@@ -797,7 +811,7 @@ const ProjectDetails: React.FC<ProjectDetailsProps> = ({ project, onBack, type =
                   {type.toLowerCase() === "swap" && (
                     <div className="flex items-center justify-end w-full mr-4">
                       <div>
-                        <button className="bg-blue-600 text-white px-4 py-2 rounded-md text-sm font-medium" onClick={showRedeemVABBModal}>
+                        <button className="bg-blue-600 text-white px-4 py-2 rounded-md text-sm font-medium" onClick={showSwapUSDCModal}>
                           Swap Collateral Token to USDC
                         </button>
                         {/* <button className="bg-blue-600 text-white px-4 py-2 rounded-md text-sm font-medium ml-2">Swap Dividend Token to USDC</button> */}
@@ -881,14 +895,14 @@ const ProjectDetails: React.FC<ProjectDetailsProps> = ({ project, onBack, type =
                     ? [
                         {
                           key: "3",
-                          label: "Redeemed VABB",
+                          label: "Redeemed Collateral Token",
                           children: <RedeemedVABBListPage />,
                         },
-                        {
-                          key: "4",
-                          label: "Redeemed VABI",
-                          children: <HistoryListPage />,
-                        },
+                        // {
+                        //   key: "4",
+                        //   label: "Redeemed VABI",
+                        //   children: <HistoryListPage />,
+                        // },
                       ]
                     : []),
                   ...(project.attributes.industryTemplate !== Industries.TRADE_FINANCE
@@ -955,29 +969,29 @@ const ProjectDetails: React.FC<ProjectDetailsProps> = ({ project, onBack, type =
         </Modal>
 
         <Modal
-          title="Redeem VABB"
-          open={isRdeeemVABBModalOpen}
-          onCancel={handleRedeemVABBCancel}
+          title="Swap to USDC"
+          open={isSwapUSDCModalOpen}
+          onCancel={handleSwapUSDCCancel}
           footer={[
-            <Button key="cancel" onClick={handleRedeemVABBCancel} className="text-gray-700 dark:text-gray-300">
+            <Button key="cancel" onClick={handleSwapUSDCCancel} className="text-gray-700 dark:text-gray-300">
               Cancel
             </Button>,
             <Button
               key="submit"
               type="default"
               className="bg-blue-600 text-white hover:bg-blue-700 disabled:bg-blue-300"
-              onClick={() => handleRedeemVABB(project.attributes.tradeDealId, vabbAmount || 0)}
-              disabled={!vabbAmount}
+              onClick={() => handleSwapUSDC(project.attributes.tradeDealId, usdcAmount || 0)}
+              disabled={!usdcAmount}
             >
               Submit
             </Button>,
           ]}
         >
-          <p>Enter the amount you want to redeem:</p>
+          <p>Enter the amount you want to USDC:</p>
           <InputNumber
             min={1}
-            value={vabbAmount}
-            onChange={setVabbAmount}
+            value={usdcAmount}
+            onChange={setUSDCAmount}
             className="w-full mt-2 border rounded-md bg-white focus-within:bg-white text-black"
             placeholder="Enter amount"
           />

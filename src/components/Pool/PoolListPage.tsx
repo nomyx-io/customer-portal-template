@@ -70,6 +70,7 @@ const PoolListPage = () => {
       //   console.error("Trade Deal Id is missing");
       //   return;
       // }
+      debugger;
       try {
         const user = appState?.session?.user;
         const walletId = user?.walletId;
@@ -101,7 +102,6 @@ const PoolListPage = () => {
               if (!walletId || !dfnsToken) {
                 throw "No wallet or DFNS token available for Redeem.";
               }
-
               // Step 1: Initiate the VABB redemption process
               const { initiateResponse: redeemResponse, error: redeemInitiateError } = await TradeFinanceService.initiateRedeemVABBTokens(
                 tradeDealId,
@@ -113,7 +113,6 @@ const PoolListPage = () => {
               if (redeemInitiateError) {
                 throw "RedeemInitiateError: " + redeemInitiateError;
               }
-
               // Step 2: Complete the VABB redemption process
               const { completeResponse: redeemCompleteResponse, error: completeRedeemError } = await TradeFinanceService.completeRedeemVABBTokens(
                 walletId,
@@ -202,7 +201,7 @@ const PoolListPage = () => {
         viewMode === "table" ? (
           <PoolTableView pools={filteredData} handleRedeemVABB={handleRedeemVABB} />
         ) : (
-          <PoolCardView pools={filteredData} />
+          <PoolCardView pools={filteredData} handleRedeemVABB={handleRedeemVABB} />
         )
       ) : (
         <p>No data found</p>

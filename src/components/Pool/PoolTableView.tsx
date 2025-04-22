@@ -14,14 +14,14 @@ import { TradeFinancePool } from "../../types/poolData";
 
 interface Props {
   pools: TradeFinancePool[];
-  handleRedeemVABB: (tradeDealId: number, vabbAmount: number) => Promise<void>; // Parent function
+  handleRedeemVABB: (tradeDealId: number, usdcAmount: number) => Promise<void>; // Parent function
 }
 
 const PoolTableView: React.FC<Props> = ({ pools, handleRedeemVABB }) => {
   const [searchText, setSearchText] = useState("");
-  const [isRdeeemVABBModalOpen, setIsRdeeemVABBModalOpen] = useState(false);
+  const [isRedeemVABBModalOpen, setIsRedeemVABBModalOpen] = useState(false);
   const [selectedTradeDealId, setSelectedTradeDealId] = useState<number | null>(null);
-  const [vabbAmount, setVabbAmount] = useState<number | null>(null);
+  const [usdcAmount, setUSDCAmount] = useState<number | null>(null);
 
   const router = useRouter();
 
@@ -33,20 +33,20 @@ const PoolTableView: React.FC<Props> = ({ pools, handleRedeemVABB }) => {
     router.push(`/pool-details/${id}`);
   };
 
-  const handleSwap = (tradeDealId: any) => {
+  const handleRedeem = (tradeDealId: any) => {
     setSelectedTradeDealId(tradeDealId);
-    setIsRdeeemVABBModalOpen(true);
+    setIsRedeemVABBModalOpen(true);
   };
 
   const handleConfirmRedeem = async () => {
-    if (selectedTradeDealId || (0 >= 0 && vabbAmount)) {
-      await handleRedeemVABB(selectedTradeDealId || 0, vabbAmount || 0);
-      setIsRdeeemVABBModalOpen(false);
+    if (selectedTradeDealId || (0 >= 0 && usdcAmount)) {
+      await handleRedeemVABB(selectedTradeDealId || 0, usdcAmount || 0);
+      setIsRedeemVABBModalOpen(false);
     }
   };
 
   const handleRedeemVABBCancel = () => {
-    setIsRdeeemVABBModalOpen(false);
+    setIsRedeemVABBModalOpen(false);
   };
 
   const filteredData = pools.filter((pool) => pool.title.toLowerCase().includes(searchText));
@@ -102,12 +102,12 @@ const PoolTableView: React.FC<Props> = ({ pools, handleRedeemVABB }) => {
       dataIndex: "actions",
       render: (_, record) => (
         <div style={{ display: "flex", flexDirection: "row", gap: 8 }}>
-          <Button type="primary" size="small" onClick={() => handleSwap(record.tradeDealId)}>
+          <Button type="primary" size="small" onClick={() => handleRedeem(record.tradeDealId)}>
             Swap Collateral Token to USDC
           </Button>
-          <Button type="primary" size="small" onClick={() => handleSwap(record.tradeDealId)}>
+          {/* <Button type="primary" size="small" onClick={() => handleSwap(record.tradeDealId)}>
             Swap Dividend Token to USDC
-          </Button>
+          </Button> */}
         </div>
       ),
       width: 200,
@@ -129,7 +129,7 @@ const PoolTableView: React.FC<Props> = ({ pools, handleRedeemVABB }) => {
       >
         <Modal
           title="Redeem VABB"
-          open={isRdeeemVABBModalOpen}
+          open={isRedeemVABBModalOpen}
           onCancel={handleRedeemVABBCancel}
           footer={[
             <Button key="cancel" onClick={handleRedeemVABBCancel} className="text-gray-700 dark:text-gray-300">
@@ -140,17 +140,17 @@ const PoolTableView: React.FC<Props> = ({ pools, handleRedeemVABB }) => {
               type="default"
               className="bg-blue-600 text-white hover:bg-blue-700 disabled:bg-blue-300"
               onClick={() => handleConfirmRedeem()}
-              disabled={!vabbAmount}
+              disabled={!usdcAmount}
             >
               Submit
             </Button>,
           ]}
         >
-          <p>Enter the amount you want to redeem:</p>
+          <p>Enter the amount you want to USDC:</p>
           <InputNumber
             min={1}
-            value={vabbAmount}
-            onChange={setVabbAmount}
+            value={usdcAmount}
+            onChange={setUSDCAmount}
             className="w-full mt-2 border rounded-md bg-white focus-within:bg-white text-black"
             placeholder="Enter amount"
           />

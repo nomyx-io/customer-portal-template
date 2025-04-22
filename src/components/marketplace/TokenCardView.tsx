@@ -74,7 +74,7 @@ const TokenCardView: React.FC<TokenCardViewProps> = ({
           dominantBaseline="middle"
           textAnchor="middle"
         >
-          KC
+          N
         </text>
       </svg>
     );
@@ -88,7 +88,10 @@ const TokenCardView: React.FC<TokenCardViewProps> = ({
         Object.entries(tokenData).forEach(([key, value]) => {
           if (value != null && !(key in nonNullColumns) && !EXCLUDED_COLUMNS.has(key)) {
             nonNullColumns[key] = {
-              title: key.replace(/([A-Z])/g, " $1").replace(/^./, (str) => str.toUpperCase()),
+              title: key
+                .replace(/([A-Z])/g, " $1") // Add space before uppercase letters
+                .replaceAll("_", " ") // Replace underscores with spaces
+                .replace(/\b\w/g, (char) => char.toUpperCase()), // Capitalize first letter of every word,
               key,
             };
           }

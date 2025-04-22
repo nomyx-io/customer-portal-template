@@ -2,6 +2,7 @@ import React, { useCallback, useEffect, useRef, useState, useMemo } from "react"
 
 import { Tabs } from "antd/es";
 import { FolderCross } from "iconsax-react";
+import Head from "next/head";
 import PubSub from "pubsub-js";
 import { toast } from "react-toastify";
 
@@ -421,7 +422,7 @@ const ClaimInterest: React.FC = () => {
       ? [
           {
             key: "4",
-            label: "Paid Off",
+            label: "Matured Debt",
             children: (
               <div>
                 <ListingClaimedTokens tokens={formatWithdrawnTokens} />
@@ -433,9 +434,14 @@ const ClaimInterest: React.FC = () => {
   ];
 
   return (
-    <div className="my-portfolio-tabs">
-      <Tabs className="nftTabs" items={tabItems} />
-    </div>
+    <>
+      <Head>
+        <title>My Portfolio - Customer Portal</title>
+      </Head>
+      <div className="my-portfolio-tabs">
+        <Tabs className="nftTabs" items={tabItems} />
+      </div>
+    </>
   );
 };
 
