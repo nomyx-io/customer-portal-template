@@ -2,9 +2,19 @@ import React, { useState } from "react";
 
 import { Card, Button, Checkbox } from "antd";
 
+import { Industries } from "@/config/generalConfig";
 import { ColumnConfig, EXCLUDED_COLUMNS, ColumnData } from "@/types/dynamicTableColumn";
 import { hashToColor } from "@/utils/colorUtils";
 import { formatPrice } from "@/utils/currencyFormater";
+
+const isValidUrl = (string: string): boolean => {
+  try {
+    new URL(string);
+    return true;
+  } catch (_) {
+    return false;
+  }
+};
 
 interface TokenCardViewProps {
   projects: any[];
@@ -12,9 +22,17 @@ interface TokenCardViewProps {
   onSelectionChange?: (selectedProjects: any[]) => void; // Prop for selection change callback
   onPurchaseToken?: (token: any) => void; // Prop for handling purchase of a single token
   isSalesHistory: boolean; // New prop to determine if this is a sales history view
+  industryTemplate?: string; // New prop to determine if this is a trade finance project
 }
 
-const TokenCardView: React.FC<TokenCardViewProps> = ({ projects, onProjectClick, onSelectionChange, onPurchaseToken, isSalesHistory }) => {
+const TokenCardView: React.FC<TokenCardViewProps> = ({
+  projects,
+  onProjectClick,
+  onSelectionChange,
+  onPurchaseToken,
+  isSalesHistory,
+  industryTemplate,
+}) => {
   const [selectedProjects, setSelectedProjects] = useState<string[]>([]);
 
   // Handle individual card selection change
@@ -65,8 +83,9 @@ const TokenCardView: React.FC<TokenCardViewProps> = ({ projects, onProjectClick,
   const getDynamicColumns = (maxColumns = 5): ColumnConfig[] => {
     const nonNullColumns: Record<string, ColumnConfig> = {};
     projects.forEach((token) => {
-      if (token.token) {
-        Object.entries(token.token).forEach(([key, value]) => {
+      const tokenData = industryTemplate === Industries.TRADE_FINANCE ? token : token.token;
+      if (tokenData) {
+        Object.entries(tokenData).forEach(([key, value]) => {
           if (value != null && !(key in nonNullColumns) && !EXCLUDED_COLUMNS.has(key)) {
             nonNullColumns[key] = {
               title: key
@@ -93,7 +112,7 @@ const TokenCardView: React.FC<TokenCardViewProps> = ({ projects, onProjectClick,
         // Create column data for each token
         const dynamicColumnData: ColumnData[] = dynamicColumns.map((column) => ({
           label: column.title,
-          value: project.token?.[column.key] || "-",
+          value: industryTemplate === Industries.TRADE_FINANCE ? project[column.key] || "-" : project.token?.[column.key] || "-",
         }));
 
         return (
@@ -139,10 +158,13 @@ const TokenCardView: React.FC<TokenCardViewProps> = ({ projects, onProjectClick,
             {/* Content Section */}
             <div className="p-4">
               {/* Title and Description */}
-              <h2 className="text-lg font-bold">{project.token?.nftTitle || "Token Title"}</h2>
+              <h2 className="text-lg font-bold">
+                {industryTemplate === Industries.TRADE_FINANCE ? `Stock Certificate ${project.tokenId}` : project.token?.nftTitle || "Token Title"}
+              </h2>
               <p className="text-sm text-gray-600 mt-1 line-clamp-1">
-                {project.token?.description ||
-                  "This is a placeholder description for the token. Lorem ipsum dolor sit amet, consectetur adipiscing elit."}
+                {industryTemplate === Industries.TRADE_FINANCE
+                  ? `Stock certificate for trade finance project`
+                  : project.token?.description || "This is a placeholder description for the token."}
               </p>
 
               {/* Project Details Section */}
@@ -150,7 +172,10 @@ const TokenCardView: React.FC<TokenCardViewProps> = ({ projects, onProjectClick,
                 {[
                   {
                     label: "Total Price",
-                    value: `${formatPrice(Number(project.token.price), "USD")}`,
+                    value:
+                      industryTemplate === Industries.TRADE_FINANCE
+                        ? formatPrice(Number(project.price), "USD")
+                        : formatPrice(Number(project.token.price), "USD"),
                   },
                   ...dynamicColumnData,
                 ].map((item, index) => (
@@ -159,7 +184,15 @@ const TokenCardView: React.FC<TokenCardViewProps> = ({ projects, onProjectClick,
                     <span className="font-semibold flex-1">{item.label}</span>
 
                     {/* Value on the right with consistent width */}
-                    <span className="bg-gray-100 dark:bg-nomyx-dark1-dark p-2 rounded text-right w-2/3">{item.value}</span>
+                    <span className="bg-gray-100 dark:bg-nomyx-dark1-dark p-2 rounded text-right w-2/3">
+                      {typeof item.value === "string" && isValidUrl(item.value) ? (
+                        <a href={item.value} target="_blank" rel="noopener noreferrer" className="text-blue-500 hover:text-blue-700">
+                          View Document
+                        </a>
+                      ) : (
+                        item.value
+                      )}
+                    </span>
                   </div>
                 ))}
               </div>

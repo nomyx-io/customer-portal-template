@@ -67,7 +67,14 @@ const PoolTableView: React.FC<Props> = ({ pools, handleRedeemVABB }) => {
       render: (_, record) => (
         <div style={{ display: "flex", alignItems: "center" }} className="">
           <div className="w-12 h-12 relative rounded overflow-hidden flex-shrink-0">
-            <Image src={record.logo?.url() || "/default-image.png"} alt={record.title || "Pool Image"} fill className="object-cover" />
+            <Image
+              src={
+                typeof record.logo === "string" ? record.logo : record.logo instanceof File ? URL.createObjectURL(record.logo) : "/default-image.png"
+              }
+              alt={record.title || "Pool Image"}
+              fill
+              className="object-cover"
+            />
           </div>
           <span className="ml-3 font-bold">{record.title}</span>
         </div>

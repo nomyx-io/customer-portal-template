@@ -16,6 +16,7 @@ import { useGemforceApp } from "@/context/GemforceAppContext";
 import projectBackground from "@/images/projects_background.png";
 import BlockchainService from "@/services/BlockchainService";
 import KronosCustomerService from "@/services/KronosCustomerService";
+import ParseService from "@/services/ParseService";
 import TradeFinanceService from "@/services/TradeFinanceService";
 import { NomyxEvent, WalletPreference } from "@/utils/Constants";
 import { formatNumber } from "@/utils/numberFormatter";
@@ -39,6 +40,8 @@ const ProjectDetails: React.FC<ProjectDetailsProps> = ({ project, onBack, type =
   const [listings, setListings] = useState<any[]>([]);
   const [sales, setSales] = useState<any[]>([]);
   const [selectedListings, setSelectedListings] = useState<any[]>([]);
+  const [projectStockList, setProjectStockList] = useState<any[]>([]);
+  const [projectInfo, setProjectInfo] = useState<Array<{ key: string; value: string }>>([]);
   const [activeTab, setActiveTab] = useState("1");
   const [searchQuery, setSearchQuery] = useState<string>("");
   const [viewMode, setViewMode] = useState<string>("table");
@@ -71,7 +74,7 @@ const ProjectDetails: React.FC<ProjectDetailsProps> = ({ project, onBack, type =
     return searchInObject(item);
   };
 
-  // Memoize the filtered listings and sales
+  // Memoize the filtered listings, sales, and stocks
   const filteredListings = useMemo(() => {
     return listings.filter((listing) => searchAllProperties(listing, searchQuery));
   }, [listings, searchQuery]);
@@ -80,10 +83,17 @@ const ProjectDetails: React.FC<ProjectDetailsProps> = ({ project, onBack, type =
     return sales.filter((sale) => searchAllProperties(sale, searchQuery));
   }, [sales, searchQuery]);
 
-  // Cleanup Listings object to pass just tokens to the MarketPlaceTokenDetail component
+  const filteredStocks = useMemo(() => {
+    return projectStockList.filter((stock) => searchAllProperties(stock, searchQuery));
+  }, [projectStockList, searchQuery]);
+
+  // Cleanup Listings/Stocks object to pass just tokens to the MarketPlaceTokenDetail component
   const tokens = useMemo(() => {
+    if (project.attributes.industryTemplate === Industries.TRADE_FINANCE) {
+      return filteredStocks.map((stock) => stock);
+    }
     return filteredListings.map((listing) => listing.token);
-  }, [filteredListings]);
+  }, [filteredListings, filteredStocks, project.attributes.industryTemplate]);
 
   // Handle search bar input change
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -126,7 +136,34 @@ const ProjectDetails: React.FC<ProjectDetailsProps> = ({ project, onBack, type =
     // Define an asynchronous function inside useEffect
     const fetchAndFilterListings = async () => {
       try {
-        // Fetch listed tokens from the blockchain service
+        // For trade finance projects, fetch stocks instead of listings
+        if (project.attributes.industryTemplate === Industries.TRADE_FINANCE) {
+          // Parse project info for trade finance projects
+          try {
+            const parsedProjectInfo = JSON.parse(project.attributes.projectInfo || "[]");
+            setProjectInfo(parsedProjectInfo);
+          } catch (error) {
+            console.error("Error parsing project info:", error);
+            setProjectInfo([]);
+          }
+          const projectTokens = await ParseService.getRecords("Token", ["projectId"], [project.id], ["*"]);
+          if (projectTokens) {
+            const sanitizedTokens = projectTokens.map((token: Parse.Object<any>) => ({
+              ...token.attributes,
+              id: token.id,
+              tokenId: token.get("tokenId"),
+              projectId: token.get("projectId"),
+              price: token.get("price"),
+              existingCredits: token.get("existingCredits"),
+            }));
+            setProjectStockList(sanitizedTokens);
+          } else {
+            setProjectStockList([]);
+          }
+          return;
+        }
+
+        // For other projects, fetch listed tokens
         const listedTokens = await BlockchainService?.fetchItems();
         if (!listedTokens) {
           console.warn("No listed tokens fetched.");
@@ -418,7 +455,7 @@ const ProjectDetails: React.FC<ProjectDetailsProps> = ({ project, onBack, type =
   }, 0);
 
   const handleSwapUSDC = useCallback(
-    async (tradeDealId: number, usdcAmount: any) => {
+    async (tradeDealId: number, vabbAmount: any) => {
       // if (!tradeDealId?.tokenId) {
       //   console.error("Trade Deal Id is missing");
       //   return;
@@ -427,8 +464,8 @@ const ProjectDetails: React.FC<ProjectDetailsProps> = ({ project, onBack, type =
         const user = appState?.session?.user;
         const walletId = user?.walletId;
         const dfnsToken = user?.dfns_token;
-        const amount = parseUnits(usdcAmount.toString(), 6);
-
+        const amount = parseUnits(vabbAmount.toString(), 6);
+        const collateralAmount = parseUnits(vabbAmount.toString(), 18);
         await toast.promise(
           async () => {
             if (walletPreference === WalletPreference.PRIVATE) {
@@ -449,34 +486,37 @@ const ProjectDetails: React.FC<ProjectDetailsProps> = ({ project, onBack, type =
               // setWithdrawals(updatedWithdrawals);
               // setSelectedToken(filteredTokens.some((t) => t.tokenId == token.tokenId) ? token : filteredTokens[0]);
             } else if (walletPreference === WalletPreference.MANAGED) {
-              // Handle MANAGED wallet withdrawal
+              // Handle MANAGED wallet redemption
               if (!walletId || !dfnsToken) {
                 throw "No wallet or DFNS token available for Swap.";
               }
 
-              // Step 1: Initiate the invest process
-              const { initiateResponse: withdrawResponse, error: withdrawInitiateError } = await TradeFinanceService.initiateRedeemVABBTokens(
+              // Step 1: Initiate the VABB redemption process
+              const { initiateResponse: redeemResponse, error: redeemInitiateError } = await TradeFinanceService.initiateRedeemVABBTokens(
                 tradeDealId,
-                amount.toString(),
+                collateralAmount.toString(),
                 walletId,
                 dfnsToken
               );
 
-              if (withdrawInitiateError) {
-                throw "WithdrawInitiateError: " + withdrawInitiateError;
+              if (redeemInitiateError) {
+                throw "RedeemInitiateError: " + redeemInitiateError;
               }
-
-              // Step 2: Complete the invest process
-              const { completeResponse: withdrawCompleteResponse, error: completeWithdrawError } = await TradeFinanceService.completeRedeemVABBTokens(
+              
+              // Step 2: Complete the VABB redemption process
+              const { completeResponse: redeemCompleteResponse, error: completeRedeemError } = await TradeFinanceService.completeRedeemVABBTokens(
                 walletId,
                 dfnsToken,
-                withdrawResponse.challenge,
-                withdrawResponse.requestBody
+                redeemResponse.challenge,
+                redeemResponse.requestBody
               );
 
-              if (completeWithdrawError) {
-                throw "CompleteWithdrawError: " + completeWithdrawError;
+              if (completeRedeemError) {
+                throw "CompleteRedeemError: " + completeRedeemError;
               }
+
+              console.log("VABB tokens redeemed successfully:", redeemCompleteResponse);
+
               const [updatedTokens, updatedWithdrawals] = await Promise.all([
                 KronosCustomerService.getTokensForUser(user.walletAddress),
                 KronosCustomerService.getWithdrawalsForUser(user.walletAddress),
@@ -540,10 +580,12 @@ const ProjectDetails: React.FC<ProjectDetailsProps> = ({ project, onBack, type =
                 throw "No wallet or DFNS token available for Deposit.";
               }
 
+              const baseUnitAmount = (Number(amount) * 1000000).toString();
+
               // 💳 Step 0: Initiate Approval
               const { initiateResponse: approvalResponse, error: approvalError } = await KronosCustomerService.initiateApproval(
                 walletId,
-                amount.toString(),
+                baseUnitAmount,
                 dfnsToken
               );
 
@@ -820,7 +862,7 @@ const ProjectDetails: React.FC<ProjectDetailsProps> = ({ project, onBack, type =
                       <>
                         {viewMode === "table" ? (
                           <TokenListView
-                            projects={filteredListings}
+                            projects={project.attributes.industryTemplate === Industries.TRADE_FINANCE ? filteredStocks : filteredListings}
                             onProjectClick={handleDetailsClick}
                             onSelectionChange={setSelectedListings}
                             onPurchaseToken={handleIndividualPurchase}
@@ -829,11 +871,12 @@ const ProjectDetails: React.FC<ProjectDetailsProps> = ({ project, onBack, type =
                           />
                         ) : (
                           <TokenCardView
-                            projects={filteredListings}
+                            projects={project.attributes.industryTemplate === Industries.TRADE_FINANCE ? filteredStocks : filteredListings}
                             onProjectClick={handleDetailsClick}
                             onSelectionChange={setSelectedListings}
                             onPurchaseToken={handleIndividualPurchase}
                             isSalesHistory={false}
+                            industryTemplate={project.attributes.industryTemplate}
                           />
                         )}
                       </>
@@ -871,7 +914,12 @@ const ProjectDetails: React.FC<ProjectDetailsProps> = ({ project, onBack, type =
                             viewMode === "table" ? (
                               <TokenListView projects={filteredSales} onProjectClick={handleDetailsClick} isSalesHistory={true} />
                             ) : (
-                              <TokenCardView projects={filteredSales} onProjectClick={handleDetailsClick} isSalesHistory={true} />
+                              <TokenCardView
+                                projects={filteredSales}
+                                onProjectClick={handleDetailsClick}
+                                isSalesHistory={true}
+                                industryTemplate={project.attributes.industryTemplate}
+                              />
                             ),
                         },
                       ]

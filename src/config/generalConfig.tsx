@@ -32,11 +32,8 @@ export const projectInfoComponents = {
   },
   [Industries.TRADE_FINANCE]: {
     fields: tradeFinanceFields,
-    component: (props: any) => (
-      <div>
-        {/* Trade Finance-specific details */}
-        <h3 className="text-xl font-bold text-gray-900 dark:text-white">Trade Finance Details</h3>
-      </div>
+    component: ({ tokenBalance, ...props }: any) => (
+      <ProjectInfo {...props} onTokenAction={props.onTokenAction} tokenActionLabel={props.tokenActionLabel} />
     ),
   },
   [Industries.TOKENIZED_DEBT]: {
