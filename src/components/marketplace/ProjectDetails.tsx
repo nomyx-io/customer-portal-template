@@ -405,7 +405,8 @@ const ProjectDetails: React.FC<ProjectDetailsProps> = ({ project, onBack, type =
 
           if (walletPreference == WalletPreference.PRIVATE) {
             var response = await BlockchainService.purchaseTokens(selectedListings);
-            if (response == "rejected") {
+            // Check if any tokens were rejected during the purchase process
+            if (Array.isArray(response) && response.some((item) => item.status === "rejected")) {
               throw "The purchase was rejected.";
             } else {
               await processSelectedPurchase();
