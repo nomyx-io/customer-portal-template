@@ -65,16 +65,17 @@ const PoolListPage = () => {
   });
 
   const handleRedeemVABB = useCallback(
-    async (tradeDealId: any, vabbAmount: any) => {
+    async (tradeDealId: any, usdcAmount: any) => {
       // if (!tradeDealId?.tokenId) {
       //   console.error("Trade Deal Id is missing");
       //   return;
       // }
+      debugger;
       try {
         const user = appState?.session?.user;
         const walletId = user?.walletId;
         const dfnsToken = user?.dfns_token;
-        const amount = parseUnits(vabbAmount.toString(), 6);
+        const amount = parseUnits(usdcAmount.toString(), 6);
 
         await toast.promise(
           async () => {
@@ -103,9 +104,9 @@ const PoolListPage = () => {
               }
 
               // Step 1: Initiate the invest process
-              const { initiateResponse: withdrawResponse, error: withdrawInitiateError } = await TradeFinanceService.initiateTradeWithdrawUSDC(
+              const { initiateResponse: withdrawResponse, error: withdrawInitiateError } = await TradeFinanceService.initiateRedeemVABBTokens(
                 tradeDealId,
-                amount,
+                amount.toString(),
                 walletId,
                 dfnsToken
               );
@@ -115,8 +116,12 @@ const PoolListPage = () => {
               }
 
               // Step 2: Complete the invest process
-              const { completeResponse: withdrawCompleteResponse, error: completeWithdrawError } =
-                await TradeFinanceService.completeTradeWithdrawUSDC(walletId, dfnsToken, withdrawResponse.challenge, withdrawResponse.requestBody);
+              const { completeResponse: withdrawCompleteResponse, error: completeWithdrawError } = await TradeFinanceService.completeRedeemVABBTokens(
+                walletId,
+                dfnsToken,
+                withdrawResponse.challenge,
+                withdrawResponse.requestBody
+              );
 
               if (completeWithdrawError) {
                 throw "CompleteWithdrawError: " + completeWithdrawError;
@@ -196,7 +201,7 @@ const PoolListPage = () => {
         viewMode === "table" ? (
           <PoolTableView pools={filteredData} handleRedeemVABB={handleRedeemVABB} />
         ) : (
-          <PoolCardView pools={filteredData} />
+          <PoolCardView pools={filteredData} handleRedeemVABB={handleRedeemVABB} />
         )
       ) : (
         <p>No data found</p>

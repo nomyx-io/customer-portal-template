@@ -64,7 +64,7 @@ class TradeFinanceService {
     }
   }
 
-  public async initiateTradeWithdrawUSDC(tradeDealId: number, amount: bigint, walletId: string, dfnsToken: string) {
+  public async initiateTradeWithdrawUSDC(tradeDealId: number, amount: string, walletId: string, dfnsToken: string) {
     if (!tradeDealId || !amount || !walletId || !dfnsToken) {
       throw new Error("Missing required parameters for withdraw.");
     }
@@ -113,6 +113,7 @@ class TradeFinanceService {
 
   public async getUserTradePools(userAddress: string): Promise<TradeFinancePool[]> {
     // Step 1: Fetch TradeDealUSDCDeposit records for the ownerAddress
+    userAddress = userAddress.toLowerCase();
     const records = await ParseService.getRecords("TradeDealUSDCDeposit", ["ownerAddress"], [userAddress], ["tradeDealId", "amount"]);
 
     if (!records || records.length === 0) return [];
@@ -139,16 +140,18 @@ class TradeFinanceService {
     );
 
     // Step 4: Create a final combined result
-    const result = uniqueTradeDealIds.map((tradeDealId) => {
+    const result = uniqueTradeDealIds.flatMap((tradeDealId) => {
       const project = tokenProjects?.find((p) => p.get("tradeDealId") == tradeDealId);
+      if (!project) return [];
+
       return {
-        tradeDealId: tradeDealId,
-        title: (project?.get("title") as string) || "Unknown",
-        description: (project?.get("description") as string) || "Unknown",
+        tradeDealId,
+        title: (project.get("title") as string) || "Unknown",
+        description: (project.get("description") as string) || "Unknown",
         totalInvestedAmount: tradeDealMap[tradeDealId],
-        projectId: project?.id ?? "", // Ensure it's always a string
-        logo: project?.get("logo") ?? "", // Provide a default if required
-        coverImage: project?.get("coverImage") ?? "", // Provide a default if required
+        projectId: project.id ?? "",
+        logo: project.get("logo") ?? "",
+        coverImage: project.get("coverImage") ?? "",
       };
     });
 
@@ -158,7 +161,7 @@ class TradeFinanceService {
   public async getDepositHistory(userAddress: string): Promise<HistoryData[]> {
     // Step 1: Fetch TradeDealUSDCDeposit records for the given user address
     const tradeDealDeposits =
-      (await ParseService.getRecords("TradeDealUSDCDeposit", ["ownerAddress"], [userAddress], ["tradeDealId", "amount"])) || [];
+      (await ParseService.getRecords("TradeDealUSDCDeposit", ["ownerAddress"], [userAddress.toLowerCase()], ["tradeDealId", "amount"])) || [];
 
     if (tradeDealDeposits.length === 0) return [];
 
@@ -192,6 +195,60 @@ class TradeFinanceService {
       usdcAmount: vabb.get("usdcAmount") as number,
       tradeDealId: vabb.get("tradeDealId") as number,
     }));
+  }
+
+  public async initiateRedeemVABBTokens(tradeDealId: number, vabbAmount: string, walletId: string, dfnsToken: string) {
+    if (tradeDealId === null || tradeDealId === undefined || !vabbAmount || !walletId || !dfnsToken) {
+      throw new Error("Missing required parameters for redeeming VABB tokens.");
+    }
+
+    try {
+      const initiateResponse = await Parse.Cloud.run("dfnsInitRedeemVABBTokens", {
+        tradeDealId,
+        vabbAmount,
+        walletId,
+        dfns_token: dfnsToken,
+      });
+
+      console.log("Pending redeem VABB tokens request:", initiateResponse);
+
+      return { initiateResponse, error: null };
+    } catch (error: any) {
+      console.error("Error initiating redeem VABB tokens:", error);
+      return {
+        initiateResponse: null,
+        error: error instanceof Error ? error.message : JSON.stringify(error),
+      };
+    }
+  }
+
+  public async completeRedeemVABBTokens(walletId: string, dfnsToken: string, challenge: any, requestBody: any) {
+    if (!walletId || !dfnsToken || !challenge || !requestBody) {
+      throw new Error("Missing required parameters for completing redeem VABB tokens.");
+    }
+
+    try {
+      const webauthn = new WebAuthnSigner();
+      const assertion = await webauthn.sign(challenge);
+
+      const completeResponse = await Parse.Cloud.run("dfnsCompleteRedeemVABBTokens", {
+        walletId,
+        dfns_token: dfnsToken,
+        signedChallenge: {
+          challengeIdentifier: challenge.challengeIdentifier,
+          firstFactor: assertion,
+        },
+        requestBody,
+      });
+
+      return { completeResponse, error: null };
+    } catch (error: any) {
+      console.error("Error completing redeem VABB tokens:", error);
+      return {
+        completeResponse: null,
+        error: error instanceof Error ? error.message : JSON.stringify(error),
+      };
+    }
   }
 }
 
