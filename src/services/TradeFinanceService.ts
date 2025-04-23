@@ -180,21 +180,20 @@ class TradeFinanceService {
 
   public async getRedeemedVABBHistory(userAddress: string): Promise<RedeemedVABBHistory[]> {
     // Step 1: Fetch VABBTokensRedeemed records for the given user address
-    const redeemedVABBs =
-      (await ParseService.getRecords("VABBTokensRedeemed", ["ownerAddress"], [userAddress], ["tradeDealId", "vabbAmount", "usdcAmount"])) || [];
+    const redeemedVABBs = (await ParseService.getRecords("Transaction", ["sender", "type"], [userAddress, "CollateralRedemption"], ["*"])) || [];
 
     if (redeemedVABBs.length === 0) return [];
 
     // Step 2: Fetch user details from the User table based on walletAddress
     const userRecords = await ParseService.getFirstRecord("User", ["walletAddress"], [userAddress]);
-
     // Step 3: Construct the final history data array
     return redeemedVABBs.map((vabb) => ({
+      id: vabb.get("id") as string,
       redeemerName: `${userRecords?.get("firstName") || "Unknown"} ${userRecords?.get("lastName") || ""}`.trim(),
       redeemerId: userRecords?.id || "",
-      vabbAmount: vabb.get("vabbAmount") as number,
+      collateralAmount: vabb.get("collateralAmount") as number,
       usdcAmount: vabb.get("usdcAmount") as number,
-      tradeDealId: vabb.get("tradeDealId") as number,
+      tradeDealId: vabb.get("tradeDeal").get("tradeDealId") as number,
     }));
   }
 

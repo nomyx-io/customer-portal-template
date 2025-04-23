@@ -70,7 +70,6 @@ const PoolListPage = () => {
       //   console.error("Trade Deal Id is missing");
       //   return;
       // }
-      debugger;
       try {
         const user = appState?.session?.user;
         const walletId = user?.walletId;

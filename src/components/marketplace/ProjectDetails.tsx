@@ -52,7 +52,6 @@ const ProjectDetails: React.FC<ProjectDetailsProps> = ({ project, onBack, type =
   const [isSwapUSDCModalOpen, setIsSwapUSDCModalOpen] = useState(false);
   const [investAmount, setInvestAmount] = useState<number | null>(null);
   const [usdcAmount, setUSDCAmount] = useState<number | null>(null);
-  const [projectInfo, setProjectInfo] = useState<ProjectInfoField[]>([]);
 
   const searchAllProperties = (item: any, query: string): boolean => {
     const searchInObject = (obj: any): boolean => {
@@ -502,7 +501,7 @@ const ProjectDetails: React.FC<ProjectDetailsProps> = ({ project, onBack, type =
               if (redeemInitiateError) {
                 throw "RedeemInitiateError: " + redeemInitiateError;
               }
-              
+
               // Step 2: Complete the VABB redemption process
               const { completeResponse: redeemCompleteResponse, error: completeRedeemError } = await TradeFinanceService.completeRedeemVABBTokens(
                 walletId,

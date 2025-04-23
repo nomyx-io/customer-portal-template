@@ -1,5 +1,6 @@
 import { Card } from "antd";
 
+import { Industries } from "@/config/generalConfig";
 import { formatPrice } from "@/utils/currencyFormater";
 import { formatNumber } from "@/utils/numberFormatter";
 
@@ -12,6 +13,7 @@ interface ProjectInfoProps {
   onTokenAction: (token: any) => void;
   tokenActionLabel: string;
   tokenBalance: number | null;
+  industryTemplate: string;
 }
 
 const ProjectInfo: React.FC<ProjectInfoProps> = ({
@@ -23,6 +25,7 @@ const ProjectInfo: React.FC<ProjectInfoProps> = ({
   onTokenAction,
   tokenActionLabel,
   tokenBalance,
+  industryTemplate,
 }) => {
   const totalCost = parseInt(token.price) * parseInt(token.existingCredits);
   return (
@@ -33,8 +36,11 @@ const ProjectInfo: React.FC<ProjectInfoProps> = ({
           <div className="text-gray-800 dark:text-gray-200 space-y-4">
             {[
               {
-                label: "Price:",
-                value: `${formatPrice(token.price, "USD")}`,
+                label: industryTemplate === Industries.TRADE_FINANCE ? "Total Amount" : "Price",
+                value:
+                  industryTemplate === Industries.TRADE_FINANCE
+                    ? `${formatPrice(token.totalAmount / 1_000_000, "USD")}`
+                    : `${formatPrice(token.price, "USD")}`,
               },
               token.existingCredits && token.existingCredits > 0
                 ? {
@@ -77,14 +83,17 @@ const ProjectInfo: React.FC<ProjectInfoProps> = ({
               </div>
             </>
           )}
-          {tokenActionLabel && (tokenActionLabel !== "Claim Now" || (tokenActionLabel === "Claim Now" && tokenBalance && tokenBalance > 0)) && (
-            <button
-              className="w-full mt-4 bg-blue-500 text-white font-bold py-3 px-6 rounded-md transition hover:bg-blue-700 hover:brightness-110 flex items-center justify-center border-none"
-              onClick={() => onTokenAction && onTokenAction(token)}
-            >
-              {tokenActionLabel}
-            </button>
-          )}
+          {industryTemplate &&
+            industryTemplate != Industries.TRADE_FINANCE &&
+            tokenActionLabel &&
+            (tokenActionLabel !== "Claim Now" || (tokenActionLabel === "Claim Now" && tokenBalance && tokenBalance > 0)) && (
+              <button
+                className="w-full mt-4 bg-blue-500 text-white font-bold py-3 px-6 rounded-md transition hover:bg-blue-700 hover:brightness-110 flex items-center justify-center border-none"
+                onClick={() => onTokenAction && onTokenAction(token)}
+              >
+                {tokenActionLabel}
+              </button>
+            )}
         </div>
       </Card>
     </div>

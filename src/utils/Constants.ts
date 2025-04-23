@@ -77,3 +77,18 @@ export type RecoveryKey = {
 export { LoginPreference, NomyxEvent, NomyxAction, OnboardingStep, WalletPreference, DataType };
 
 export const DFNS_END_USER_TOKEN_COOKIE = "dfnsEndUserToken";
+
+export const tradeFinanceDocumentationFields = [
+  {
+    label: "PPM",
+    name: "ppm",
+  },
+  {
+    label: "Custodian Contract",
+    name: "custodianContract",
+  },
+  {
+    label: "Stock Certificate",
+    name: "stockCertificate",
+  },
+];

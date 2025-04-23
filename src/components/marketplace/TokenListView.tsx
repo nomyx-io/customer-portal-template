@@ -108,7 +108,7 @@ const TokenListView: React.FC<TokenListViewProps> = ({
           dominantBaseline="middle"
           textAnchor="middle"
         >
-          N
+          SGH
         </text>
       </svg>
     );
@@ -219,21 +219,25 @@ const TokenListView: React.FC<TokenListViewProps> = ({
         return aTitle.localeCompare(bTitle);
       },
     },
-    {
-      title: "Price",
-      dataIndex: "price",
-      render: (price: number, record: any) => {
-        if (industryTemplate === Industries.TRADE_FINANCE) {
-          return formatPrice(record.price, "USD");
-        }
-        return isSalesHistory ? formatPrice(record?.token?.price, "USD") : formatPrice(price / 1_000_000, "USD");
-      },
-      sorter: (a: any, b: any) => {
-        const aPrice = industryTemplate === Industries.TRADE_FINANCE ? a.price : a.token?.price;
-        const bPrice = industryTemplate === Industries.TRADE_FINANCE ? b.price : b.token?.price;
-        return aPrice - bPrice;
-      },
-    },
+    ...(filteredProjects.some((row: any) => row.price > 0 || row.token?.price > 0)
+      ? [
+          {
+            title: "Price",
+            dataIndex: "price",
+            render: (price: number, record: any) => {
+              if (industryTemplate === Industries.TRADE_FINANCE) {
+                return formatPrice(record.price, "USD");
+              }
+              return isSalesHistory ? formatPrice(record?.token?.price, "USD") : formatPrice(price / 1_000_000, "USD");
+            },
+            sorter: (a: any, b: any) => {
+              const aPrice = industryTemplate === Industries.TRADE_FINANCE ? a.price : a.token?.price;
+              const bPrice = industryTemplate === Industries.TRADE_FINANCE ? b.price : b.token?.price;
+              return aPrice - bPrice;
+            },
+          },
+        ]
+      : []),
     ...additionalColumns,
 
     ...(!isSalesHistory && industryTemplate && industryTemplate != Industries.TRADE_FINANCE

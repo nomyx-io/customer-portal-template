@@ -31,26 +31,26 @@ const ItemActivity = ({ token, shouldApplyActivityFilter = false }: any) => {
   }, []);
 
   const fetchActivityData = useCallback(async () => {
-    if (!token?.objectId) {
+    if (token?.objectId || token?.id) {
+      try {
+        const data = await KronosCustomerService.getTokenActivity([token.objectId || token?.id]);
+
+        // Determine whether to apply the activity filter
+        const filteredActivity = shouldApplyActivityFilter
+          ? data.filter((act: any) => act.tokens.some((activityToken: { tokenId: string }) => activityToken.tokenId === token.tokenId))
+          : data;
+
+        // Format the (filtered) activity data
+        const formattedActivity = formatActivityData(filteredActivity);
+
+        setActivityData(data);
+        setFilteredData(formattedActivity);
+      } catch (error) {
+        console.error("Error fetching activity data:", error);
+      }
+    } else {
       console.error("Token object ID is missing.");
       return;
-    }
-
-    try {
-      const data = await KronosCustomerService.getTokenActivity([token.objectId]);
-
-      // Determine whether to apply the activity filter
-      const filteredActivity = shouldApplyActivityFilter
-        ? data.filter((act: any) => act.tokens.some((activityToken: { tokenId: string }) => activityToken.tokenId === token.tokenId))
-        : data;
-
-      // Format the (filtered) activity data
-      const formattedActivity = formatActivityData(filteredActivity);
-
-      setActivityData(data);
-      setFilteredData(formattedActivity);
-    } catch (error) {
-      console.error("Error fetching activity data:", error);
     }
   }, [token, shouldApplyActivityFilter, formatActivityData]);
 

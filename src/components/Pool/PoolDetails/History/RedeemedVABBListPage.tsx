@@ -60,10 +60,10 @@ const RedeemedVABBListPage: React.FC<Props> = () => {
       dataIndex: "redeemerId",
     },
     {
-      title: "VABB Amount",
-      dataIndex: "vabbAmount",
-      render: (vabbAmount: number) => `${formatPrice(vabbAmount / 1_000_000, "USD")}`,
-      sorter: (a, b) => a.vabbAmount - b.vabbAmount,
+      title: "Collateral Amount",
+      dataIndex: "collateralAmount",
+      render: (collateralAmount: number) => `${formatPrice(collateralAmount / 1_000_000, "USD")}`,
+      sorter: (a, b) => a.collateralAmount - b.collateralAmount,
     },
     {
       title: "USDC Amount",
@@ -90,7 +90,7 @@ const RedeemedVABBListPage: React.FC<Props> = () => {
         onChange={(e) => handleSearch(e.target.value)}
         style={{ marginBottom: 16, width: 300 }}
       /> */}
-      <Table columns={columns} dataSource={filteredData} rowKey={(record) => record.redeemerId} scroll={{ x: "max-content" }} />
+      <Table columns={columns} dataSource={filteredData} rowKey={(record) => record.id} scroll={{ x: "max-content" }} />
     </div>
   );
 };
