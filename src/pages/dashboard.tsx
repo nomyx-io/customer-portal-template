@@ -48,13 +48,20 @@ const Dashboard: React.FC = () => {
     return pools.reduce((acc: number, pool: any) => acc + (pool.totalInvestedAmount || 0), 0);
   }, [pools]);
 
-  const totalPoolAvailable = useMemo(() => {
-    return tradeDeals.reduce((acc: number, deal: any) => {
+  const { totalPoolAvailable, totalFundingTarget } = useMemo(() => {
+    let totalTarget = 0;
+    let totalAvailable = 0;
+
+    tradeDeals.forEach((deal: any) => {
       const fundingTarget = deal.fundingTarget || 0;
       const usdcBalance = deal.usdcBalance || 0;
       const available = fundingTarget - usdcBalance;
-      return acc + (available > 0 ? available : 0);
-    }, 0);
+
+      totalTarget += fundingTarget;
+      totalAvailable += available > 0 ? available : 0;
+    });
+
+    return { totalPoolAvailable: totalAvailable, totalFundingTarget: totalTarget };
   }, [tradeDeals]);
 
   // Statistics data with pending states
@@ -151,6 +158,21 @@ const Dashboard: React.FC = () => {
   const redemptionEvents = useMemo(() => events.filter((event: any) => event.event === "CarbonCreditsRetired"), [events]);
 
   // Chart data preparation
+  // New chart data for Pool Insights
+  const preparePoolChartData = useCallback(() => {
+    return {
+      labels: ["Total Pools Amount", "Total Pool Available"],
+      datasets: [
+        {
+          label: "Amount in USD",
+          data: [totalFundingTarget || 0, totalPoolAvailable || 0],
+          backgroundColor: ["rgba(33, 102, 248, 0.8)", "rgba(255, 130, 0, 0.8)"],
+        },
+      ],
+    };
+  }, [totalFundingTarget, totalPoolAvailable]);
+
+  // Original chart data for Token Insights
   const prepareTokenChartData = useCallback(() => {
     return {
       labels: ["Total Tokens Purchased", "Sales"],
@@ -212,11 +234,11 @@ const Dashboard: React.FC = () => {
       {
         key: "3",
         label: "Pool Insights",
-        children: <Bar data={prepareTokenChartData()} options={chartOptions} />,
+        children: <Bar data={preparePoolChartData()} options={chartOptions} />,
         className: "chart",
       },
     ],
-    [prepareTokenChartData, chartOptions]
+    [prepareTokenChartData, preparePoolChartData, chartOptions]
   );
 
   const sidebarTabItems = useMemo(
