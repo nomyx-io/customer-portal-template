@@ -67,24 +67,24 @@ const Dashboard: React.FC = () => {
   // Statistics data with pending states
   const allStats = useMemo(
     () => [
-      {
-        key: "totalAssets",
-        title: "Total Assets",
-        value: tokens?.length,
-        icon: <Coin />,
-        color: tokens?.length < 1 ? "text-nomyx-danger-light dark:text-nomyx-danger-dark" : "text-nomyx-text-light dark:text-nomyx-text-dark",
-        show: true, // Always show
-        loading: loading.tokens,
-      },
-      {
-        key: "totalFunding",
-        title: "Total Funding",
-        value: currentValue ? currentValue.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ",") : "0.00",
-        icon: <DollarCircle className="text-nomyx-text-light dark:text-nomyx-text-dark" />,
-        color: "text-nomyx-text-light dark:text-nomyx-text-dark",
-        show: true, // Always show
-        loading: loading.tokens,
-      },
+      // {
+      //   key: "totalAssets",
+      //   title: "Total Assets",
+      //   value: tokens?.length,
+      //   icon: <Coin />,
+      //   color: tokens?.length < 1 ? "text-nomyx-danger-light dark:text-nomyx-danger-dark" : "text-nomyx-text-light dark:text-nomyx-text-dark",
+      //   show: true, // Always show
+      //   loading: loading.tokens,
+      // },
+      // {
+      //   key: "totalFunding",
+      //   title: "Total Funding",
+      //   value: currentValue ? currentValue.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ",") : "0.00",
+      //   icon: <DollarCircle className="text-nomyx-text-light dark:text-nomyx-text-dark" />,
+      //   color: "text-nomyx-text-light dark:text-nomyx-text-dark",
+      //   show: true, // Always show
+      //   loading: loading.tokens,
+      // },
       {
         key: "totalPoolsFunded",
         title: "Total Pools Funded",
@@ -219,18 +219,18 @@ const Dashboard: React.FC = () => {
   // Tab items
   const mainTabItems = useMemo(
     () => [
-      {
-        key: "1",
-        label: "Token Insights",
-        children: <Bar data={prepareTokenChartData()} options={chartOptions} />,
-        className: "chart",
-      },
-      {
-        key: "2",
-        label: "Invoice Insights",
-        children: <Bar data={prepareTokenChartData()} options={chartOptions} />,
-        className: "chart",
-      },
+      // {
+      //   key: "1",
+      //   label: "Token Insights",
+      //   children: <Bar data={prepareTokenChartData()} options={chartOptions} />,
+      //   className: "chart",
+      // },
+      // {
+      //   key: "2",
+      //   label: "Invoice Insights",
+      //   children: <Bar data={prepareTokenChartData()} options={chartOptions} />,
+      //   className: "chart",
+      // },
       {
         key: "3",
         label: "Pool Insights",
