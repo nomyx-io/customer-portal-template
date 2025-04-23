@@ -4,13 +4,14 @@ import { InfoCircleOutlined, WarningOutlined } from "@ant-design/icons";
 import { Card, List, Statistic, Tabs, Skeleton } from "antd/es";
 import { CategoryScale } from "chart.js";
 import Chart from "chart.js/auto";
-import { Setting, DollarCircle, Coin } from "iconsax-react";
+import { Setting, DollarCircle, Coin, NoteText } from "iconsax-react";
 import Head from "next/head";
 import { useSession } from "next-auth/react";
 import { Bar } from "react-chartjs-2";
 
 import Ellipsis from "@/components/Ellipsis";
 import KronosCustomerService from "@/services/KronosCustomerService";
+import TradeFinanceService from "@/services/TradeFinanceService";
 
 Chart.register(CategoryScale);
 
@@ -22,10 +23,12 @@ const Dashboard: React.FC = () => {
   const [tokens, setTokens] = useState<any>([]);
   const [retiredTokens, setRetiredTokens] = useState<any>([]);
   const [events, setEvents] = useState<any>([]);
+  const [pools, setPools] = useState<any>([]);
   const [loading, setLoading] = useState({
     tokens: true,
     retiredTokens: true,
     events: true,
+    pools: true,
   });
 
   // Derived state
@@ -63,11 +66,11 @@ const Dashboard: React.FC = () => {
       {
         key: "totalPoolsFunded",
         title: "Total Pools Funded",
-        value: tokens?.length,
-        icon: <Coin />,
-        color: tokens?.length < 1 ? "text-nomyx-danger-light dark:text-nomyx-danger-dark" : "text-nomyx-text-light dark:text-nomyx-text-dark",
-        show: tokens?.length > 0,
-        loading: loading.tokens,
+        value: pools?.length,
+        icon: <NoteText />,
+        color: pools?.length < 1 ? "text-nomyx-danger-light dark:text-nomyx-danger-dark" : "text-nomyx-text-light dark:text-nomyx-text-dark",
+        show: pools?.length > 0,
+        loading: loading.pools,
       },
       {
         key: "totalPoolAvailable",
@@ -105,7 +108,7 @@ const Dashboard: React.FC = () => {
         loading: loading.tokens,
       },
     ],
-    [tokens.length, currentValue, loading.tokens]
+    [tokens.length, currentValue, loading.tokens, pools.length, loading.pools]
   );
 
   // Split stats into chunks of 5 for display
@@ -278,6 +281,21 @@ const Dashboard: React.FC = () => {
     }
   }, [user]);
 
+  const fetchPools = useCallback(async () => {
+    if (!user?.walletAddress) {
+      console.error("User wallet address is missing.");
+      return;
+    }
+    try {
+      const fetchedPools = await TradeFinanceService.getUserTradePools(user.walletAddress);
+      setPools(fetchedPools);
+    } catch (error) {
+      console.error("Error fetching pools:", error);
+    } finally {
+      setLoading((prev) => ({ ...prev, pools: false }));
+    }
+  }, [user]);
+
   const fetchTokens = useCallback(async () => {
     if (!user?.walletAddress) {
       console.error("User wallet address is missing.");
@@ -299,8 +317,9 @@ const Dashboard: React.FC = () => {
       fetchEvents();
       fetchRetiredTokens();
       fetchTokens();
+      fetchPools();
     }
-  }, [status, user, fetchEvents, fetchRetiredTokens, fetchTokens]);
+  }, [status, user, fetchEvents, fetchRetiredTokens, fetchTokens, fetchPools]);
 
   return (
     <>
