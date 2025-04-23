@@ -42,6 +42,10 @@ const Dashboard: React.FC = () => {
     return { currentValue: totalValue, totalCarbon };
   }, [tokens]);
 
+  const totalPoolInvestment = useMemo(() => {
+    return pools.reduce((acc: number, pool: any) => acc + (pool.totalInvestedAmount || 0), 0);
+  }, [pools]);
+
   // Statistics data with pending states
   const allStats = useMemo(
     () => [
@@ -84,11 +88,11 @@ const Dashboard: React.FC = () => {
       {
         key: "totalPoolInvestment",
         title: "Total Pool Investment",
-        value: currentValue ? currentValue.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ",") : "0.00",
+        value: totalPoolInvestment ? totalPoolInvestment.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ",") : "0.00",
         icon: <DollarCircle className="text-nomyx-text-light dark:text-nomyx-text-dark" />,
         color: "text-nomyx-text-light dark:text-nomyx-text-dark",
-        show: currentValue > 0,
-        loading: loading.tokens,
+        show: pools?.length > 0,
+        loading: loading.pools,
       },
       {
         key: "interestGenerated",
@@ -108,7 +112,7 @@ const Dashboard: React.FC = () => {
         loading: loading.tokens,
       },
     ],
-    [tokens.length, currentValue, loading.tokens, pools.length, loading.pools]
+    [tokens.length, currentValue, loading.tokens, pools.length, loading.pools, totalPoolInvestment]
   );
 
   // Split stats into chunks of 5 for display
