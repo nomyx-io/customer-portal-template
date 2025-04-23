@@ -250,6 +250,22 @@ class TradeFinanceService {
       };
     }
   }
+
+  public async getTradeDeals(): Promise<any[]> {
+    try {
+      const tradeDeals = await ParseService.getRecords("TradeDeal", [], [], ["usdcBalance", "fundingTarget"]);
+
+      if (!tradeDeals) return [];
+
+      return tradeDeals.map((deal) => ({
+        usdcBalance: Number(deal.get("usdcBalance") || 0),
+        fundingTarget: Number(deal.get("fundingTarget") || 0),
+      }));
+    } catch (error) {
+      console.error("Error fetching trade deals:", error);
+      return [];
+    }
+  }
 }
 
 export default TradeFinanceService.instance;
