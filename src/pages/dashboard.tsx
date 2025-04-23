@@ -24,11 +24,13 @@ const Dashboard: React.FC = () => {
   const [retiredTokens, setRetiredTokens] = useState<any>([]);
   const [events, setEvents] = useState<any>([]);
   const [pools, setPools] = useState<any>([]);
+  const [tradeDeals, setTradeDeals] = useState<any>([]);
   const [loading, setLoading] = useState({
     tokens: true,
     retiredTokens: true,
     events: true,
     pools: true,
+    tradeDeals: true,
   });
 
   // Derived state
@@ -45,6 +47,15 @@ const Dashboard: React.FC = () => {
   const totalPoolInvestment = useMemo(() => {
     return pools.reduce((acc: number, pool: any) => acc + (pool.totalInvestedAmount || 0), 0);
   }, [pools]);
+
+  const totalPoolAvailable = useMemo(() => {
+    return tradeDeals.reduce((acc: number, deal: any) => {
+      const fundingTarget = deal.fundingTarget || 0;
+      const usdcBalance = deal.usdcBalance || 0;
+      const available = fundingTarget - usdcBalance;
+      return acc + (available > 0 ? available : 0);
+    }, 0);
+  }, [tradeDeals]);
 
   // Statistics data with pending states
   const allStats = useMemo(
@@ -79,11 +90,11 @@ const Dashboard: React.FC = () => {
       {
         key: "totalPoolAvailable",
         title: "Total Pool Available",
-        value: currentValue ? currentValue.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ",") : "0.00",
+        value: totalPoolAvailable ? totalPoolAvailable.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ",") : "0.00",
         icon: <DollarCircle className="text-nomyx-text-light dark:text-nomyx-text-dark" />,
         color: "text-nomyx-text-light dark:text-nomyx-text-dark",
-        show: currentValue > 0,
-        loading: loading.tokens,
+        show: tradeDeals?.length > 0,
+        loading: loading.tradeDeals,
       },
       {
         key: "totalPoolInvestment",
@@ -112,7 +123,17 @@ const Dashboard: React.FC = () => {
         loading: loading.tokens,
       },
     ],
-    [tokens.length, currentValue, loading.tokens, pools.length, loading.pools, totalPoolInvestment]
+    [
+      tokens.length,
+      currentValue,
+      loading.tokens,
+      pools.length,
+      loading.pools,
+      totalPoolInvestment,
+      totalPoolAvailable,
+      loading.tradeDeals,
+      tradeDeals?.length,
+    ]
   );
 
   // Split stats into chunks of 5 for display
@@ -285,6 +306,17 @@ const Dashboard: React.FC = () => {
     }
   }, [user]);
 
+  const fetchTradeDeals = useCallback(async () => {
+    try {
+      const fetchedDeals = await TradeFinanceService.getTradeDeals();
+      setTradeDeals(fetchedDeals);
+    } catch (error) {
+      console.error("Error fetching trade deals:", error);
+    } finally {
+      setLoading((prev) => ({ ...prev, tradeDeals: false }));
+    }
+  }, []);
+
   const fetchPools = useCallback(async () => {
     if (!user?.walletAddress) {
       console.error("User wallet address is missing.");
@@ -322,8 +354,9 @@ const Dashboard: React.FC = () => {
       fetchRetiredTokens();
       fetchTokens();
       fetchPools();
+      fetchTradeDeals();
     }
-  }, [status, user, fetchEvents, fetchRetiredTokens, fetchTokens, fetchPools]);
+  }, [status, user, fetchEvents, fetchRetiredTokens, fetchTokens, fetchPools, fetchTradeDeals]);
 
   return (
     <>
