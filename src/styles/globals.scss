@@ -122,16 +122,6 @@ w3m-button{
 .ant-select .ant-select-arrow {
   color: #000 !important; /* Arrow color */
 }
-.signup-input::placeholder {
-  color: #BDBDBD; /* Set placeholder color */
-  opacity: 1; /* Ensure full opacity */
-}
-.signup-input:-ms-input-placeholder { /* Internet Explorer 10-11 */
-  color: #BDBDBD;
-}
-.signup-input::-ms-input-placeholder { /* Microsoft Edge */
-  color: #BDBDBD;
-}
 .onboarding-header-card .ant-card-body {
   padding: 0px;
 }
@@ -219,14 +209,14 @@ w3m-button{
   opacity: 1;
 }
 .login-radio-button.ant-radio-button-wrapper-checked {
-  background: #3F206B !important;
-  border-color: #3F206B !important;
+  background: rgb(37 99 235) !important;
+  border-color: rgb(37 99 235) !important;
 }
 .auth-page button.ant-btn-primary:not([disabled]), [type='button'].ant-btn-primary:not([disabled]) {
-  background-color: #3F206B !important;
+  background-color: rgb(37 99 235) !important;
 }
 .auth-page .ant-card .ant-card-body, .auth-page .ant-card .ant-card-head {
-  background-color: #3E81C833 !important;
+  // background-color: #3E81C833 !important;
 }
 .auth-page .ant-card .ant-card-grid, .auth-page .ant-card-head {
   background-color: transparent !important;

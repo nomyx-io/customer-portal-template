@@ -69,12 +69,12 @@ const TokenCardView: React.FC<TokenCardViewProps> = ({
           y="50%"
           fontFamily="Arial, sans-serif"
           fontWeight="bold"
-          fontSize="50"
+          fontSize="40"
           fill="white"
           dominantBaseline="middle"
           textAnchor="middle"
         >
-          KC
+          SGH
         </text>
       </svg>
     );
@@ -88,7 +88,10 @@ const TokenCardView: React.FC<TokenCardViewProps> = ({
         Object.entries(tokenData).forEach(([key, value]) => {
           if (value != null && !(key in nonNullColumns) && !EXCLUDED_COLUMNS.has(key)) {
             nonNullColumns[key] = {
-              title: key.replace(/([A-Z])/g, " $1").replace(/^./, (str) => str.toUpperCase()),
+              title: key
+                .replace(/([A-Z])/g, " $1") // Add space before uppercase letters
+                .replaceAll("_", " ") // Replace underscores with spaces
+                .replace(/\b\w/g, (char) => char.toUpperCase()), // Capitalize first letter of every word,
               key,
             };
           }
@@ -167,13 +170,19 @@ const TokenCardView: React.FC<TokenCardViewProps> = ({
               {/* Project Details Section */}
               <div className="mt-4 grid gap-2">
                 {[
-                  {
-                    label: "Total Price",
-                    value:
-                      industryTemplate === Industries.TRADE_FINANCE
-                        ? formatPrice(Number(project.price), "USD")
-                        : formatPrice(Number(project.token.price), "USD"),
-                  },
+                  ...(project?.price > 0 || project?.token?.price > 0
+                    ? [
+                        {
+                          label: "Total Price",
+                          value:
+                            industryTemplate === Industries.TRADE_FINANCE
+                              ? formatPrice(Number(project.price), "USD")
+                              : isSalesHistory
+                                ? formatPrice(Number(project.token.price), "USD")
+                                : formatPrice(Number(project.token.price) / 1_000_000, "USD"),
+                        },
+                      ]
+                    : []),
                   ...dynamicColumnData,
                 ].map((item, index) => (
                   <div key={index} className="flex items-center">
@@ -195,7 +204,7 @@ const TokenCardView: React.FC<TokenCardViewProps> = ({
               </div>
 
               {/* Purchase Button and Checkbox (Only shown if not sales history) */}
-              {!isSalesHistory && (
+              {!isSalesHistory && industryTemplate != Industries.TRADE_FINANCE && (
                 <div className="mt-4 flex justify-end items-center">
                   {/* Checkbox for Selecting the Card */}
                   {/* <Checkbox

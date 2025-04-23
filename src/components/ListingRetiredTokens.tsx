@@ -14,7 +14,7 @@ interface Token {
   totalPrice: number;
   registerId: string;
   existingCredits: number;
-  issuanceDate: string;
+  createdAt: string;
   ghgReduction: string;
   state: string;
 }
@@ -80,12 +80,12 @@ const ListingRetiredTokens = ({ tokens }: { tokens: Token[] }) => {
           y="50%" // Adjusted to bring text to vertical center
           fontFamily="Arial, sans-serif"
           fontWeight="bold"
-          fontSize="300" // Increased font size to make "KC" bigger
+          fontSize="220" // Increased font size to make "KC" bigger
           fill="white"
           dominantBaseline="middle"
           textAnchor="middle"
         >
-          KC
+          SGH
         </text>
       </svg>
     );
@@ -117,9 +117,9 @@ const ListingRetiredTokens = ({ tokens }: { tokens: Token[] }) => {
     },
     {
       title: "Issuance Date",
-      dataIndex: "issuanceDate",
-      sorter: (a, b) => new Date(a.issuanceDate).getTime() - new Date(b.issuanceDate).getTime(),
-      ...getColumnSearchProps("issuanceDate"),
+      dataIndex: "createdAt",
+      sorter: (a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime(),
+      ...getColumnSearchProps("createdAt"),
     },
   ];
 

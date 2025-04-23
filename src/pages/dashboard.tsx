@@ -1,15 +1,17 @@
 import React, { useEffect, useState, useMemo, useCallback } from "react";
 
 import { InfoCircleOutlined, WarningOutlined } from "@ant-design/icons";
-import { Card, List, Statistic, Tabs } from "antd/es";
+import { Card, List, Statistic, Tabs, Skeleton } from "antd/es";
 import { CategoryScale } from "chart.js";
 import Chart from "chart.js/auto";
-import { Setting, DollarCircle, Coin } from "iconsax-react";
+import { Setting, DollarCircle, Coin, NoteText } from "iconsax-react";
+import Head from "next/head";
 import { useSession } from "next-auth/react";
 import { Bar } from "react-chartjs-2";
 
 import Ellipsis from "@/components/Ellipsis";
 import KronosCustomerService from "@/services/KronosCustomerService";
+import TradeFinanceService from "@/services/TradeFinanceService";
 
 Chart.register(CategoryScale);
 
@@ -21,6 +23,15 @@ const Dashboard: React.FC = () => {
   const [tokens, setTokens] = useState<any>([]);
   const [retiredTokens, setRetiredTokens] = useState<any>([]);
   const [events, setEvents] = useState<any>([]);
+  const [pools, setPools] = useState<any>([]);
+  const [tradeDeals, setTradeDeals] = useState<any>([]);
+  const [loading, setLoading] = useState({
+    tokens: true,
+    retiredTokens: true,
+    events: true,
+    pools: true,
+    tradeDeals: true,
+  });
 
   // Derived state
   const carbonRetired = useMemo(() => {
@@ -33,50 +44,135 @@ const Dashboard: React.FC = () => {
     return { currentValue: totalValue, totalCarbon };
   }, [tokens]);
 
-  //const retirableCarbon = useMemo(() => parseFloat(totalCarbon) - parseFloat(carbonRetired), [totalCarbon, carbonRetired]);
+  const totalPoolInvestment = useMemo(() => {
+    return pools.reduce((acc: number, pool: any) => acc + (pool.totalInvestedAmount || 0), 0);
+  }, [pools]);
 
-  // Statistics data
-  const stats = useMemo(
+  const { totalPoolAvailable, totalFundingTarget } = useMemo(() => {
+    let totalTarget = 0;
+    let totalAvailable = 0;
+
+    tradeDeals.forEach((deal: any) => {
+      const fundingTarget = deal.fundingTarget || 0;
+      const usdcBalance = deal.usdcBalance || 0;
+      const available = fundingTarget - usdcBalance;
+
+      totalTarget += fundingTarget;
+      totalAvailable += available > 0 ? available : 0;
+    });
+
+    return { totalPoolAvailable: totalAvailable, totalFundingTarget: totalTarget };
+  }, [tradeDeals]);
+
+  // Statistics data with pending states
+  const allStats = useMemo(
     () => [
+      // {
+      //   key: "totalAssets",
+      //   title: "Total Assets",
+      //   value: tokens?.length,
+      //   icon: <Coin />,
+      //   color: tokens?.length < 1 ? "text-nomyx-danger-light dark:text-nomyx-danger-dark" : "text-nomyx-text-light dark:text-nomyx-text-dark",
+      //   show: true, // Always show
+      //   loading: loading.tokens,
+      // },
+      // {
+      //   key: "totalFunding",
+      //   title: "Total Funding",
+      //   value: currentValue ? currentValue.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ",") : "0.00",
+      //   icon: <DollarCircle className="text-nomyx-text-light dark:text-nomyx-text-dark" />,
+      //   color: "text-nomyx-text-light dark:text-nomyx-text-dark",
+      //   show: true, // Always show
+      //   loading: loading.tokens,
+      // },
       {
+        key: "totalPoolsFunded",
         title: "Total Pools Funded",
-        value: tokens?.length,
-        // Icon KronosSymbolDark or KronosSymbolLight depending on the theme
-        icon: <Coin />,
-        color: tokens?.length < 1 ? "text-nomyx-danger-light dark:text-nomyx-danger-dark" : "text-nomyx-text-light dark:text-nomyx-text-dark",
+        value: pools?.length,
+        icon: <NoteText />,
+        color: pools?.length < 1 ? "text-nomyx-danger-light dark:text-nomyx-danger-dark" : "text-nomyx-text-light dark:text-nomyx-text-dark",
+        show: pools?.length > 0,
+        loading: loading.pools,
       },
       {
+        key: "totalPoolAvailable",
         title: "Total Pool Available",
-        value: currentValue ? currentValue.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ",") : "0.00",
+        value: totalPoolAvailable ? totalPoolAvailable.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ",") : "0.00",
         icon: <DollarCircle className="text-nomyx-text-light dark:text-nomyx-text-dark" />,
         color: "text-nomyx-text-light dark:text-nomyx-text-dark",
+        show: tradeDeals?.length > 0,
+        loading: loading.tradeDeals,
       },
       {
+        key: "totalPoolInvestment",
         title: "Total Pool Investment",
-        value: currentValue ? currentValue.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ",") : "0.00",
+        value: totalPoolInvestment ? totalPoolInvestment.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ",") : "0.00",
         icon: <DollarCircle className="text-nomyx-text-light dark:text-nomyx-text-dark" />,
         color: "text-nomyx-text-light dark:text-nomyx-text-dark",
+        show: pools?.length > 0,
+        loading: loading.pools,
       },
       {
+        key: "interestGenerated",
         title: "Interest Generated",
         value: currentValue ? currentValue.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ",") : "0.00",
         icon: <DollarCircle className="text-nomyx-text-light dark:text-nomyx-text-dark" />,
         color: "text-nomyx-text-light dark:text-nomyx-text-dark",
+        show: currentValue > 0,
+        loading: loading.tokens,
       },
       {
+        key: "averageAPY",
         title: "Average APY %",
         value: tokens?.length,
         color: tokens?.length < 1 ? "text-nomyx-danger-light dark:text-nomyx-danger-dark" : "text-nomyx-text-light dark:text-nomyx-text-dark",
+        show: tokens?.length > 0,
+        loading: loading.tokens,
       },
     ],
-    [tokens.length, currentValue]
+    [
+      tokens.length,
+      currentValue,
+      loading.tokens,
+      pools.length,
+      loading.pools,
+      totalPoolInvestment,
+      totalPoolAvailable,
+      loading.tradeDeals,
+      tradeDeals?.length,
+    ]
   );
+
+  // Split stats into chunks of 5 for display
+  const statsChunks = useMemo(() => {
+    const visibleStats = allStats.filter((stat) => stat.show);
+    const chunks = [];
+    for (let i = 0; i < visibleStats.length; i += 5) {
+      chunks.push(visibleStats.slice(i, i + 5));
+    }
+    return chunks;
+  }, [allStats]);
 
   // Filtered events
   const salesEvents = useMemo(() => events.filter((event: any) => event.event === "Sales"), [events]);
   const redemptionEvents = useMemo(() => events.filter((event: any) => event.event === "CarbonCreditsRetired"), [events]);
 
   // Chart data preparation
+  // New chart data for Pool Insights
+  const preparePoolChartData = useCallback(() => {
+    return {
+      labels: ["Total Pools Amount", "Total Pool Available"],
+      datasets: [
+        {
+          label: "Amount in USD",
+          data: [totalFundingTarget || 0, totalPoolAvailable || 0],
+          backgroundColor: ["rgba(33, 102, 248, 0.8)", "rgba(255, 130, 0, 0.8)"],
+        },
+      ],
+    };
+  }, [totalFundingTarget, totalPoolAvailable]);
+
+  // Original chart data for Token Insights
   const prepareTokenChartData = useCallback(() => {
     return {
       labels: ["Total Tokens Purchased", "Sales"],
@@ -123,26 +219,26 @@ const Dashboard: React.FC = () => {
   // Tab items
   const mainTabItems = useMemo(
     () => [
-      {
-        key: "1",
-        label: "Token Insights",
-        children: <Bar data={prepareTokenChartData()} options={chartOptions} />,
-        className: "chart",
-      },
-      {
-        key: "2",
-        label: "Invoice Insights",
-        children: <Bar data={prepareTokenChartData()} options={chartOptions} />,
-        className: "chart",
-      },
+      // {
+      //   key: "1",
+      //   label: "Token Insights",
+      //   children: <Bar data={prepareTokenChartData()} options={chartOptions} />,
+      //   className: "chart",
+      // },
+      // {
+      //   key: "2",
+      //   label: "Invoice Insights",
+      //   children: <Bar data={prepareTokenChartData()} options={chartOptions} />,
+      //   className: "chart",
+      // },
       {
         key: "3",
         label: "Pool Insights",
-        children: <Bar data={prepareTokenChartData()} options={chartOptions} />,
+        children: <Bar data={preparePoolChartData()} options={chartOptions} />,
         className: "chart",
       },
     ],
-    [prepareTokenChartData, chartOptions]
+    [prepareTokenChartData, preparePoolChartData, chartOptions]
   );
 
   const sidebarTabItems = useMemo(
@@ -201,7 +297,7 @@ const Dashboard: React.FC = () => {
     [salesEvents, redemptionEvents]
   );
 
-  // Fetch functions
+  // Fetch functions with loading states
   const fetchEvents = useCallback(async () => {
     if (!user?.walletAddress) {
       console.error("User wallet address not found.");
@@ -212,6 +308,8 @@ const Dashboard: React.FC = () => {
       setEvents(fetchedEvents);
     } catch (error) {
       console.error("Error fetching events:", error);
+    } finally {
+      setLoading((prev) => ({ ...prev, events: false }));
     }
   }, [user]);
 
@@ -225,6 +323,34 @@ const Dashboard: React.FC = () => {
       setRetiredTokens(fetchedRetiredTokens);
     } catch (error) {
       console.error("Error fetching retired tokens:", error);
+    } finally {
+      setLoading((prev) => ({ ...prev, retiredTokens: false }));
+    }
+  }, [user]);
+
+  const fetchTradeDeals = useCallback(async () => {
+    try {
+      const fetchedDeals = await TradeFinanceService.getTradeDeals();
+      setTradeDeals(fetchedDeals);
+    } catch (error) {
+      console.error("Error fetching trade deals:", error);
+    } finally {
+      setLoading((prev) => ({ ...prev, tradeDeals: false }));
+    }
+  }, []);
+
+  const fetchPools = useCallback(async () => {
+    if (!user?.walletAddress) {
+      console.error("User wallet address is missing.");
+      return;
+    }
+    try {
+      const fetchedPools = await TradeFinanceService.getUserTradePools(user.walletAddress);
+      setPools(fetchedPools);
+    } catch (error) {
+      console.error("Error fetching pools:", error);
+    } finally {
+      setLoading((prev) => ({ ...prev, pools: false }));
     }
   }, [user]);
 
@@ -238,6 +364,8 @@ const Dashboard: React.FC = () => {
       setTokens(fetchedTokens);
     } catch (error) {
       console.error("Error fetching tokens:", error);
+    } finally {
+      setLoading((prev) => ({ ...prev, tokens: false }));
     }
   }, [user]);
 
@@ -247,37 +375,64 @@ const Dashboard: React.FC = () => {
       fetchEvents();
       fetchRetiredTokens();
       fetchTokens();
+      fetchPools();
+      fetchTradeDeals();
     }
-  }, [status, user, fetchEvents, fetchRetiredTokens, fetchTokens]);
+  }, [status, user, fetchEvents, fetchRetiredTokens, fetchTokens, fetchPools, fetchTradeDeals]);
 
   return (
     <>
+      <Head>
+        <title>Dashboard - Customer Portal</title>
+      </Head>
       <div className="dashboard grid grid-cols-1 lg:grid-cols-4 gap-3">
         <div className="lg:col-span-3">
           {/* Statistics section */}
-          <div className="flex flex-wrap gap-3 pb-3">
-            {stats.map((stat, index) => (
-              <Card
-                key={index}
-                className="flex-1 text-center bg-nomyx-dark2-light dark:bg-nomyx-dark2-dark border-nomyx-gray4-light dark:border-nomyx-gray4-dark"
-              >
-                <Statistic
-                  title={<span className="text-nomyx-gray2-light dark:text-nomyx-gray2-dark">{stat.title}</span>}
-                  value={stat.value}
-                  formatter={() => (
-                    <div className="flex items-center space-x-2">
-                      {stat.icon}
-                      <span className={stat.color}>{stat.value}</span>
-                    </div>
-                  )}
-                  valueStyle={{
-                    color: stat.color,
-                    display: "flex",
-                    justifyContent: "center",
-                    alignItems: "center",
-                  }}
-                />
-              </Card>
+          <div className="flex flex-col gap-3 pb-3">
+            {statsChunks.map((chunk, chunkIndex) => (
+              <div key={`chunk-${chunkIndex}`} className={`flex flex-wrap mx-[-0.5rem] ${chunk.length > 5 ? "justify-center" : ""}`}>
+                {chunk.map((stat, index) => (
+                  <div
+                    key={`${chunkIndex}-${index}`}
+                    className={`px-2 ${
+                      chunk.length === 1
+                        ? "w-full"
+                        : chunk.length === 2
+                          ? "w-1/2"
+                          : chunk.length === 3
+                            ? "w-1/3"
+                            : chunk.length === 4
+                              ? "w-1/4"
+                              : chunk.length === 5
+                                ? "w-1/5"
+                                : "min-w-[200px] max-w-[300px] flex-1"
+                    }`}
+                  >
+                    <Card className="w-full text-center bg-nomyx-dark2-light dark:bg-nomyx-dark2-dark border-nomyx-gray4-light dark:border-nomyx-gray4-dark">
+                      {stat.loading ? (
+                        <Skeleton active paragraph={{ rows: 1 }} />
+                      ) : (
+                        <Statistic
+                          title={<span className="text-nomyx-gray2-light dark:text-nomyx-gray2-dark">{stat.title}</span>}
+                          value={stat.value}
+                          formatter={() => (
+                            <div className="flex items-center space-x-2">
+                              {stat.icon}
+                              <span className={stat.color}>{stat.value}</span>
+                            </div>
+                          )}
+                          valueStyle={{
+                            color: stat.color,
+                            display: "flex",
+                            justifyContent: "center",
+                            alignItems: "center",
+                          }}
+                        />
+                      )}
+                    </Card>
+                  </div>
+                ))}
+              </div>
             ))}
           </div>
 

@@ -65,7 +65,7 @@ class TradeFinanceService {
     }
   }
 
-  public async initiateTradeWithdrawUSDC(tradeDealId: number, amount: bigint, walletId: string, dfnsToken: string) {
+  public async initiateTradeWithdrawUSDC(tradeDealId: number, amount: string, walletId: string, dfnsToken: string) {
     if (!tradeDealId || !amount || !walletId || !dfnsToken) {
       throw new Error("Missing required parameters for withdraw.");
     }
@@ -114,7 +114,8 @@ class TradeFinanceService {
 
   public async getUserTradePools(userAddress: string): Promise<TradeFinancePool[]> {
     // Step 1: Fetch TradeDealUSDCDeposit records for the ownerAddress
-    const records = await ParseService.getRecords("TradeDealUSDCDeposit", ["ownerAddress"], [userAddress.toLowerCase()], ["tradeDealId", "amount"]);
+    userAddress = userAddress.toLowerCase();
+    const records = await ParseService.getRecords("TradeDealUSDCDeposit", ["ownerAddress"], [userAddress], ["tradeDealId", "amount"]);
 
     if (!records || records.length === 0) return [];
 
@@ -140,16 +141,18 @@ class TradeFinanceService {
     );
 
     // Step 4: Create a final combined result
-    const result = uniqueTradeDealIds.map((tradeDealId) => {
+    const result = uniqueTradeDealIds.flatMap((tradeDealId) => {
       const project = tokenProjects?.find((p) => p.get("tradeDealId") == tradeDealId);
+      if (!project) return [];
+
       return {
-        tradeDealId: tradeDealId,
-        title: (project?.get("title") as string) || "Unknown",
-        description: (project?.get("description") as string) || "Unknown",
+        tradeDealId,
+        title: (project.get("title") as string) || "Unknown",
+        description: (project.get("description") as string) || "Unknown",
         totalInvestedAmount: tradeDealMap[tradeDealId],
-        projectId: project?.id ?? "", // Ensure it's always a string
-        logo: project?.get("logo") ?? "", // Provide a default if required
-        coverImage: project?.get("coverImage") ?? "", // Provide a default if required
+        projectId: project.id ?? "",
+        logo: project.get("logo") ?? "",
+        coverImage: project.get("coverImage") ?? "",
       };
     });
 
@@ -159,7 +162,7 @@ class TradeFinanceService {
   public async getDepositHistory(userAddress: string): Promise<HistoryData[]> {
     // Step 1: Fetch TradeDealUSDCDeposit records for the given user address
     const tradeDealDeposits =
-      (await ParseService.getRecords("TradeDealUSDCDeposit", ["ownerAddress"], [userAddress], ["tradeDealId", "amount"])) || [];
+      (await ParseService.getRecords("TradeDealUSDCDeposit", ["ownerAddress"], [userAddress.toLowerCase()], ["tradeDealId", "amount"])) || [];
 
     if (tradeDealDeposits.length === 0) return [];
 
@@ -177,21 +180,20 @@ class TradeFinanceService {
 
   public async getRedeemedVABBHistory(userAddress: string): Promise<RedeemedVABBHistory[]> {
     // Step 1: Fetch VABBTokensRedeemed records for the given user address
-    const redeemedVABBs =
-      (await ParseService.getRecords("VABBTokensRedeemed", ["ownerAddress"], [userAddress], ["tradeDealId", "vabbAmount", "usdcAmount"])) || [];
+    const redeemedVABBs = (await ParseService.getRecords("Transaction", ["sender", "type"], [userAddress, "CollateralRedemption"], ["*"])) || [];
 
     if (redeemedVABBs.length === 0) return [];
 
     // Step 2: Fetch user details from the User table based on walletAddress
     const userRecords = await ParseService.getFirstRecord("User", ["walletAddress"], [userAddress]);
-
     // Step 3: Construct the final history data array
     return redeemedVABBs.map((vabb) => ({
+      id: vabb.get("id") as string,
       redeemerName: `${userRecords?.get("firstName") || "Unknown"} ${userRecords?.get("lastName") || ""}`.trim(),
       redeemerId: userRecords?.id || "",
-      vabbAmount: vabb.get("vabbAmount") as number,
+      collateralAmount: vabb.get("collateralAmount") as number,
       usdcAmount: vabb.get("usdcAmount") as number,
-      tradeDealId: vabb.get("tradeDealId") as number,
+      tradeDealId: vabb.get("tradeDeal").get("tradeDealId") as number,
     }));
   }
 
@@ -246,6 +248,22 @@ class TradeFinanceService {
         completeResponse: null,
         error: error instanceof Error ? error.message : JSON.stringify(error),
       };
+    }
+  }
+
+  public async getTradeDeals(): Promise<any[]> {
+    try {
+      const tradeDeals = await ParseService.getRecords("TradeDeal", [], [], ["usdcBalance", "fundingTarget"]);
+
+      if (!tradeDeals) return [];
+
+      return tradeDeals.map((deal) => ({
+        usdcBalance: Number(deal.get("usdcBalance") || 0),
+        fundingTarget: Number(deal.get("fundingTarget") || 0),
+      }));
+    } catch (error) {
+      console.error("Error fetching trade deals:", error);
+      return [];
     }
   }
 }

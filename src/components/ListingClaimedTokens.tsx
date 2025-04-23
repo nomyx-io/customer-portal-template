@@ -74,12 +74,12 @@ const ListingClaimedTokens = ({ tokens }: { tokens: ClaimedToken[] }) => {
           y="50%" // Adjusted to bring text to vertical center
           fontFamily="Arial, sans-serif"
           fontWeight="bold"
-          fontSize="300" // Increased font size to make "KC" bigger
+          fontSize="220" // Increased font size to make "KC" bigger
           fill="white"
           dominantBaseline="middle"
           textAnchor="middle"
         >
-          KC
+          SGH
         </text>
       </svg>
     );

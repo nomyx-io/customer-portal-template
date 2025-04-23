@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 
 import { Tabs, Card } from "antd";
 import { InfoCircle, DocumentText, Personalcard, WalletAdd1, UserTick } from "iconsax-react";
+import Head from "next/head";
 import { useRouter } from "next/router";
 import Parse from "parse";
 import { toast } from "react-toastify";
@@ -158,41 +159,46 @@ const OnboardingComponent = () => {
   };
 
   return (
-    <div
-      className="relative w-full min-h-screen overflow-hidden flex flex-col items-center"
-      style={{
-        backgroundImage: "url('/images/nomyx_banner.svg')",
-        backgroundSize: "cover",
-        backgroundPosition: "center",
-      }}
-    >
-      <Card className="h-[100px] w-[90%] max-w-[1400px] mt-5 onboarding-header-card bg-[#F1F5F9]">
-        <Tabs
-          activeKey={activeTab}
-          onChange={handleTabChange} // Use the custom handler
-          centered
-          tabBarStyle={{ borderBottom: "none" }}
-        >
-          {tabs.map((tab) => (
-            <Tabs.TabPane
-              key={tab.key}
-              tab={
-                <div className="flex flex-col items-center relative">
-                  {tab.icon}
-                  <span className="text-[#626262]">{tab.label}</span>
-                  {/* Show dot only if the tab is NOT active */}
-                  {activeTab !== tab.key && <span className="dot absolute bottom-[-20px] text-3xl text-[#409C43]">•</span>}
-                </div>
-              }
-            />
-          ))}
-        </Tabs>
-      </Card>
+    <>
+      <Head>
+        <title>Onboarding - Customer Portal</title>
+      </Head>
+      <div
+        className="relative w-full min-h-screen overflow-hidden flex flex-col items-center"
+        style={{
+          backgroundImage: "url('/images/nomyx_banner.svg')",
+          backgroundSize: "cover",
+          backgroundPosition: "center",
+        }}
+      >
+        <Card className="h-[100px] w-[90%] max-w-[1400px] mt-5 onboarding-header-card bg-nomyxDark1 border-none bg-opacity-90">
+          <Tabs
+            activeKey={activeTab}
+            onChange={handleTabChange} // Use the custom handler
+            centered
+            tabBarStyle={{ borderBottom: "none" }}
+          >
+            {tabs.map((tab) => (
+              <Tabs.TabPane
+                key={tab.key}
+                tab={
+                  <div className="flex flex-col items-center relative">
+                    {tab.icon}
+                    <span className="text-[#626262]">{tab.label}</span>
+                    {/* Show dot only if the tab is NOT active */}
+                    {activeTab !== tab.key && <span className="dot absolute bottom-[-20px] text-3xl text-[#409C43]">•</span>}
+                  </div>
+                }
+              />
+            ))}
+          </Tabs>
+        </Card>
 
-      <Card className="flex-grow mt-5 w-[90%] max-w-[1400px] overflow-auto mb-5 bg-[#3E81C833]">
-        <div>{tabs.find((tab) => tab.key === activeTab)?.content}</div>
-      </Card>
-    </div>
+        <Card className="flex-grow mt-5 w-[90%] max-w-[1400px] overflow-auto mb-5 bg-nomyxDark1 border-none bg-opacity-90">
+          <div>{tabs.find((tab) => tab.key === activeTab)?.content}</div>
+        </Card>
+      </div>
+    </>
   );
 };
 

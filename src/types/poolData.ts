@@ -36,9 +36,10 @@ export interface HistoryData {
 }
 
 export interface RedeemedVABBHistory {
+  id: string;
   redeemerName: string;
   redeemerId: string;
-  vabbAmount: number;
+  collateralAmount: number;
   usdcAmount: number;
   tradeDealId: number;
 }
