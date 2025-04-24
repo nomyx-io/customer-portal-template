@@ -60,6 +60,7 @@ const AutoLogout = () => {
 
     return () => clearInterval(intervalId); // Clean up interval on unmount
   }, [expirationTime, status, isInitialized, hasLoggedOut]);
+  return null;
 };
 
 export default AutoLogout;

@@ -27,7 +27,7 @@ export const actions = {
     const processPurchase = async (onComplete: () => Promise<void>) => {
       if (walletPreference === WalletPreference.PRIVATE) {
         const response = await BlockchainService.purchaseTokens([token]);
-        if (response === "rejected") {
+        if (Array.isArray(response) && response.some((item) => item.status === "rejected")) {
           throw new Error("The purchase was rejected.");
         }
       } else if (walletPreference === WalletPreference.MANAGED) {
