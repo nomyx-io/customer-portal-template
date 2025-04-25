@@ -25,6 +25,7 @@ const Dashboard: React.FC = () => {
   const [events, setEvents] = useState<any>([]);
   const [pools, setPools] = useState<any>([]);
   const [tradeDeals, setTradeDeals] = useState<any>([]);
+  const [tradeDealEvent, setTradeDealEvent] = useState<any>([]);
   const [loading, setLoading] = useState({
     tokens: true,
     retiredTokens: true,
@@ -249,7 +250,7 @@ const Dashboard: React.FC = () => {
         children: (
           <List
             itemLayout="horizontal"
-            dataSource={salesEvents}
+            dataSource={tradeDealEvent?.length ? tradeDealEvent : salesEvents}
             renderItem={(item: any, index) => (
               <List.Item key={`event-list-item-${index}`}>
                 <List.Item.Meta
@@ -369,6 +370,21 @@ const Dashboard: React.FC = () => {
     }
   }, [user]);
 
+  const fetchTradeDealEvents = useCallback(async () => {
+    if (!user?.walletAddress) {
+      console.error("User wallet address not found.");
+      return;
+    }
+    try {
+      const fetchedEvents = await TradeFinanceService.getTradeDealEvents(user.walletAddress);
+      setTradeDealEvent(fetchedEvents);
+    } catch (error) {
+      console.error("Error fetching events:", error);
+    } finally {
+      setLoading((prev) => ({ ...prev, events: false }));
+    }
+  }, [user]);
+
   // Initial data fetch on component mount
   useEffect(() => {
     if (status === "authenticated" && user?.walletAddress) {
@@ -377,6 +393,7 @@ const Dashboard: React.FC = () => {
       fetchTokens();
       fetchPools();
       fetchTradeDeals();
+      fetchTradeDealEvents();
     }
   }, [status, user, fetchEvents, fetchRetiredTokens, fetchTokens, fetchPools, fetchTradeDeals]);
 
