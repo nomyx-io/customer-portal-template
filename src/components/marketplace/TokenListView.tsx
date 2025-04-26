@@ -114,7 +114,7 @@ const TokenListView: React.FC<TokenListViewProps> = ({
     );
   };
 
-  const getDynamicColumns = (maxColumns = 7): ColumnConfig[] => {
+  const getDynamicColumns = (maxColumns = 8): ColumnConfig[] => {
     const nonNullColumns: Record<string, ColumnConfig> = {};
     projects.forEach((token) => {
       const tokenData = industryTemplate === Industries.TRADE_FINANCE ? token : token.token;
@@ -135,27 +135,41 @@ const TokenListView: React.FC<TokenListViewProps> = ({
     });
     return Object.values(nonNullColumns).slice(0, maxColumns);
   };
+
   const createColumns = (nonNullColumns: ColumnConfig[]) => {
-    return nonNullColumns.map(({ title, key }) => ({
-      title,
-      dataIndex: industryTemplate === Industries.TRADE_FINANCE ? key : ["token", key],
-      render: (value: any) => {
-        if (typeof value === "object") return "N/A";
-        if (typeof value === "string" && isValidUrl(value)) {
-          return (
-            <a href={value} target="_blank" rel="noopener noreferrer" className="text-blue-500 hover:text-blue-700">
-              View Document
-            </a>
-          );
-        }
-        return <span>{value}</span>;
-      },
-      sorter: (a: any, b: any) => {
-        const aValue = industryTemplate === Industries.TRADE_FINANCE ? a[key] : a.token[key];
-        const bValue = industryTemplate === Industries.TRADE_FINANCE ? b[key] : b.token[key];
-        return typeof aValue === "string" && typeof bValue === "string" ? aValue.localeCompare(bValue) : 0;
-      },
-    }));
+    return nonNullColumns.map(({ title, key }) => {
+      const isTotalAmount = key === "totalAmount";
+      const isIsinNumber = key === "isin_number";
+      const isParValue = key === "par_value";
+      return {
+        title: isTotalAmount ? "Price" : isIsinNumber ? "ISIN Number" : title,
+        dataIndex: industryTemplate === Industries.TRADE_FINANCE ? key : ["token", key],
+        render: (value: any) => {
+          if (isTotalAmount || isParValue) {
+            return formatPrice(isTotalAmount ? value / 1_000_000 : value, "USD") || "-";
+          }
+          if (typeof value === "object") return "N/A";
+          if (typeof value === "string" && isValidUrl(value)) {
+            return (
+              <a href={value} target="_blank" rel="noopener noreferrer" className="text-blue-500 hover:text-blue-700">
+                View Document
+              </a>
+            );
+          }
+          return <span>{value}</span>;
+        },
+        sorter: (a: any, b: any) => {
+          const aValue = industryTemplate === Industries.TRADE_FINANCE ? a[key] : a.token[key];
+          const bValue = industryTemplate === Industries.TRADE_FINANCE ? b[key] : b.token[key];
+
+          if (isTotalAmount) {
+            return (aValue ?? 0) - (bValue ?? 0);
+          }
+
+          return typeof aValue === "string" && typeof bValue === "string" ? aValue.localeCompare(bValue) : 0;
+        },
+      };
+    });
   };
 
   const dynamicColumns = getDynamicColumns(); // This would be your method to get the first 7 non-null columns

@@ -161,9 +161,16 @@ const TokenDetail: React.FC<TokenDetailProps> = ({ tokens, currentIndex, project
     []
   );
 
-  const formatValueByType = (type: string, value: any): React.ReactNode => {
+  const formatValueByType = (type: string, value: any, key: string): React.ReactNode => {
     // chek if value is undefined or null or empty
     if (value === undefined || value === null || (type === "string" && typeof value === "string" && value.trim() === "")) return "N/A";
+
+    const keyTypeMap: Record<string, string> = {
+      isin_number: "string",
+      par_value: "price",
+    };
+
+    type = keyTypeMap[key] || type;
 
     switch (type) {
       case "text":
@@ -183,7 +190,7 @@ const TokenDetail: React.FC<TokenDetailProps> = ({ tokens, currentIndex, project
       case "date":
         return dayjs(value).format("MM-DD-YYYY");
       case "price":
-        return formatPrice(Number(value) / 1_000_000, "USD");
+        return formatPrice(Number(value), "USD");
       // Add more cases as needed for other types
 
       default:
@@ -297,7 +304,7 @@ const TokenDetail: React.FC<TokenDetailProps> = ({ tokens, currentIndex, project
                               {tradeFinanceDocumentationFields.find((f) => f.name === field.name)?.label || field.name}:
                             </label>
                             <span className="w-full bg-white dark:bg-nomyx-dark2-dark text-gray-900 dark:text-white border border-gray-300 dark:border-gray-600 shadow-md rounded-md px-4 py-2 hover:bg-white dark:hover:bg-gray-800">
-                              {formatValueByType(field.type, value)}
+                              {formatValueByType(field.type, value, field.key)}
                             </span>
                           </div>
                         );
