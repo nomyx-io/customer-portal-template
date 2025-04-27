@@ -266,6 +266,29 @@ class TradeFinanceService {
       return [];
     }
   }
+
+  public async getTradeDealEvents(userAddress: string): Promise<{ event: string; transactionHash: string }[]> {
+    try {
+      const address = userAddress.toLowerCase();
+
+      const usdcDeposit = await ParseService.getRecords("USDCDepositedToTradeDeal__e", ["depositor"], [address], ["event", "transactionHash"]);
+
+      const fundingWithdrawn = await ParseService.getRecords("TradeDealFundingWithdrawn__e", ["recipient"], [address], ["event", "transactionHash"]);
+
+      const redeemedCollateral = await ParseService.getRecords("CollateralTokensRedeemed__e", ["redeemer"], [address], ["event", "transactionHash"]);
+
+      // Combine all records into one array
+      const allEvents = [...(usdcDeposit || []), ...(fundingWithdrawn || []), ...(redeemedCollateral || [])];
+      // Map to simplified format
+      return allEvents.map((record: any) => ({
+        event: record.attributes.event,
+        transactionHash: record.attributes.transactionHash,
+      }));
+    } catch (error) {
+      console.error("Error fetching trade deal events:", error);
+      return [];
+    }
+  }
 }
 
 export default TradeFinanceService.instance;
