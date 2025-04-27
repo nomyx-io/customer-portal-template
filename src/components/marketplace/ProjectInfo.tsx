@@ -36,7 +36,7 @@ const ProjectInfo: React.FC<ProjectInfoProps> = ({
           <div className="text-gray-800 dark:text-gray-200 space-y-4">
             {[
               {
-                label: industryTemplate === Industries.TRADE_FINANCE ? "Total Amount" : "Price",
+                label: "Price",
                 value:
                   industryTemplate === Industries.TRADE_FINANCE
                     ? `${formatPrice(token.totalAmount / 1_000_000, "USD")}`

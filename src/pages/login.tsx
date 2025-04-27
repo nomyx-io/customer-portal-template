@@ -49,7 +49,7 @@ const Login = function ({ csrfToken, callbackUrl }: InferGetServerSidePropsType<
 
       if (!result?.ok) {
         toast.dismiss("login");
-        toast.error(result?.status === 401 ? "Login failed. Unauthorized." : "An error occurred.");
+        toast.error(result?.status === 401 ? "Incorrect username / password" : "An error occurred.");
         return;
       }
 

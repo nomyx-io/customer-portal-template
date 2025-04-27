@@ -50,7 +50,6 @@ const PoolTableView: React.FC<Props> = ({ pools, handleRedeemVABB }) => {
   };
 
   const filteredData = pools.filter((pool) => pool.title.toLowerCase().includes(searchText));
-
   const columns: ColumnsType<TradeFinancePool> = [
     {
       title: "",
@@ -67,14 +66,7 @@ const PoolTableView: React.FC<Props> = ({ pools, handleRedeemVABB }) => {
       render: (_, record) => (
         <div style={{ display: "flex", alignItems: "center" }} className="">
           <div className="w-12 h-12 relative rounded overflow-hidden flex-shrink-0">
-            <Image
-              src={
-                typeof record.logo === "string" ? record.logo : record.logo instanceof File ? URL.createObjectURL(record.logo) : "/default-image.png"
-              }
-              alt={record.title || "Pool Image"}
-              fill
-              className="object-cover"
-            />
+            <Image src={record.logo?.url() || "/default-image.png"} alt={record.title || "Pool Image"} fill className="object-cover" />
           </div>
           <span className="ml-3 font-bold">{record.title}</span>
         </div>
@@ -94,7 +86,7 @@ const PoolTableView: React.FC<Props> = ({ pools, handleRedeemVABB }) => {
     {
       title: <div style={{ whiteSpace: "pre-line" }}>Total Invested Amount</div>,
       dataIndex: "totalInvestedAmount",
-      render: (totalInvestedAmount) => formatPrice(totalInvestedAmount / 1_000_000, "USD"),
+      render: (totalInvestedAmount) => formatPrice(totalInvestedAmount, "USD"),
       sorter: (a, b) => (a.totalInvestedAmount ?? 0) - (b.totalInvestedAmount ?? 0),
     },
     {

@@ -170,13 +170,13 @@ const TokenCardView: React.FC<TokenCardViewProps> = ({
               {/* Project Details Section */}
               <div className="mt-4 grid gap-2">
                 {[
-                  ...(project?.price > 0 || project?.token?.price > 0
+                  ...(project?.price > 0 || project?.token?.price > 0 || project?.totalAmount > 0
                     ? [
                         {
-                          label: "Total Price",
+                          label: "Price",
                           value:
                             industryTemplate === Industries.TRADE_FINANCE
-                              ? formatPrice(Number(project.price), "USD")
+                              ? formatPrice(Number(project.totalAmount) / 1_000_000, "USD")
                               : isSalesHistory
                                 ? formatPrice(Number(project.token.price), "USD")
                                 : formatPrice(Number(project.token.price) / 1_000_000, "USD"),

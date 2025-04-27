@@ -9,6 +9,7 @@ export interface ColumnData {
 }
 
 export const EXCLUDED_COLUMNS = new Set([
+  "id",
   "address",
   "createdAt",
   "updatedAt",
@@ -28,4 +29,6 @@ export const EXCLUDED_COLUMNS = new Set([
   "className",
   "claimTopics",
   "projectName",
+  "isWithdrawn",
+  "depositAmount",
 ]);
