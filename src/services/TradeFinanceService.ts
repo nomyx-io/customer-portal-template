@@ -269,20 +269,31 @@ class TradeFinanceService {
 
   public async getTradeDealEvents(userAddress: string): Promise<{ event: string; transactionHash: string }[]> {
     try {
-      const address = userAddress.toLowerCase();
+      const address = userAddress; // keep as provided
 
-      const usdcDeposit = await ParseService.getRecords("USDCDepositedToTradeDeal__e", ["depositor"], [address], ["event", "transactionHash"]);
+      const usdcDepositQuery = new Parse.Query("USDCDepositedToTradeDeal__e");
+      usdcDepositQuery.matches("depositor", new RegExp(`^${address}$`, "i"));
+      usdcDepositQuery.select("event", "transactionHash");
 
-      const fundingWithdrawn = await ParseService.getRecords("TradeDealFundingWithdrawn__e", ["recipient"], [address], ["event", "transactionHash"]);
+      const fundingWithdrawnQuery = new Parse.Query("TradeDealFundingWithdrawn__e");
+      fundingWithdrawnQuery.matches("recipient", new RegExp(`^${address}$`, "i"));
+      fundingWithdrawnQuery.select("event", "transactionHash");
 
-      const redeemedCollateral = await ParseService.getRecords("CollateralTokensRedeemed__e", ["redeemer"], [address], ["event", "transactionHash"]);
+      const redeemedCollateralQuery = new Parse.Query("CollateralTokensRedeemed__e");
+      redeemedCollateralQuery.matches("redeemer", new RegExp(`^${address}$`, "i"));
+      redeemedCollateralQuery.select("event", "transactionHash");
 
-      // Combine all records into one array
+      const [usdcDeposit, fundingWithdrawn, redeemedCollateral] = await Promise.all([
+        usdcDepositQuery.find(),
+        fundingWithdrawnQuery.find(),
+        redeemedCollateralQuery.find(),
+      ]);
+
       const allEvents = [...(usdcDeposit || []), ...(fundingWithdrawn || []), ...(redeemedCollateral || [])];
-      // Map to simplified format
+
       return allEvents.map((record: any) => ({
-        event: record.attributes.event,
-        transactionHash: record.attributes.transactionHash,
+        event: record.get("event"),
+        transactionHash: record.get("transactionHash"),
       }));
     } catch (error) {
       console.error("Error fetching trade deal events:", error);
