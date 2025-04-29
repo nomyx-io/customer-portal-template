@@ -89,7 +89,26 @@ const baseSep: any = {
   },
 };
 
-const chains = [base, baseSep, localhost];
+const optSep: Chain = {
+  id: 11155420,
+  network: "optimism",
+  name: "Optimism Sepolia",
+  nativeCurrency: {
+    name: "OP Sepolia",
+    symbol: "ETH",
+    decimals: 18,
+  },
+  rpcUrls: {
+    default: {
+      http: [process.env.NEXT_PUBLIC_NETWORK_OPTIMISM_SEPOLIA || ""],
+    },
+    public: {
+      http: [process.env.NEXT_PUBLIC_NETWORK_OPTIMISM_SEPOLIA || ""],
+    },
+  },
+};
+
+const chains = [base, baseSep, localhost, optSep];
 const wagmiConfig = defaultWagmiConfig({ chains, projectId, metadata });
 
 // 3. Create modal
