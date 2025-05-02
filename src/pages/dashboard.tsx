@@ -54,7 +54,7 @@ const Dashboard: React.FC = () => {
     let totalAvailable = 0;
 
     tradeDeals.forEach((deal: any) => {
-      const fundingTarget = deal.fundingTarget || 0;
+      const fundingTarget = (deal?.fundingTarget ?? 0) / 1_000_000;
       const usdcBalance = deal.usdcBalance || 0;
       const available = fundingTarget - usdcBalance;
 
