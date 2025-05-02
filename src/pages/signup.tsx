@@ -50,7 +50,7 @@ const SignUp = () => {
             lastName: formData.lastName,
             username: formData.email,
             password: data.password, // Password from password form
-            email: formData.email.toLowerCase(),
+            email: formData.email.toLowerCase().trim(),
             company: formData.company,
           });
 

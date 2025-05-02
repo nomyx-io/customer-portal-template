@@ -957,6 +957,8 @@ const ProjectDetails: React.FC<ProjectDetailsProps> = ({ project, onBack, type =
               Submit
             </Button>,
           ]}
+          maskClosable={false}
+          className="custom-modal"
         >
           <p>Enter the amount you want to invest in the pool:</p>
           <InputNumber
