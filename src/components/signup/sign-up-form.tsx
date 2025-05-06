@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 
 import { Card, Form, Input, Button } from "antd";
 import Image from "next/image";
@@ -6,12 +6,18 @@ import Link from "next/link";
 
 import CheckUserOnboarding from "./check-user-onboarding";
 
-const SignUpForm = ({ onNext, formData }: any) => {
+const SignUpForm = ({ onNext, formData, referralId }: any) => {
   const [form] = Form.useForm();
   const [isModalVisible, setIsModalVisible] = useState(false);
 
   // Initial form values (from parent state)
-  const initialValues = formData;
+  const initialValues = { ...formData };
+
+  useEffect(() => {
+    if (referralId) {
+      form.setFieldsValue({ referralId });
+    }
+  }, [referralId, form]);
 
   const onSubmit = (values: any) => {
     onNext(values); // Pass form data to parent and switch to PasswordForm
@@ -91,6 +97,15 @@ const SignUpForm = ({ onNext, formData }: any) => {
                   ]}
                 >
                   <Input placeholder="Company/Organization" className="signup-input" />
+                </Form.Item>
+
+                {/* Referal Id */}
+                <Form.Item name="referralId" label={<span className="text-nomyxGray1">Referral Id</span>}>
+                  <Input
+                    placeholder="Referral Id"
+                    className="signup-input"
+                    disabled={!!referralId} // Disable if referralId exists
+                  />
                 </Form.Item>
 
                 {/* Submit Button */}
