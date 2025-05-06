@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 
 import { Layout } from "antd";
 import Head from "next/head";
@@ -19,10 +19,21 @@ const SignUp = () => {
     lastName: "",
     email: "",
     company: "",
+    referralId: "",
   });
   const [showPasswordForm, setShowPasswordForm] = useState(false);
   const [showConfirmMessage, setShowConfirmMessage] = useState(false);
+  const [referralId, setReferralId] = useState("");
   const router = useRouter();
+
+  useEffect(() => {
+    if (router.isReady) {
+      const { referralId } = router.query;
+      if (typeof referralId === "string") {
+        setReferralId(referralId);
+      }
+    }
+  }, [router.isReady, router.query]);
 
   // Handle next step to show the password form
   const handleNext = (data: any) => {
@@ -52,6 +63,7 @@ const SignUp = () => {
             password: data.password, // Password from password form
             email: formData.email.toLowerCase().trim(),
             company: formData.company,
+            referralId: formData.referralId,
           });
 
           // Handle the API response
@@ -92,7 +104,7 @@ const SignUp = () => {
         ) : showPasswordForm ? (
           <PasswordForm onBack={handleBack} onSubmit={handleSubmit} />
         ) : (
-          <SignUpForm onNext={handleNext} formData={formData} />
+          <SignUpForm onNext={handleNext} formData={formData} referralId={referralId} />
         )}
       </Layout>
     </>
