@@ -961,13 +961,7 @@ const ProjectDetails: React.FC<ProjectDetailsProps> = ({ project, onBack, type =
           className="custom-modal"
         >
           <p>Enter the amount you want to invest in the pool:</p>
-          <InputNumber
-            min={1}
-            value={investAmount}
-            onChange={setInvestAmount}
-            className="w-full mt-2 border rounded-md bg-white focus-within:bg-white text-black"
-            placeholder="Enter amount"
-          />
+          <InputNumber min={1} value={investAmount} onChange={setInvestAmount} placeholder="Enter amount" />
         </Modal>
 
         <Modal
@@ -988,15 +982,11 @@ const ProjectDetails: React.FC<ProjectDetailsProps> = ({ project, onBack, type =
               Submit
             </Button>,
           ]}
+          maskClosable={false}
+          className="custom-modal"
         >
           <p>Enter the amount you want to USDC:</p>
-          <InputNumber
-            min={1}
-            value={usdcAmount}
-            onChange={setUSDCAmount}
-            className="w-full mt-2 border rounded-md bg-white focus-within:bg-white text-black"
-            placeholder="Enter amount"
-          />
+          <InputNumber min={1} value={usdcAmount} onChange={setUSDCAmount} placeholder="Enter amount" />
         </Modal>
       </ConfigProvider>
     </div>
