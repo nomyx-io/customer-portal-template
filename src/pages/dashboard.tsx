@@ -12,6 +12,7 @@ import { Bar } from "react-chartjs-2";
 import Ellipsis from "@/components/Ellipsis";
 import KronosCustomerService from "@/services/KronosCustomerService";
 import TradeFinanceService from "@/services/TradeFinanceService";
+import { formatNumber } from "@/utils/numberFormatter";
 
 Chart.register(CategoryScale);
 
@@ -62,6 +63,9 @@ const Dashboard: React.FC = () => {
       totalAvailable += available > 0 ? available : 0;
     });
 
+    totalTarget = totalTarget > 0 ? totalTarget / 1_000_000 : 0;
+    totalAvailable = totalAvailable > 0 ? totalAvailable / 1_000_000 : 0;
+
     return { totalPoolAvailable: totalAvailable, totalFundingTarget: totalTarget };
   }, [tradeDeals]);
 
@@ -98,7 +102,7 @@ const Dashboard: React.FC = () => {
       {
         key: "totalPoolAvailable",
         title: "Total Pool Available",
-        value: totalPoolAvailable ? totalPoolAvailable.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ",") : "0.00",
+        value: totalPoolAvailable ? formatNumber(totalPoolAvailable) : "0.00",
         icon: <DollarCircle className="text-nomyx-text-light dark:text-nomyx-text-dark" />,
         color: "text-nomyx-text-light dark:text-nomyx-text-dark",
         show: tradeDeals?.length > 0,
