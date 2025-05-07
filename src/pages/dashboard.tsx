@@ -224,12 +224,12 @@ const Dashboard: React.FC = () => {
   // Tab items
   const mainTabItems = useMemo(
     () => [
-      // {
-      //   key: "1",
-      //   label: "Token Insights",
-      //   children: <Bar data={prepareTokenChartData()} options={chartOptions} />,
-      //   className: "chart",
-      // },
+      {
+        key: "1",
+        label: "Token Insights",
+        children: <Bar data={prepareTokenChartData()} options={chartOptions} />,
+        className: "chart",
+      },
       // {
       //   key: "2",
       //   label: "Invoice Insights",
@@ -350,7 +350,7 @@ const Dashboard: React.FC = () => {
       return;
     }
     try {
-      const fetchedPools = await TradeFinanceService.getUserTradePools(user.walletAddress);
+      const fetchedPools = await TradeFinanceService.getUserTradePoolsStats(user.walletAddress);
       setPools(fetchedPools);
     } catch (error) {
       console.error("Error fetching pools:", error);
