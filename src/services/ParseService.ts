@@ -17,15 +17,32 @@ export default class ParseService {
     Parse.User.logOut();
   }
 
-  static setUser(session: string) {
-    // console.log("Setting user");
-    Parse.User.become(session).catch(async () => {
-      console.log("Error setting user");
+  static async setUser(session: string) {
+    try {
+      const user = await Parse.User.become(session);
+
+      //Call Cloud Function to generate JWT
+      const jwtResponse = await Parse.Cloud.run("generateJWTToken", {
+        userId: user.id,
+        claims: {
+          name: user.get("email") || user.get("username") || "unknown",
+          email: user.get("email") || "unknown@unknown.com",
+          issuer: "AP",
+          audience: "AP",
+          scope: "ap_users",
+        },
+      });
+
+      console.log("JWT token received:", jwtResponse.token);
+
+      // Optional: Store the JWT for later use
+      localStorage.setItem("jwtToken", jwtResponse.token);
+    } catch (error) {
+      console.error("Error in setUser or generating JWT:", error);
       Parse.User.logOut();
       await signOut();
-    });
+    }
   }
-
   /**
    * get a record from the parse database
    * @param collectionName
