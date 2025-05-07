@@ -121,22 +121,49 @@ class TradeFinanceService {
 
     // Step 2: Aggregate total amount for each unique tradeDealId
     const tradeDealMap: Record<number, number> = {};
+    const tradeDealPointerMap: Record<number, Parse.Object> = {};
 
     records.forEach((record) => {
       const tradeDealId = record.get("tradeDealId") as number;
       const amount = (record.get("amount") as number) || 0;
+      const tradeDeal = record.get("tradeDeal") as Parse.Object | undefined;
       tradeDealMap[tradeDealId] = (tradeDealMap[tradeDealId] || 0) + Number(amount);
+      if (tradeDeal?.id && tradeDealId) {
+        tradeDealPointerMap[tradeDealId] = tradeDeal;
+      }
     });
 
     // Step 3: Fetch TokenProject records for unique tradeDealIds
     const uniqueTradeDealIds = Object.keys(tradeDealMap).map((id) => Number(id));
 
     if (uniqueTradeDealIds.length === 0) return [];
+    const tradeDealPointers = Object.values(tradeDealPointerMap);
+    if (tradeDealPointers.length === 0) return [];
+
+    // Step 3: Query Transaction table for any of these tradeDeal pointers
+    const Transaction = Parse.Object.extend("Transaction");
+    const transactionQuery = new Parse.Query(Transaction);
+    transactionQuery.containedIn("tradeDeal", tradeDealPointers);
+    transactionQuery.equalTo("type", "CollateralRedemption");
+    const transactions = await transactionQuery.find();
+
+    const tradeDealsWithTransactions = Array.from(
+      new Set(
+        transactions.map((tx) => tx.get("tradeDeal")?.get("tradeDealId")).filter(Boolean) // filters out undefined/null
+      )
+    ).map(Number);
+
+    let filteredTradeDealIds = uniqueTradeDealIds;
+
+    if (tradeDealsWithTransactions.length > 0) {
+      const txSet = new Set(tradeDealsWithTransactions);
+      filteredTradeDealIds = uniqueTradeDealIds.filter((id) => !txSet.has(id));
+    }
 
     const tokenProjects = await ParseService.getRecords(
       "TokenProject",
       ["tradeDealId"],
-      [uniqueTradeDealIds], // Ensure Parse query supports arrays
+      [filteredTradeDealIds], // Ensure Parse query supports arrays
       ["tradeDealId", "title", "logo", "coverImage"]
     );
 
