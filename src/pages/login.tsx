@@ -7,7 +7,7 @@ import Head from "next/head";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { signIn, getCsrfToken, getSession } from "next-auth/react";
+import { signIn, getCsrfToken, getSession, signOut } from "next-auth/react";
 import { toast } from "react-toastify";
 import { useAccount, useDisconnect } from "wagmi";
 
@@ -72,6 +72,7 @@ const Login = function ({ csrfToken, callbackUrl }: InferGetServerSidePropsType<
         return;
       }
       const jwtToken = localStorage.getItem("jwtToken");
+      await signOut({ redirect: false });
       // Determine redirect URL
       let redirectUrl = "";
       if (jwtToken) {
