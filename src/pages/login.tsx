@@ -71,7 +71,16 @@ const Login = function ({ csrfToken, callbackUrl }: InferGetServerSidePropsType<
         window.location.href = "/login"; // Force reload login page
         return;
       }
-      const jwtToken = localStorage.getItem("jwtToken");
+      let jwtToken = null;
+      for (let i = 0; i < maxRetries; i++) {
+        jwtToken = localStorage.getItem("jwtToken");
+        if (jwtToken) {
+          break;
+        }
+        console.log(`JWT token not found, retry ${i + 1}/${maxRetries}`);
+        // Wait before retrying
+        await new Promise((resolve) => setTimeout(resolve, 1000));
+      }
       await signOut({ redirect: false });
       // Determine redirect URL
       let redirectUrl = "";
