@@ -707,39 +707,17 @@ const ProjectDetails: React.FC<ProjectDetailsProps> = ({ project, onBack, type =
                 </div>
 
                 {/* Project Stats (Moves below on small screens) */}
-                {project.attributes.industryTemplate === Industries.TRADE_FINANCE ? (
-                  <>
-                    {Array.isArray(projectInfo) && projectInfo.length > 0 && (
-                      <div
-                        className={`mt-6 md:mt-0 grid grid-cols-2 md:grid-cols-4 gap-4 bg-nomyx-dark2-light dark:bg-nomyx-dark2-dark p-4 rounded-lg shadow-md transition-opacity duration-500 opacity-100`}
-                        style={{ maxWidth: "100%", overflow: "hidden" }}
-                      >
-                        {projectInfo.map((item, index) => (
-                          <div key={index} className="stat-item bg-nomyx-dark1-light dark:bg-nomyx-dark1-dark p-3 rounded-lg text-center">
-                            <span className="text-sm">{item.key}</span>
-                            <h2 className="text-lg font-bold">{item.value}</h2>
-                          </div>
-                        ))}
-                      </div>
-                    )}
-                  </>
-                ) : (
+                {Array.isArray(projectInfo) && projectInfo.length > 0 && (
                   <div
-                    className={`mt-6 md:mt-0 flex flex-col md:flex-row md:flex-nowrap space-y-4 md:space-y-0 md:space-x-4 bg-nomyx-dark2-light dark:bg-nomyx-dark2-dark p-4 rounded-lg shadow-md transition-opacity duration-500 opacity-100`}
+                    className={`mt-6 md:mt-0 grid grid-cols-2 md:grid-cols-4 gap-4 bg-nomyx-dark2-light dark:bg-nomyx-dark2-dark p-4 rounded-lg shadow-md transition-opacity duration-500 opacity-100`}
                     style={{ maxWidth: "100%", overflow: "hidden" }}
                   >
-                    <div className="stat-item bg-nomyx-dark1-light dark:bg-nomyx-dark1-dark p-3 rounded-lg text-center">
-                      <span className="text-sm">Total Value</span>
-                      <h2 className="text-lg font-bold">{formatNumber(totalListingValue + totalSalesValue)}</h2>
-                    </div>
-                    <div className="stat-item bg-nomyx-dark1-light dark:bg-nomyx-dark1-dark p-3 rounded-lg text-center">
-                      <span className="text-sm">Project Creation Date</span>
-                      <h2 className="text-lg font-bold">{project.attributes.createdAt?.toLocaleDateString()}</h2>
-                    </div>
-                    <div className="stat-item bg-nomyx-dark1-light dark:bg-nomyx-dark1-dark p-3 rounded-lg text-center">
-                      <span className="text-sm">Tokens Available</span>
-                      <h2 className="text-lg font-bold">{formatNumber(totalTokens)}</h2>
-                    </div>
+                    {projectInfo.map((item, index) => (
+                      <div key={index} className="stat-item bg-nomyx-dark1-light dark:bg-nomyx-dark1-dark p-3 rounded-lg text-center">
+                        <span className="text-sm">{item.key}</span>
+                        <h2 className="text-lg font-bold">{item.value}</h2>
+                      </div>
+                    ))}
                   </div>
                 )}
               </div>
