@@ -71,9 +71,14 @@ const Login = function ({ csrfToken, callbackUrl }: InferGetServerSidePropsType<
         window.location.href = "/login"; // Force reload login page
         return;
       }
-
+      const jwtToken = localStorage.getItem("jwtToken");
       // Determine redirect URL
-      let redirectUrl = "/dashboard";
+      let redirectUrl = "";
+      if (jwtToken) {
+        redirectUrl = process.env.NEXT_PUBLIC_CUSTOMER_PORTAL_URL + "?token=" + jwtToken;
+      } else {
+        redirectUrl = "/dashboard";
+      }
 
       toast.dismiss("login");
       toast.success("Login successful!");
@@ -99,7 +104,14 @@ const Login = function ({ csrfToken, callbackUrl }: InferGetServerSidePropsType<
     const checkAndRedirect = async () => {
       const session = await getSession();
       if (session?.user?.accessToken) {
-        const redirectUrl = "/dashboard";
+        const jwtToken = localStorage.getItem("jwtToken");
+        // Determine redirect URL
+        let redirectUrl = "";
+        if (jwtToken) {
+          redirectUrl = process.env.NEXT_PUBLIC_CUSTOMER_PORTAL_URL + "?token=" + jwtToken;
+        } else {
+          redirectUrl = "/dashboard";
+        }
         window.location.href = redirectUrl;
       }
     };
