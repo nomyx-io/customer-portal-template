@@ -8,10 +8,12 @@ import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { signIn, getCsrfToken, getSession } from "next-auth/react";
+import { signOut } from "next-auth/react";
 import { toast } from "react-toastify";
 import { useAccount, useDisconnect } from "wagmi";
 
 import { StandardCredentials, EthereumCredentials } from "@/auth/Credentials";
+import ParseService from "@/services/ParseService";
 import { LoginPreference } from "@/utils/Constants";
 
 import Header from "../components/global/auth_header";
@@ -75,6 +77,8 @@ const Login = function ({ csrfToken, callbackUrl }: InferGetServerSidePropsType<
       // Determine redirect URL
       let redirectUrl = "";
       if (jwtToken) {
+        await signOut({ redirect: false });
+        ParseService.logout();
         redirectUrl = process.env.NEXT_PUBLIC_CUSTOMER_PORTAL_URL + "?token=" + jwtToken;
       } else {
         redirectUrl = "/dashboard";
@@ -108,6 +112,8 @@ const Login = function ({ csrfToken, callbackUrl }: InferGetServerSidePropsType<
         // Determine redirect URL
         let redirectUrl = "";
         if (jwtToken) {
+          await signOut({ redirect: false });
+          ParseService.logout();
           redirectUrl = process.env.NEXT_PUBLIC_CUSTOMER_PORTAL_URL + "?token=" + jwtToken;
         } else {
           redirectUrl = "/dashboard";
