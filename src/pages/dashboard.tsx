@@ -63,9 +63,6 @@ const Dashboard: React.FC = () => {
       totalAvailable += available > 0 ? available : 0;
     });
 
-    totalTarget = totalTarget > 0 ? totalTarget / 1_000_000 : 0;
-    totalAvailable = totalAvailable > 0 ? totalAvailable / 1_000_000 : 0;
-
     return { totalPoolAvailable: totalAvailable, totalFundingTarget: totalTarget };
   }, [tradeDeals]);
 
