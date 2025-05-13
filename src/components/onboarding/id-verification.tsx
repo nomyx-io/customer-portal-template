@@ -57,6 +57,16 @@ const IDVerification: React.FC<IDVerificationProps> = ({ setActiveTab, setRegist
     setModalVisible(true); // Open the modal
   };
 
+  const handleAccreditedInvestor = () => {
+    setTemplateId(process.env.NEXT_PUBLIC_PERSONA_ACCREDITED_INVESTOR_TEMPLATEID || "");
+    setModalVisible(true); // Open the modal
+  };
+
+  const handleQualifiedInvestor = () => {
+    setTemplateId(process.env.NEXT_PUBLIC_PERSONA_QUALIFIED_INVESTOR_TEMPLATEID || "");
+    setModalVisible(true); // Open the modal
+  };
+
   const handleModalClose = () => {
     setModalVisible(false); // Close the modal
     setVerificationCompleted(false); // Reset the verification completed state
@@ -73,15 +83,23 @@ const IDVerification: React.FC<IDVerificationProps> = ({ setActiveTab, setRegist
           <>
             <h2 className="text-2xl font-extrabold text-white text-center">Please verify your identity</h2>
             <p className="text-base mt-4 text-nomyxGray1 text-center max-w-[600px]">
-              We will use Persona to verify your identity. Click the &apos;Register as a User&apos; button for individual verification and the
-              &apos;Register as a Business&apos; button for business verification to proceed!
+              We use Persona to verify your identity. To proceed, click the &apos;Register as a User&apos; button for individual verification, the
+              &apos;Register as a Business&apos; button for business verification, the &apos;Register as an Accredited US Investor&apos; button for
+              accredited investor registration in the US, or the &apos;Register as an EU Qualified Investor&apos; button for EU qualified investor
+              registration.
             </p>
-            <div className="flex space-x-4 mt-8">
+            <div className="flex flex-wrap gap-x-4 gap-y-4 mt-8">
               <Button type="primary" onClick={handleKYC}>
                 Register as a User
               </Button>
               <Button type="primary" onClick={handleKYB}>
                 Register as a Business
+              </Button>
+              <Button type="primary" onClick={handleAccreditedInvestor}>
+                Register as an Accredited US Investor
+              </Button>
+              <Button type="primary" onClick={handleQualifiedInvestor}>
+                Register as an EU Qualified Investor
               </Button>
             </div>
           </>
