@@ -111,14 +111,20 @@ const optSep: Chain = {
 const chains = [base, baseSep, localhost, optSep];
 const wagmiConfig = defaultWagmiConfig({ chains, projectId, metadata });
 
-// 3. Create modal
-createWeb3Modal({
-  // siweConfig,
-  wagmiConfig,
-  projectId,
-  chains,
-  enableAnalytics: true, // Optional - defaults to your Cloud configuration
-});
+// Initialize Web3Modal only when needed, not at module level
+let web3ModalInitialized = false;
+export const initializeWeb3Modal = () => {
+  if (!web3ModalInitialized) {
+    createWeb3Modal({
+      // siweConfig,
+      wagmiConfig,
+      projectId,
+      chains,
+      enableAnalytics: true, // Optional - defaults to your Cloud configuration
+    });
+    web3ModalInitialized = true;
+  }
+};
 
 type GemforceAppContextType = {
   appState: GemforceAppState;

@@ -26,6 +26,19 @@ const Login = function ({ csrfToken, callbackUrl }: InferGetServerSidePropsType<
 
   const walletLogin = loginPreference == LoginPreference.WALLET;
 
+  // Import the initializeWeb3Modal function only when needed
+  const handleWalletLoginSelection = (value: number) => {
+    setLoginPreference(value);
+    if (value === LoginPreference.WALLET) {
+      // Dynamically import and initialize Web3Modal only when wallet login is selected
+      import("@/context/GemforceAppContext").then((module) => {
+        if (typeof module.initializeWeb3Modal === "function") {
+          module.initializeWeb3Modal();
+        }
+      });
+    }
+  };
+
   const { address, isConnected } = useAccount();
   // Prevents automatic wallet disconnection on page load
   useEffect(() => {
@@ -164,7 +177,7 @@ const Login = function ({ csrfToken, callbackUrl }: InferGetServerSidePropsType<
                               key={`login-option-${credentialConfig.options.id}`}
                               value={loginPreferenceOptionValue}
                               onClick={(e: any) => {
-                                setLoginPreference(e.target.value);
+                                handleWalletLoginSelection(e.target.value);
                               }}
                               className="login-radio-button"
                             >
