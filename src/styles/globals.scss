@@ -193,6 +193,16 @@ w3m-button{
 .light .custom-modal .ant-modal-close {
   @apply text-black
 }
+.dark .custom-modal .ant-modal-content, 
+.dark .custom-modal .ant-modal-header {
+  background-color: #1f1f1f;
+}
+.dark .custom-modal .ant-modal-title, 
+.dark .custom-modal .ant-modal-close,
+.dark .custom-modal .ant-input-number-input {
+  @apply text-white
+}
+
 .light .custom-modal .ant-input-outlined {
   background: #fff;
   border-color: #808080;
@@ -225,4 +235,7 @@ w3m-button{
 .ant-statistic-content-value {
   width: 100% !important;
   height: 100% !important;
+}
+.ant-input-number-outlined:focus-within {
+  background: none !important;
 }

@@ -937,8 +937,14 @@ const ProjectDetails: React.FC<ProjectDetailsProps> = ({ project, onBack, type =
           maskClosable={false}
           className="custom-modal"
         >
-          <p>Enter the amount you want to invest in the pool:</p>
-          <InputNumber min={1} value={investAmount} onChange={setInvestAmount} placeholder="Enter amount" />
+          <p className="dark:text-white">Enter the amount you want to invest in the pool:</p>
+          <InputNumber
+            min={1}
+            value={investAmount}
+            onChange={setInvestAmount}
+            placeholder="Enter amount"
+            className="w-2/3 mt-3 bg-white dark:bg-black"
+          />
         </Modal>
 
         <Modal
@@ -946,7 +952,7 @@ const ProjectDetails: React.FC<ProjectDetailsProps> = ({ project, onBack, type =
           open={isSwapUSDCModalOpen}
           onCancel={handleSwapUSDCCancel}
           footer={[
-            <Button key="cancel" onClick={handleSwapUSDCCancel} className="text-gray-700 dark:text-gray-300">
+            <Button key="cancel" onClick={handleSwapUSDCCancel} className="text-gray-700 dark:text-gray-300 focus:bg-none">
               Cancel
             </Button>,
             <Button
