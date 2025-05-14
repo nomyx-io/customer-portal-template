@@ -134,14 +134,22 @@ const WalletConnectHandler = ({ children }: any) => {
   useEffect(() => {
     const ethereum: any = (window as any).ethereum;
     if (ethereum) {
-      ethereum.on("accountsChanged", () => {
-        if (status === "authenticated") signOut();
-        try {
-          ParseService.logout();
-        } catch (error) {
-          console.error("Error logging out:", error);
+      ethereum.on("accountsChanged", async () => {
+        if (status === "authenticated") {
+          try {
+            // First clear any Parse session
+            await ParseService.logout();
+            // Then handle next-auth signout
+            await signOut({ callbackUrl: "/login" });
+            // Finally disconnect wallet
+            disconnect();
+          } catch (error) {
+            console.error("Error during account change cleanup:", error);
+            // Ensure signout happens even if cleanup fails
+            await signOut({ callbackUrl: "/login" });
+            disconnect();
+          }
         }
-        disconnect();
       });
     }
     return () => {
