@@ -63,9 +63,6 @@ const Dashboard: React.FC = () => {
       totalAvailable += available > 0 ? available : 0;
     });
 
-    totalTarget = totalTarget > 0 ? totalTarget / 1_000_000 : 0;
-    totalAvailable = totalAvailable > 0 ? totalAvailable / 1_000_000 : 0;
-
     return { totalPoolAvailable: totalAvailable, totalFundingTarget: totalTarget };
   }, [tradeDeals]);
 
@@ -224,12 +221,12 @@ const Dashboard: React.FC = () => {
   // Tab items
   const mainTabItems = useMemo(
     () => [
-      // {
-      //   key: "1",
-      //   label: "Token Insights",
-      //   children: <Bar data={prepareTokenChartData()} options={chartOptions} />,
-      //   className: "chart",
-      // },
+      {
+        key: "1",
+        label: "Token Insights",
+        children: <Bar data={prepareTokenChartData()} options={chartOptions} />,
+        className: "chart",
+      },
       // {
       //   key: "2",
       //   label: "Invoice Insights",
@@ -350,7 +347,7 @@ const Dashboard: React.FC = () => {
       return;
     }
     try {
-      const fetchedPools = await TradeFinanceService.getUserTradePools(user.walletAddress);
+      const fetchedPools = await TradeFinanceService.getUserTradePoolsStats(user.walletAddress);
       setPools(fetchedPools);
     } catch (error) {
       console.error("Error fetching pools:", error);
@@ -437,13 +434,15 @@ const Dashboard: React.FC = () => {
                           title={<span className="text-nomyx-gray2-light dark:text-nomyx-gray2-dark">{stat.title}</span>}
                           value={stat.value}
                           formatter={() => (
-                            <div className="flex items-center space-x-2">
+                            <div className="flex items-center space-x-2 justify-center">
                               {stat.icon}
-                              <span className={stat.color}>{stat.value}</span>
+                              <span className={`${stat.color} truncate`}>{stat.value}</span>
                             </div>
                           )}
                           valueStyle={{
                             color: stat.color,
+                            width: "100%",
+                            height: "100%",
                             display: "flex",
                             justifyContent: "center",
                             alignItems: "center",

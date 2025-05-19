@@ -13,8 +13,13 @@ const globalErrorHandler = (error: Parse.Error) => {
 export default class ParseService {
   static createdSchemas: any = [];
 
-  static logout() {
-    Parse.User.logOut();
+  static async logout() {
+    try {
+      await Parse.User.logOut();
+    } catch (error) {
+      console.error("Error during Parse logout:", error);
+      // Even if Parse logout fails, we want to continue with the sign out process
+    }
   }
 
   static setUser(session: string) {

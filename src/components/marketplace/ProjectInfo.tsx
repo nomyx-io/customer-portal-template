@@ -71,7 +71,7 @@ const ProjectInfo: React.FC<ProjectInfoProps> = ({
             <>
               <div className="text-gray-900 dark:text-white font-bold text-lg mb-2">Carbon Credits:</div>
               <div className="text-3xl font-bold text-gray-900 dark:text-white">
-                {carbonCreditBalance !== null ? formatNumber(carbonCreditBalance) : "Loading..."}
+                {carbonCreditBalance !== null ? formatPrice(carbonCreditBalance) : "Loading..."}
               </div>
             </>
           )}
@@ -86,7 +86,7 @@ const ProjectInfo: React.FC<ProjectInfoProps> = ({
           {industryTemplate &&
             industryTemplate != Industries.TRADE_FINANCE &&
             tokenActionLabel &&
-            (tokenActionLabel !== "Claim Now" || (tokenActionLabel === "Claim Now" && tokenBalance && tokenBalance > 0)) && (
+            ((tokenBalance && tokenBalance > 0) || (carbonCreditBalance && carbonCreditBalance > 0)) && (
               <button
                 className="w-full mt-4 bg-blue-500 text-white font-bold py-3 px-6 rounded-md transition hover:bg-blue-700 hover:brightness-110 flex items-center justify-center border-none"
                 onClick={() => onTokenAction && onTokenAction(token)}

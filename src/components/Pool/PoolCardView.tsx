@@ -63,7 +63,7 @@ const PoolCardView: React.FC<Props> = ({ pools, handleRedeemVABB }) => {
               <h2 className="text-lg font-bold mb-2">{pool.title}</h2>
 
               <div className="mt-4 grid gap-2">
-                {[{ label: "Total Invested", value: formatPrice(pool.totalInvestedAmount / 1_000_000, "USD") }].map((item, index) => (
+                {[{ label: "Total Invested", value: formatPrice(pool.totalInvestedAmount, "USD") }].map((item, index) => (
                   <div key={index} className="flex justify-between items-center">
                     <span className="font-semibold">{item.label}</span>
                     <span className="bg-gray-100 dark:bg-gray-700 p-2 rounded text-right w-2/3">{item.value}</span>

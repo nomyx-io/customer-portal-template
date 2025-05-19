@@ -186,6 +186,52 @@ class TradeFinanceService {
     return result;
   }
 
+  public async getUserTradePoolsStats(userAddress: string): Promise<TradeFinancePool[]> {
+    // Step 1: Fetch TradeDealUSDCDeposit records for the ownerAddress
+    userAddress = userAddress.toLowerCase();
+    const records = await ParseService.getRecords("TradeDealUSDCDeposit", ["ownerAddress"], [userAddress], ["tradeDealId", "amount"]);
+
+    if (!records || records.length === 0) return [];
+
+    // Step 2: Aggregate total amount for each unique tradeDealId
+    const tradeDealMap: Record<number, number> = {};
+
+    records.forEach((record) => {
+      const tradeDealId = record.get("tradeDealId") as number;
+      const amount = (record.get("amount") as number) || 0;
+      tradeDealMap[tradeDealId] = (tradeDealMap[tradeDealId] || 0) + Number(amount);
+    });
+
+    // Step 3: Fetch TokenProject records for unique tradeDealIds
+    const uniqueTradeDealIds = Object.keys(tradeDealMap).map((id) => Number(id));
+    if (uniqueTradeDealIds.length === 0) return [];
+
+    const tokenProjects = await ParseService.getRecords(
+      "TokenProject",
+      ["tradeDealId"],
+      [uniqueTradeDealIds], // Ensure Parse query supports arrays
+      ["tradeDealId", "title", "logo", "coverImage"]
+    );
+
+    // Step 4: Create a final combined result
+    const result = uniqueTradeDealIds.flatMap((tradeDealId) => {
+      const project = tokenProjects?.find((p) => p.get("tradeDealId") == tradeDealId);
+      if (!project) return [];
+
+      return {
+        tradeDealId,
+        title: (project.get("title") as string) || "Unknown",
+        description: (project.get("description") as string) || "Unknown",
+        totalInvestedAmount: tradeDealMap[tradeDealId],
+        projectId: project.id ?? "",
+        logo: project.get("logo") ?? "",
+        coverImage: project.get("coverImage") ?? "",
+      };
+    });
+
+    return result;
+  }
+
   public async getDepositHistory(userAddress: string): Promise<HistoryData[]> {
     // Step 1: Fetch TradeDealUSDCDeposit records for the given user address
     const tradeDealDeposits =

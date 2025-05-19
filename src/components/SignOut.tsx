@@ -37,9 +37,17 @@ export function SignOut(props: React.ComponentPropsWithRef<typeof Button> & { wa
       <Button
         className="mr-2 text-nomyx-text-light dark:text-nomyx-text-dark hover:!bg-transparent"
         {...buttonProps}
-        onClick={() => {
-          signOut();
-          ParseService.logout();
+        onClick={async () => {
+          try {
+            // First clear any Parse session
+            await ParseService.logout();
+            // Then trigger next-auth sign out
+            await signOut({ callbackUrl: "/login" });
+          } catch (error) {
+            console.error("Error during sign out:", error);
+            // Ensure user is signed out even if there's an error
+            await signOut({ callbackUrl: "/login" });
+          }
         }}
       >
         Sign Out
