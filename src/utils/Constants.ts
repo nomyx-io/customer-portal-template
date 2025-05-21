@@ -80,8 +80,8 @@ export const DFNS_END_USER_TOKEN_COOKIE = "dfnsEndUserToken";
 
 export const tradeFinanceDocumentationFields = [
   {
-    label: "PPM",
-    name: "ppm",
+    label: "Private Placement Memorandum",
+    name: "privatePlacementMemorandum",
   },
   {
     label: "Custodian Contract",

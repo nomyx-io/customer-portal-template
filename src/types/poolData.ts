@@ -7,6 +7,7 @@ export interface TradeFinancePool {
   description: string;
   logo?: Parse.File;
   coverImage?: Parse.File;
+  isRedemptionCompleted?: boolean;
 }
 
 export interface StockData {

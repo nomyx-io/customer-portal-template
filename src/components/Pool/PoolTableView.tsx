@@ -94,7 +94,13 @@ const PoolTableView: React.FC<Props> = ({ pools, handleRedeemVABB }) => {
       dataIndex: "actions",
       render: (_, record) => (
         <div style={{ display: "flex", flexDirection: "row", gap: 8 }}>
-          <Button type="primary" size="small" onClick={() => handleRedeem(record.tradeDealId)}>
+          <Button
+            type="primary"
+            size="small"
+            onClick={() => handleRedeem(record.tradeDealId)}
+            disabled={record.isRedemptionCompleted}
+            className="disabled:text-black disabled:p-2 disabled:leading-[0.50rem]"
+          >
             Swap Collateral Token to USDC
           </Button>
           {/* <Button type="primary" size="small" onClick={() => handleSwap(record.tradeDealId)}>

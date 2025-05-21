@@ -140,43 +140,57 @@ class TradeFinanceService {
     const tradeDealPointers = Object.values(tradeDealPointerMap);
     if (tradeDealPointers.length === 0) return [];
 
-    // Step 3: Query Transaction table for any of these tradeDeal pointers
+    // Step 4: Query Transaction table for any of these tradeDeal pointers
     const Transaction = Parse.Object.extend("Transaction");
     const transactionQuery = new Parse.Query(Transaction);
     transactionQuery.containedIn("tradeDeal", tradeDealPointers);
     transactionQuery.equalTo("type", "CollateralRedemption");
     const transactions = await transactionQuery.find();
 
-    const tradeDealsWithTransactions = Array.from(
-      new Set(
-        transactions.map((tx) => tx.get("tradeDeal")?.get("tradeDealId")).filter(Boolean) // filters out undefined/null
-      )
-    ).map(Number);
+    // Calculate total USDC amount per tradeDeal from transactions
+    const transactionAmounts: Record<number, number> = {};
+    transactions.forEach((tx) => {
+      const tradeDeal = tx.get("tradeDeal");
+      if (!tradeDeal) return;
 
-    let filteredTradeDealIds = uniqueTradeDealIds;
+      const tradeDealId = tradeDeal.get("tradeDealId") as number;
+      const usdcAmount = (tx.get("usdcAmount") as number) || 0;
+      transactionAmounts[tradeDealId] = (transactionAmounts[tradeDealId] || 0) + Number(usdcAmount);
+    });
 
-    if (tradeDealsWithTransactions.length > 0) {
-      const txSet = new Set(tradeDealsWithTransactions);
-      filteredTradeDealIds = uniqueTradeDealIds.filter((id) => !txSet.has(id));
-    }
+    const tradeDealsWithTransactions = Array.from(new Set(transactions.map((tx) => tx.get("tradeDeal")?.get("tradeDealId")).filter(Boolean))).map(
+      Number
+    );
+
+    // let filteredTradeDealIds = uniqueTradeDealIds;
+
+    // if (tradeDealsWithTransactions.length > 0) {
+    //   const txSet = new Set(tradeDealsWithTransactions);
+    //   filteredTradeDealIds = uniqueTradeDealIds.filter((id) => !txSet.has(id));
+    // }
 
     const tokenProjects = await ParseService.getRecords(
       "TokenProject",
       ["tradeDealId"],
-      [filteredTradeDealIds], // Ensure Parse query supports arrays
-      ["tradeDealId", "title", "logo", "coverImage"]
+      [uniqueTradeDealIds],
+      ["tradeDealId", "title", "logo", "coverImage", "description"]
     );
 
-    // Step 4: Create a final combined result
+    // Step 5: Create a final combined result
     const result = uniqueTradeDealIds.flatMap((tradeDealId) => {
       const project = tokenProjects?.find((p) => p.get("tradeDealId") == tradeDealId);
       if (!project) return [];
+
+      const totalInvestedAmount = tradeDealMap[tradeDealId];
+      const totalTransactionAmount = transactionAmounts[tradeDealId] / 1_000_000 || 0;
+      const amountsMatch = totalInvestedAmount === totalTransactionAmount;
 
       return {
         tradeDealId,
         title: (project.get("title") as string) || "Unknown",
         description: (project.get("description") as string) || "Unknown",
-        totalInvestedAmount: tradeDealMap[tradeDealId],
+        totalInvestedAmount,
+        isRedemptionCompleted: amountsMatch,
         projectId: project.id ?? "",
         logo: project.get("logo") ?? "",
         coverImage: project.get("coverImage") ?? "",
@@ -252,21 +266,29 @@ class TradeFinanceService {
   }
 
   public async getRedeemedVABBHistory(userAddress: string): Promise<RedeemedVABBHistory[]> {
-    // Step 1: Fetch VABBTokensRedeemed records for the given user address
-    const redeemedVABBs = (await ParseService.getRecords("Transaction", ["sender", "type"], [userAddress, "CollateralRedemption"], ["*"])) || [];
+    // Step 1: Fetch VABBTokensRedeemed records for the given user address (case-insensitive)
+    const Transaction = Parse.Object.extend("Transaction");
+    const query = new Parse.Query(Transaction);
+    query.equalTo("type", "CollateralRedemption");
+    query.matches("sender", new RegExp(`^${userAddress}$`, "i")); // case-insensitive match
+    query.include("*");
 
+    const redeemedVABBs = (await query.find()) || [];
     if (redeemedVABBs.length === 0) return [];
 
     // Step 2: Fetch user details from the User table based on walletAddress
-    const userRecords = await ParseService.getFirstRecord("User", ["walletAddress"], [userAddress]);
+    const userQuery = new Parse.Query("User");
+    userQuery.matches("walletAddress", new RegExp(`^${userAddress}$`, "i")); // case-insensitive match
+    const userRecords = await userQuery.first();
+
     // Step 3: Construct the final history data array
     return redeemedVABBs.map((vabb) => ({
-      id: vabb.get("id") as string,
+      id: vabb.id,
       redeemerName: `${userRecords?.get("firstName") || "Unknown"} ${userRecords?.get("lastName") || ""}`.trim(),
       redeemerId: userRecords?.id || "",
       collateralAmount: vabb.get("collateralAmount") as number,
       usdcAmount: vabb.get("usdcAmount") as number,
-      tradeDealId: vabb.get("tradeDeal").get("tradeDealId") as number,
+      tradeDealId: vabb.get("tradeDeal")?.get("tradeDealId") as number,
     }));
   }
 

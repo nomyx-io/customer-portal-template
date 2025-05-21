@@ -71,15 +71,15 @@ const RedeemedVABBListPage: React.FC<Props> = () => {
       render: (usdcAmount: number) => `${formatPrice(usdcAmount / 1_000_000, "USD")}`,
       sorter: (a, b) => a.usdcAmount - b.usdcAmount,
     },
-    {
-      title: "", // Empty column header
-      dataIndex: "withdraw",
-      render: (_, record) => (
-        <Button type="primary" onClick={() => handleWithdraw(record.redeemerId)}>
-          Withdraw
-        </Button>
-      ),
-    },
+    // {
+    //   title: "", // Empty column header
+    //   dataIndex: "withdraw",
+    //   render: (_, record) => (
+    //     <Button type="primary" onClick={() => handleWithdraw(record.redeemerId)}>
+    //       Withdraw
+    //     </Button>
+    //   ),
+    // },
   ];
 
   return (

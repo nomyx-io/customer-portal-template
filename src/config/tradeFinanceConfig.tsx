@@ -9,10 +9,10 @@ export const tradeFinanceFields = [
   //   rules: [requiredRule, numberRule],
   // },
   {
-    name: "ppm",
-    key: "ppm",
+    name: "Private Placement Memorandum",
+    key: "privatePlacementMemorandum",
     type: "text",
-    placeHolder: "ppm Document",
+    placeHolder: "Private Placement Memorandum Document",
   },
   {
     name: "Stock Certificate",
