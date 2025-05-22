@@ -72,7 +72,12 @@ const PoolCardView: React.FC<Props> = ({ pools, handleRedeemVABB }) => {
               </div>
 
               <div className="mt-4 flex gap-3 justify-end">
-                <Button type="primary" className="w-full md:w-auto" onClick={() => handleRedeem(pool.tradeDealId)}>
+                <Button
+                  type="primary"
+                  className="w-full md:w-auto disabled:text-black disabled:p-2 disabled:leading-[0.50rem]"
+                  onClick={() => handleRedeem(pool.tradeDealId)}
+                  disabled={pool.isRedemptionCompleted}
+                >
                   Swap Collateral Token to USDC
                 </Button>
                 {/* <Button

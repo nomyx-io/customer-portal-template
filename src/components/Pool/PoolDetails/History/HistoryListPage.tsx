@@ -62,18 +62,18 @@ const HistoryListPage: React.FC<Props> = () => {
     {
       title: "Amount Deposited",
       dataIndex: "amountDeposited",
-      render: (amountDeposited: number) => `${formatPrice(amountDeposited / 1_000_000, "USD")}`,
+      render: (amountDeposited: number) => `${formatPrice(amountDeposited, "USD")}`,
       sorter: (a, b) => a.amountDeposited - b.amountDeposited,
     },
-    {
-      title: "", // Empty column header
-      dataIndex: "withdraw",
-      render: (_, record) => (
-        <Button type="primary" onClick={() => handleWithdraw(record.investorId)}>
-          Withdraw
-        </Button>
-      ),
-    },
+    // {
+    //   title: "", // Empty column header
+    //   dataIndex: "withdraw",
+    //   render: (_, record) => (
+    //     <Button type="primary" onClick={() => handleWithdraw(record.investorId)}>
+    //       Withdraw
+    //     </Button>
+    //   ),
+    // },
   ];
 
   return (

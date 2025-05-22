@@ -968,8 +968,8 @@ const ProjectDetails: React.FC<ProjectDetailsProps> = ({ project, onBack, type =
           maskClosable={false}
           className="custom-modal"
         >
-          <p>Enter the amount you want to USDC:</p>
-          <InputNumber min={1} value={usdcAmount} onChange={setUSDCAmount} placeholder="Enter amount" />
+          <p className="dark:text-white">Enter the amount you want Swap to USDC:</p>
+          <InputNumber min={1} value={usdcAmount} onChange={setUSDCAmount} placeholder="Enter amount" className="w-2/3 mt-3 bg-white dark:bg-black" />
         </Modal>
       </ConfigProvider>
     </div>
