@@ -115,7 +115,7 @@ const TokenListView: React.FC<TokenListViewProps> = ({
     );
   };
 
-  const getDynamicColumns = (maxColumns = 8): ColumnConfig[] => {
+  const getDynamicColumns = (maxColumns = 100): ColumnConfig[] => {
     const nonNullColumns: Record<string, ColumnConfig> = {};
     projects.forEach((token) => {
       const tokenData = industryTemplate === Industries.TRADE_FINANCE ? token : token.token;
