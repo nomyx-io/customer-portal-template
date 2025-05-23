@@ -7,6 +7,7 @@ import { Industries } from "@/config/generalConfig";
 import { ColumnConfig, EXCLUDED_COLUMNS } from "@/types/dynamicTableColumn";
 import { hashToColor } from "@/utils/colorUtils";
 import { formatPrice } from "@/utils/currencyFormater";
+import { formatNumber } from "@/utils/numberFormatter";
 
 const isValidUrl = (string: string): boolean => {
   try {
@@ -149,6 +150,9 @@ const TokenListView: React.FC<TokenListViewProps> = ({
             return formatPrice(isTotalAmount ? value / 1_000_000 : value, "USD") || "-";
           }
           if (typeof value === "object") return "N/A";
+          if (value !== undefined && value !== null && !isNaN(Number(value)) && !isValidUrl(value?.toString())) {
+            return formatNumber(Number(value));
+          }
           if (typeof value === "string" && isValidUrl(value)) {
             return (
               <a href={value} target="_blank" rel="noopener noreferrer" className="text-blue-500 hover:text-blue-700">
