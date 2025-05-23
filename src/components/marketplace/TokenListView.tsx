@@ -150,7 +150,14 @@ const TokenListView: React.FC<TokenListViewProps> = ({
             return formatPrice(isTotalAmount ? value / 1_000_000 : value, "USD") || "-";
           }
           if (typeof value === "object") return "N/A";
-          if (value !== undefined && value !== null && !isNaN(Number(value)) && !isValidUrl(value?.toString())) {
+          if (
+            value !== undefined &&
+            value !== null &&
+            !isNaN(Number(value)) &&
+            !isValidUrl(value?.toString()) &&
+            key !== "tokenId" &&
+            key !== "mintAddress"
+          ) {
             return formatNumber(Number(value));
           }
           if (typeof value === "string" && isValidUrl(value)) {
