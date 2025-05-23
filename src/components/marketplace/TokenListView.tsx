@@ -7,6 +7,7 @@ import { Industries } from "@/config/generalConfig";
 import { ColumnConfig, EXCLUDED_COLUMNS } from "@/types/dynamicTableColumn";
 import { hashToColor } from "@/utils/colorUtils";
 import { formatPrice } from "@/utils/currencyFormater";
+import { formatNumber } from "@/utils/numberFormatter";
 
 const isValidUrl = (string: string): boolean => {
   try {
@@ -114,7 +115,7 @@ const TokenListView: React.FC<TokenListViewProps> = ({
     );
   };
 
-  const getDynamicColumns = (maxColumns = 8): ColumnConfig[] => {
+  const getDynamicColumns = (maxColumns = 100): ColumnConfig[] => {
     const nonNullColumns: Record<string, ColumnConfig> = {};
     projects.forEach((token) => {
       const tokenData = industryTemplate === Industries.TRADE_FINANCE ? token : token.token;
@@ -149,6 +150,16 @@ const TokenListView: React.FC<TokenListViewProps> = ({
             return formatPrice(isTotalAmount ? value / 1_000_000 : value, "USD") || "-";
           }
           if (typeof value === "object") return "N/A";
+          if (
+            value !== undefined &&
+            value !== null &&
+            !isNaN(Number(value)) &&
+            !isValidUrl(value?.toString()) &&
+            key !== "tokenId" &&
+            key !== "mintAddress"
+          ) {
+            return formatNumber(Number(value));
+          }
           if (typeof value === "string" && isValidUrl(value)) {
             return (
               <a href={value} target="_blank" rel="noopener noreferrer" className="text-blue-500 hover:text-blue-700">
